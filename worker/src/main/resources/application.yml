@@ -8,13 +8,5 @@ etcd:
 spring:
   aop:
     proxy-target-class: true
-  datasource:
-    username: root
-    password: JRTEST
-    url: jdbc:mysql://172.24.7.182:3306/test1?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
-mybatis:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 server:
   port: 8080

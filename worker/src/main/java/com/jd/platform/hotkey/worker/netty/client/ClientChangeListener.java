@@ -1,14 +1,11 @@
 package com.jd.platform.hotkey.worker.netty.client;
 
-import com.jd.platform.hotkey.worker.mapper.AppInfoMapper;
 import com.jd.platform.hotkey.worker.model.AppInfo;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -24,9 +21,6 @@ public class ClientChangeListener implements IClientChangeListener {
     private static final String NEW_CLIENT = "监听到事件";
     private static final String NEW_CLIENT_JOIN = "new client join";
     private static final String CLIENT_LOSE = "client removed";
-
-    @Autowired
-    private AppInfoMapper appInfoMapper;
 
     /**
      * 客户端新增
@@ -48,13 +42,6 @@ public class ClientChangeListener implements IClientChangeListener {
             appInfo.setAppName(appName);
             ClientInfoHolder.apps.add(appInfo);
             appInfo.getMap().put(ip, ctx);
-
-            AppInfo dbAppInfo = appInfoMapper.findByAppName(appName);
-            if (dbAppInfo == null) {
-                //记录app信息
-                appInfo.setCreateTime(new Date());
-                appInfoMapper.insertSelective(appInfo);
-            }
         }
 
         logger.info(NEW_CLIENT_JOIN);
