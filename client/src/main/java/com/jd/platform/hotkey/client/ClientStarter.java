@@ -10,6 +10,8 @@ import com.jd.platform.hotkey.client.core.worker.WorkerRetryConnector;
 import com.jd.platform.hotkey.client.etcd.EtcdConfigFactory;
 import com.jd.platform.hotkey.client.etcd.EtcdStarter;
 import com.jd.platform.hotkey.client.log.JdLogger;
+import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
+import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 
 /**
  * 客户端启动器
@@ -89,6 +91,15 @@ public class ClientStarter {
         EtcdStarter starter = new EtcdStarter();
         //与etcd相关的监听都开启
         starter.start();
+
+        //存app名
+        registerAppName(Context.APP_NAME);
+    }
+
+    private void registerAppName(String appName) {
+        JdLogger.info(getClass(), "--- registerAppName ----");
+        IConfigCenter configCenter = EtcdConfigFactory.configCenter();
+        configCenter.put(ConfigConstant.appsPath + appName, appName);
     }
 
     private void registEventBus() {
