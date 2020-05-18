@@ -105,16 +105,3 @@ CREATE TABLE `hk_key_timely`  (
 -- ----------------------------
 INSERT INTO `hk_key_timely` VALUES (1, 'testk1', 'testv1', '/jd/hotkeys/test/', 'test', 60000, 1212121);
 --INSERT INTO `hk_key_timely` VALUES (2, 'testk2', 'testv2', '/jd/hotkeys/test/', 'test', 10000, 123443345);
-
-
-DROP TABLE IF EXISTS `hk_app_info`;
-CREATE TABLE `hk_app_info` (
-  `id`              bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `app_name`        varchar(60) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT '应用名称',
-  `principal_name`  varchar(20) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL DEFAULT '' COMMENT '负责人',
-  `principal_phone` varchar(11) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL DEFAULT '' COMMENT '负责人手机号',
-  `app_desc`        varchar(64) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL DEFAULT '' COMMENT '应用描述',
-  `create_time`     datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建/接入时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uniq_key`(`app_name`) USING BTREE COMMENT '唯一索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
