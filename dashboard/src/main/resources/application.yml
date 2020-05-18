@@ -26,9 +26,9 @@ spring :
     date-format: yyyy-MM-dd HH:mm:ss
   datasource:
     username: root
-    password: JRTEST
-    url: jdbc:mysql://172.24.7.182:3306/test1?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    password:
+    url: jdbc:mysql://127.0.0.1:3306/test1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
 pagehelper:
     helperDialect: mysql
     reasonable: true
