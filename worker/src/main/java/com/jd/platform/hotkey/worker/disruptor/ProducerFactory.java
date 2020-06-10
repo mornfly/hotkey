@@ -25,6 +25,10 @@ public class ProducerFactory {
         //如果手工指定了线程数，就用手工指定的
         if (InitConstant.threadCount != 0) {
             threadCount = InitConstant.threadCount;
+        } else {
+            if (threadCount >= 8) {
+                threadCount = threadCount / 2;
+            }
         }
 
         HotKeyEventConsumer[] array = new HotKeyEventConsumer[threadCount];
