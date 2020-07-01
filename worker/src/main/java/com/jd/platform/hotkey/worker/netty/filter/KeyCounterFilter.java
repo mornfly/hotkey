@@ -1,19 +1,23 @@
 package com.jd.platform.hotkey.worker.netty.filter;
 
+import cn.hutool.core.date.SystemClock;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.worker.keydispatcher.KeyProducer;
+import com.jd.platform.hotkey.common.tool.NettyIpUtil;
+import com.jd.platform.hotkey.worker.counter.KeyCountItem;
 import com.jd.platform.hotkey.worker.mq.IMqMessageReceiver;
+import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.List;
+
+import static com.jd.platform.hotkey.worker.counter.CounterConfig.DELAY_QUEUE;
 
 /**
  * 对热key访问次数和总访问次数进行累计
@@ -23,9 +27,6 @@ import java.util.List;
 @Component
 @Order(4)
 public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
-    @Resource
-    private KeyProducer keyProducer;
-
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -49,18 +50,14 @@ public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
     private void publishMsg(String appName, String message, ChannelHandlerContext ctx) {
         //老版的用的单个HotKeyModel，新版用的数组
         List<KeyCountModel> models = FastJsonUtils.toList(message, KeyCountModel.class);
-//        for (HotKeyModel model : models) {
-//            //白名单key不处理
-//            if (WhiteListHolder.contains(model.getKey())) {
-//                continue;
-//            }
-//            long timeOut = SystemClock.now() - model.getCreateTime();
-//            if (timeOut > 1000) {
-//                logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
-//            }
-//            keyProducer.push(model);
-//        }
-
+        long timeOut = SystemClock.now() - models.get(0).getCreateTime();
+        //超时5秒以上的就不处理了，因为client是每10秒发送一次，所以最迟15秒以后的就不处理了
+        if (timeOut > InitConstant.timeOut + 10000) {
+            logger.warn("key count timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
+            return;
+        }
+        //将收到的key放入延时队列，15秒后进行累加并发送
+        DELAY_QUEUE.put(new KeyCountItem(appName, models.get(0).getCreateTime(), models));
     }
 
 }
