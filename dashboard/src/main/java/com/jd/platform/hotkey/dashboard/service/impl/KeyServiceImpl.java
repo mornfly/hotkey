@@ -67,8 +67,17 @@ public class KeyServiceImpl implements KeyService {
         int type = req.getType();
         LocalDateTime now = LocalDateTime.now();
         req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
-
         List<String> rules = ruleService.listRules(null);
+        if(type == 4){
+            LocalDateTime st = req.getStartTime() == null? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
+            req.setStartTime(DateUtil.ldtToDate(st));
+            LocalDateTime et = DateUtil.dateToLdt(req.getEndTime());
+            boolean longTime = Duration.between(st,et).toHours()>2;
+            req.setType(longTime ? 6 : 5);
+            List<Statistics> list = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(st,et,list,!longTime,rules);
+        }
+
         if(type == 5){
             LocalDateTime startTime = now.minusMinutes(31);
             req.setStartTime(DateUtil.ldtToDate(startTime));
@@ -85,7 +94,6 @@ public class KeyServiceImpl implements KeyService {
             req.setType(6);
             List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
             return CommonUtil.processData(startTime3,now,list3,false,rules);
-
         }
     }
 
