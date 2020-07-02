@@ -19,15 +19,16 @@ public class RuleUtil {
 
     private static Logger logger = LoggerFactory.getLogger("RuleUtil");
 
-   /* public static void init() {
+    public static void init() {
         synchronized (RULE_MAP) {
             RULE_MAP.clear();
         }
-    }*/
+    }
 
     public static void put(String appName, List<KeyRule> list) {
         synchronized (RULE_MAP) {
-            RULE_MAP.clear();
+            logger.info("更新了appName:{}  rule:{}",appName, JSON.toJSONString(list));
+            logger.info("更新了appName:{}  rule:{}",appName, JSON.toJSONString(list));
             logger.info("更新了appName:{}  rule:{}",appName, JSON.toJSONString(list));
             RULE_MAP.put(appName, list);
         }
@@ -37,13 +38,17 @@ public class RuleUtil {
      * 根据APP的key，获取该key对应的rule
      */
     public static String rule(String key) {
-        KeyRule keyRule = findByKey(key);
-        if (keyRule != null) {
-            String[] appKey = key.split("/");
-            String appName = appKey[0];
-            return appName + "-" + keyRule.getKey();
-        } else {
-            logger.info("rule is null，key is " + key);
+        try {
+            KeyRule keyRule = findByKey(key);
+            if (keyRule != null) {
+                String[] appKey = key.split("/");
+                String appName = appKey[0];
+                return appName + "-" + keyRule.getKey();
+            } else {
+                logger.info("rule is null，key is " + key);
+            }
+        }catch (Exception e){
+            logger.error("findByKey error",e);
         }
         return null;
     }
@@ -72,6 +77,8 @@ public class RuleUtil {
             //遍历该app的所有rule，找到与key匹配的rule。优先全匹配->prefix匹配-> * 通配
             //这一段虽然看起来比较奇怪，但是没毛病，不要乱改
             for (KeyRule keyRule : RULE_MAP.get(appName)) {
+                logger.info("findByKey  RULE_MAP:{}", JSON.toJSONString(RULE_MAP));
+
                 if (realKey.equals(keyRule.getKey())) {
                     return keyRule;
                 }

@@ -166,7 +166,7 @@ public class EtcdMonitor {
      * 启动后从etcd拉取所有rule
      */
     private void fetchRuleFromEtcd() {
-       // RuleUtil.init();
+        RuleUtil.init();
         try {
             List<KeyRule> ruleList = new ArrayList<>();
 
