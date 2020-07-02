@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.dashboard.util;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,14 +19,16 @@ public class RuleUtil {
 
     private static Logger logger = LoggerFactory.getLogger("RuleUtil");
 
-    public static void init() {
+   /* public static void init() {
         synchronized (RULE_MAP) {
             RULE_MAP.clear();
         }
-    }
+    }*/
 
     public static void put(String appName, List<KeyRule> list) {
         synchronized (RULE_MAP) {
+            RULE_MAP.clear();
+            logger.info("更新了appName:{}  rule:{}",appName, JSON.toJSONString(list));
             RULE_MAP.put(appName, list);
         }
     }
