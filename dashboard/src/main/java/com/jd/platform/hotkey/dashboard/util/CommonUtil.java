@@ -170,8 +170,6 @@ public class CommonUtil {
 		Map<String, List<Statistics>> ruleStatsMap = listGroup(list);
 		Map<String, List<Integer>> ruleDataMap = new ConcurrentHashMap<>(ruleStatsMap.size());
 		ruleStatsMap.forEach((rule,statistics)->{
-			String app1 = statistics.get(0).getApp();
-			rule = app1 + "-" + rule;
 			Map<Integer, List<Statistics>> timeStatsMap = listGroupByTime(statistics, isMinute);
 			timeCountMap.forEach((k,v)->{
 				if(timeStatsMap.get(k) == null){
