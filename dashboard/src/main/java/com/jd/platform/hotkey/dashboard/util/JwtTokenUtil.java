@@ -62,7 +62,6 @@ public class JwtTokenUtil {
             JwtBuilder builder = Jwts.builder().setHeaderParam("type", "JWT")
                     .claim("userId", encryId)
                     .claim("role", role)
-                    .claim("appName", appName)
                     .claim("nickName", nickName)
                     .setSubject(username)           // 代表这个JWT的主体，即它的所有人
                  //   .setIssuer(audience.getClientId())              // 代表这个JWT的签发主体；
@@ -86,16 +85,6 @@ public class JwtTokenUtil {
         }
     }
 
-
-    /**
-     * 从token中获取appName
-     * @param token
-     * @return
-     */
-    public static String getAppName(String token){
-        Claims re = parseJWT(token);
-        return re.get("appName", String.class);
-    }
 
 
     /**

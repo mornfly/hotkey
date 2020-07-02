@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,8 @@ import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 public class CommonUtil {
@@ -153,7 +156,7 @@ public class CommonUtil {
 	 * @return vo
 	 */
 	public static HotKeyLineChartVo processData(LocalDateTime st, LocalDateTime et, List<Statistics> list,
-												boolean isMinute, List<String> rules){
+												boolean isMinute, List<String> rules, String app){
 		Set<String> xAxisSet = new TreeSet<>();
 		Duration duration = Duration.between(st,et);
 		long passTime = isMinute ? duration.toMinutes() : duration.toHours();
@@ -165,8 +168,10 @@ public class CommonUtil {
 			timeCountMap.put(time,null);
 		}
 		Map<String, List<Statistics>> ruleStatsMap = listGroup(list);
-		Map<String, List<Integer>> ruleDataMap = new HashMap<>(ruleStatsMap.size());
+		Map<String, List<Integer>> ruleDataMap = new ConcurrentHashMap<>(ruleStatsMap.size());
 		ruleStatsMap.forEach((rule,statistics)->{
+			String app1 = statistics.get(0).getApp();
+			rule = app1 + "-" + rule;
 			Map<Integer, List<Statistics>> timeStatsMap = listGroupByTime(statistics, isMinute);
 			timeCountMap.forEach((k,v)->{
 				if(timeStatsMap.get(k) == null){
@@ -179,11 +184,23 @@ public class CommonUtil {
 		});
 		HotKeyLineChartVo vo = new HotKeyLineChartVo();
 		vo.setxAxis2(xAxisSet);
+		if(StringUtils.isNotEmpty(app)){
+			ruleDataMap.forEach((rule,data)->{
+				if(!rule.startsWith(app)){
+					ruleDataMap.remove(rule);
+				}
+			});
+		}
 		vo.setSeries2(ruleDataMap);
 		Set<String> ruleSet = ruleDataMap.keySet();
 		Set<String> etcdRuleSet = new HashSet<>(rules);
-		Set<String> legend = new HashSet<>(etcdRuleSet);
+		Set<String> legend = new CopyOnWriteArraySet<>(etcdRuleSet);
 		legend.retainAll(ruleSet);
+		if(StringUtils.isNotEmpty(app)){
+			legend.forEach(x->{
+				if(!x.startsWith(app)){ legend.remove(x); }
+			});
+		}
 		vo.setLegend(legend);
 		return vo;
 	}

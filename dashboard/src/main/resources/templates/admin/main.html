@@ -29,7 +29,9 @@
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
                          </span>
-
+                           <label class="control-label timeBut2" style="margin-left: 2%">所属APP：</label>
+                           <select name="app" id="apps" class="form-control" style="width: 10%">
+                           </select>
                             <div class="form-group" style="margin-left: 3%; padding-top: 5px;width: 36%">
                                 <label class="control-label" style="float: left;padding-top: 10px">固定时间查询：</label>
                                 <select name="type"  class="form-control" style="width: 100px" id="type">
@@ -61,6 +63,36 @@
 
 
 <script type="text/javascript">
+
+    $.ajax({
+        cache : true,
+        type : "POST",
+        url : "/user/info",
+        headers: {
+            "Authorization":getCookie("token")
+        },
+        async : false,
+        error : function(XMLHttpRequest){
+            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
+        },
+        success : function(data) {
+            console.log(data)
+            let role = data.role;
+            if(role === "ADMIN"){
+                $("#apps").append("<option></option>");
+            }
+            let apps = data.appNames;
+            let appName = data.appName;
+            for (let i = 0; i < apps.length; i++) {
+                let app = apps[i];
+                if(app === appName){
+                    $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
+                }else{
+                    $("#apps").append("<option>" + apps[i] + "</option>");
+                }
+            }
+        }
+    });
 
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('ruleLineChart'));
@@ -112,7 +144,7 @@
         ]
     };
     //加载数据
-    loadData(option, "", {"type":5});
+    loadData(option, "", {"type":5,"app":$("#apps").val()});
     // 使用刚指定的配置项和数据显示图表。
     myChart.setOption(option);
 
@@ -134,7 +166,7 @@
                     //初始化option.series[0]中的data
                     option.series = [];
                     let i = 0;
-                    if(result.xAxis == 0){
+                    if(result.legend.length === 0){
                         myChart.clear();
                     }else{
                         for(let key in result.series2){
@@ -176,7 +208,8 @@
         let st = $("#lineSt").val();
         let et = $("#lineEt").val();
         let type = $("#type").val();
-        let param = {"startTime":st,"endTime":et,"type":type};
+        let app = $("#apps").val();
+        let param = {"startTime":st,"endTime":et,"type":type,"app":app};
         loadData(option,"",param);
         myChart.setOption(option);
     }

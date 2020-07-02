@@ -31,6 +31,8 @@ public interface UserService {
 
     User selectByPrimaryKey(int id);
 
+    User selectByUserName(String userName);
+
     int updateUser(User user);
 
     List<String> listApp();

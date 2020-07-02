@@ -25,6 +25,7 @@ import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -63,8 +64,14 @@ public class KeyServiceImpl implements KeyService {
      * @return vo
      */
     @Override
-    public HotKeyLineChartVo ruleLineChart(SearchReq req) {
+    public HotKeyLineChartVo ruleLineChart(SearchReq req, String app) {
         int type = req.getType();
+        String appReq = req.getApp();
+        // admin 全查
+        if(StringUtils.isNotEmpty(appReq)){
+            app = appReq;
+        }
+        req.setApp(null);
         LocalDateTime now = LocalDateTime.now();
         req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
         List<String> rules = ruleService.listRules(null);
@@ -75,25 +82,25 @@ public class KeyServiceImpl implements KeyService {
             boolean longTime = Duration.between(st,et).toHours()>2;
             req.setType(longTime ? 6 : 5);
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(st,et,list,!longTime,rules);
+            return CommonUtil.processData(st,et,list,!longTime,rules,app);
         }
 
         if(type == 5){
             LocalDateTime startTime = now.minusMinutes(31);
             req.setStartTime(DateUtil.ldtToDate(startTime));
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime,now,list,true,rules);
+            return CommonUtil.processData(startTime,now,list,true,rules,app);
         }else if(type == 6){
             LocalDateTime startTime2 = now.minusHours(25);
             req.setStartTime(DateUtil.ldtToDate(startTime2));
             List<Statistics> list2 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime2,now,list2,false,rules);
+            return CommonUtil.processData(startTime2,now,list2,false,rules,app);
         }else{
             LocalDateTime startTime3 = now.minusDays(7).minusHours(1);
             req.setStartTime(DateUtil.ldtToDate(startTime3));
             req.setType(6);
             List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime3,now,list3,false,rules);
+            return CommonUtil.processData(startTime3,now,list3,false,rules,app);
         }
     }
 

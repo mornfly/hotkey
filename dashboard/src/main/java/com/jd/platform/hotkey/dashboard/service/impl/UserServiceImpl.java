@@ -120,6 +120,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User selectByUserName(String userName) {
+        return userMapper.selectByUserName(userName);
+    }
+
+    @Override
     public int updateUser(User user) {
         if(!StringUtils.isEmpty(user.getPwd())){
             user.setPwd(DigestUtils.md5DigestAsHex(user.getPwd().getBytes()));

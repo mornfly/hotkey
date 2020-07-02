@@ -44,7 +44,8 @@ public class KeyController extends BaseController {
 	@PostMapping("/ruleLineChart")
 	@ResponseBody
 	public HotKeyLineChartVo ruleLineChart(SearchReq req){
-		return keyService.ruleLineChart(req);
+		String app = appName();
+		return keyService.ruleLineChart(req,app);
 	}
 
 
