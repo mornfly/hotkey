@@ -2,6 +2,7 @@ package com.jd.platform.hotkey.worker.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.jd.platform.hotkey.worker.tool.InitConstant;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +22,7 @@ public class CaffeineBuilder {
         return Caffeine.newBuilder()
                 .initialCapacity(8192)//初始大小
                 .maximumSize(5000000)//最大数量。这个数值我设置的很大，按30万每秒，每分钟是1800万，实际可以调小
-                .expireAfterWrite(1, TimeUnit.MINUTES)//过期时间
+                .expireAfterWrite(InitConstant.caffeineMaxMinutes, TimeUnit.MINUTES)//过期时间，默认1分钟
                 .executor(executorService)
                 .softValues()
                 .build();

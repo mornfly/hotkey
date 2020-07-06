@@ -22,4 +22,9 @@ public class InitConstant {
     public static final LongAdder totalDealCount = new LongAdder();
 
     public static final LongAdder totalOfferCount = new LongAdder();
+
+    /**
+     * key在caffeine里多久过期，默认只存1分钟的
+     */
+    public static int caffeineMaxMinutes = 1;
 }
