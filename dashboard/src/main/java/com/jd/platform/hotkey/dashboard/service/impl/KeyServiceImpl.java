@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.dashboard.service.impl;
 
 
+import cn.hutool.core.date.SystemClock;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -12,14 +13,8 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
-import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
-import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
-import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
-import com.jd.platform.hotkey.dashboard.model.KeyRecord;
-import com.jd.platform.hotkey.dashboard.model.KeyTimely;
-import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
-import com.jd.platform.hotkey.dashboard.model.Statistics;
+import com.jd.platform.hotkey.dashboard.mapper.*;
+import com.jd.platform.hotkey.dashboard.model.*;
 import com.jd.platform.hotkey.dashboard.service.KeyService;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
@@ -57,6 +52,8 @@ public class KeyServiceImpl implements KeyService {
     private StatisticsMapper statisticsMapper;
     @Resource
     private RuleService ruleService;
+    @Resource
+    private ChangeLogMapper logMapper;
 
     /**
      * 折线图
@@ -203,7 +200,8 @@ public class KeyServiceImpl implements KeyService {
     public int insertKeyByUser(KeyTimely key) {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
-        return 1;
+        return logMapper.insertSelective(new ChangeLog(key.getAppName(), Constant.HOTKEY_CHANGE, "",
+                key.getKey(), key.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override
@@ -226,10 +224,8 @@ public class KeyServiceImpl implements KeyService {
 
         KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
-
         recordMapper.insertSelective(keyRecord);
-
-        return 1;
+        return   logMapper.insertSelective(new ChangeLog(arr[0], Constant.HOTKEY_CHANGE, arr[1],"", keyTimely.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override

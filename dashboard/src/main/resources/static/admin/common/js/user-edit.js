@@ -16,8 +16,8 @@ function edit() {
 			"Authorization":getCookie("token")
 		},
 		async : false,
-		error : function(request) {
-			$.modal.alertError("系统错误");
+		error : function(XMLHttpRequest){
+			$.modal.alertError(XMLHttpRequest.responseJSON.msg);
 		},
 		success : function(data) {
 			$.operate.saveSuccess(data);

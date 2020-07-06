@@ -28,11 +28,16 @@ public class KeyTimely implements Serializable {
      */
     private transient String ruleDesc;
 
+
+    private String updater;
+
+
     public KeyTimely() {
     }
 
-    public KeyTimely(String key) {
+    public KeyTimely(String key, String updater) {
         this.key = key;
+        this.updater = updater;
     }
 
 
@@ -107,5 +112,13 @@ public class KeyTimely implements Serializable {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(String updater) {
+        this.updater = updater;
     }
 }

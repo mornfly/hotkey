@@ -20,6 +20,8 @@ public class Constant {
 
     public static final int WORKER_CHANGE = 2;
 
+    public static final int HOTKEY_CHANGE = 3;
+
 
     public static final String CHANG_LOG_VIEW = "变更记录";
 
