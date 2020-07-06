@@ -3,14 +3,14 @@ package com.jd.platform.hotkey.worker.starters;
 import com.jd.platform.hotkey.worker.tool.InitConstant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuweifeng
  * @version 1.0
  * @date 2020-05-22
  */
-@Configuration
+@Component
 public class InitStarter {
     @Value("${netty.timeOut}")
     private int timeOut;
