@@ -6,6 +6,8 @@ open:
   timeout: ${openTimeOut:true}
 thread:
   count: ${threadCount:0}
+caffeine:
+  minutes: ${caffeineMinutes:1}
 disruptor:
   bufferSize: ${bufferSize:2} #必须是2的整数倍
 #etcd的地址，如有多个用逗号分隔
