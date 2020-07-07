@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.worker.netty.filter;
 
 import cn.hutool.core.date.SystemClock;
+import cn.hutool.core.util.StrUtil;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
@@ -12,6 +13,7 @@ import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -29,11 +31,19 @@ import static com.jd.platform.hotkey.worker.counter.CounterConfig.DELAY_QUEUE;
 public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    /**
+     * 该worker放到etcd worker目录的哪个app下
+     */
+    @Value("${etcd.workerPath}")
+    private String workerPath;
 
     @Override
     public boolean chain(HotKeyMsg message, ChannelHandlerContext ctx) {
         if (MessageType.REQUEST_HIT_COUNT == message.getMessageType()) {
-
+            //设置appName
+            if (StrUtil.isEmpty(message.getAppName())) {
+                message.setAppName(workerPath);
+            }
             publishMsg(message.getAppName(), message.getBody(), ctx);
 
             return false;

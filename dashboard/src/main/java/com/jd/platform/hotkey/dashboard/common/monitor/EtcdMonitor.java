@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -136,13 +137,16 @@ public class EtcdMonitor {
         watchRule();
 
         watchWorkers();
+
+        //观察热key访问次数和总访问次数，并做统计
+        watchHitCount();
     }
 
     /**
      * 异步监听rule规则变化
      */
 
-    public void watchRule() {
+    private void watchRule() {
         CompletableFuture.runAsync(() -> {
             try {
                 KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
@@ -219,7 +223,7 @@ public class EtcdMonitor {
     }
 
     //@PostConstruct
-    public void watchReceiveKeyCount() {
+    private void watchReceiveKeyCount() {
         CompletableFuture.runAsync(() -> {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.totalReceiveKeyCount);
             while (watchIterator.hasNext()) {
@@ -234,6 +238,37 @@ public class EtcdMonitor {
                     receiveCountMapper.insert(new ReceiveCount(k, Long.parseLong(v), uuid));
                 } else if (eventType.equals(Event.EventType.DELETE)) {
                     receiveCountMapper.insert(new ReceiveCount(k, 0L, uuid));
+                }
+            }
+        });
+    }
+
+    /**
+     * 监听热key访问次数和总访问次数
+     */
+    private void watchHitCount() {
+        CompletableFuture.runAsync(() -> {
+            //key：ConfigConstant.keyHitCountPath + appName + "/" + IpUtils.getIp() + "-" + System.currentTimeMillis()
+            //value：FastJsonUtils.convertObjectToJSON(map)
+            //map的key是 appName + #**# + pin__#**#2020-10-23 21:11:22
+            //map的value是"67-1937" 前面是热key访问量，后面是总访问量
+            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.keyHitCountPath);
+            while (watchIterator.hasNext()) {
+                Event event = event(watchIterator);
+                KeyValue kv = event.getKv();
+//                String k = kv.getKey().toStringUtf8();
+                String v = kv.getValue().toStringUtf8();
+                Map<String, String> map = FastJsonUtils.stringToCollect(v);
+                for (String key : map.keySet()) {
+                    String[] args = key.split(com.jd.platform.hotkey.common.tool.Constant.COUNT_DELIMITER);
+                    String appName = args[0];
+                    String ruleKey = args[1];
+                    String hitTime = args[2];
+                    String[] counts = map.get(key).split("-");
+                    int hotCount = Integer.valueOf(counts[0]);
+                    int totalCount = Integer.valueOf(counts[1]);
+                    //TODO 入库操作，注意事项：需要按照appName+ruleKey+hitTime 三个维度作为唯一的标志，在入库时，如果这三个维度存在重复的值了，就将数量进行累加并入库
+                    //供将来查询
                 }
             }
         });

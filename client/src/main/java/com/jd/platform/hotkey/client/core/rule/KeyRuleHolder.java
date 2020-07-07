@@ -105,13 +105,23 @@ public class KeyRuleHolder {
      * 判断该key命中了哪个rule
      */
     public static String rule(String key) {
-        String rule = "";
+        String prefix = "";
+        String common = "";
         for (KeyRule keyRule : KEY_RULES) {
-            if (key.equals(keyRule.getKey()) || (keyRule.isPrefix() && key.startsWith(keyRule.getKey())) || "*".equals(keyRule.getKey())) {
+            if (key.equals(keyRule.getKey())) {
                 return keyRule.getKey();
             }
+            if ((keyRule.isPrefix() && key.startsWith(keyRule.getKey()))) {
+                prefix = keyRule.getKey();
+            }
+            if ("*".equals(keyRule.getKey())) {
+                common = keyRule.getKey();
+            }
         }
-        return rule;
+        if (prefix != null) {
+            return prefix;
+        }
+        return common;
     }
 
     /**
