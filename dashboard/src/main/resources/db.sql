@@ -65,6 +65,7 @@ CREATE TABLE `hk_key_record`  (
   `type` int(11) NOT NULL DEFAULT 1 COMMENT '记录类型：1put；2del; -1unkonw',
   `create_time` datetime(0) NOT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建时间',
   `uuid` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT '防重ID',
+  `rule` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '''' COMMENT '规则',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
