@@ -1,10 +1,14 @@
 package com.jd.platform.sample;
 
 import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author wuweifeng wrote on 2020-02-21
@@ -80,6 +84,33 @@ public class Cache {
     public void remove(String key) {
         JdHotKeyStore.remove(key);
         //do your job
+    }
+private Logger logger = LoggerFactory.getLogger(getClass());
+    @PostConstruct
+    public void test() {
+
+        CompletableFuture.runAsync(() -> {
+            int i = 0;
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                logger.info("beat");
+//                Object object = JdHotKeyStore.getValue("a");
+//                if (object != null) {
+//                    System.err.println("is hot key " + object);
+//                } else {
+//                    System.err.println("set value");
+//                    JdHotKeyStore.smartSet("a", "a");
+//                }
+                if (JdHotKeyStore.isHotKey("a")) {
+                    logger.error("isHot");
+                }
+            }
+        });
+
     }
 
 }
