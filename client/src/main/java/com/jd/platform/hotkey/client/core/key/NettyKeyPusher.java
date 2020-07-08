@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.client.core.key;
 
+import com.jd.platform.hotkey.client.Context;
 import com.jd.platform.hotkey.client.core.worker.WorkerInfoHolder;
 import com.jd.platform.hotkey.client.log.JdLogger;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
@@ -76,7 +77,8 @@ public class NettyKeyPusher implements IKeyPusher {
         for (Channel channel : map.keySet()) {
             try {
                 List<KeyCountModel> batch = map.get(channel);
-                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_HIT_COUNT, FastJsonUtils.convertObjectToJSON(batch))));
+                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(Context.APP_NAME,
+                        MessageType.REQUEST_HIT_COUNT, FastJsonUtils.convertObjectToJSON(batch))));
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();

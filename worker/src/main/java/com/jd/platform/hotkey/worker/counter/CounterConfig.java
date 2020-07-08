@@ -1,8 +1,10 @@
 package com.jd.platform.hotkey.worker.counter;
 
+import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
 import java.util.concurrent.DelayQueue;
 
 /**
@@ -17,10 +19,13 @@ public class CounterConfig {
      */
     public static DelayQueue<KeyCountItem> DELAY_QUEUE = new DelayQueue<>();
 
+    @Resource
+    private IConfigCenter configCenter;
+
     @Bean
     public CounterConsumer counterConsumer() {
         CounterConsumer counterConsumer = new CounterConsumer();
-        counterConsumer.beginConsume();
+        counterConsumer.beginConsume(configCenter);
         return counterConsumer;
     }
 

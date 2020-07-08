@@ -49,4 +49,9 @@ public interface ConfigConstant {
      * bufferPool直接内存
      */
     String bufferPoolPath = "/jd/bufferPool/";
+
+    /**
+     * 存放客户端hotKey访问次数和总访问次数的path
+     */
+    String keyHitCountPath = "/jd/keyHitCount/";
 }
