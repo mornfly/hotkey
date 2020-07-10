@@ -2,11 +2,10 @@ package com.jd.platform.hotkey.dashboard.service.impl;
 
 
 import cn.hutool.core.date.SystemClock;
-import com.alibaba.fastjson.JSON;
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ibm.etcd.api.Event;
-import com.jd.jsf.gd.util.StringUtils;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
@@ -65,7 +64,7 @@ public class KeyServiceImpl implements KeyService {
         int type = req.getType();
         String appReq = req.getApp();
         // admin 全查
-        if(StringUtils.isNotEmpty(appReq)){
+        if(StrUtil.isNotEmpty(appReq)){
             app = appReq;
         }
         req.setApp(null);
