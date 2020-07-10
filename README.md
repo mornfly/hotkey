@@ -118,6 +118,25 @@ public void initHotkey() {
 ```
 其中还可以setCaffeineSize(int size)设置本地缓存最大数量，默认5万，setPushPeriod(Long period)设置批量推送key的间隔时间，默认500ms，该值越小，上报热key越频繁，相应越及时，建议根据实际情况调整，如单机每秒qps10个，那么0.5秒上报一次即可，否则是空跑。该值最小为1，即1ms上报一次。
 
+注意：
+
+如果原有项目里使用了guava，需要升级guava为以下版本，否则过低的guava版本可能发生jar包冲突。或者删除自己项目里的guava的maven依赖，guava升级不会影响原有任何逻辑。
+
+```
+<dependency>
+ <groupId>com.google.guava</groupId>
+ <artifactId>guava</artifactId>
+ <version>28.2-jre</version>
+ <scope>compile</scope>
+</dependency>
+```
+
+有时可能项目里没有直接依赖guava，但是引入的某个pom里引了guava，也需要将guava排除掉。
+
+
+
+使用：
+
 主要有如下4个方法可供使用
 
 boolean JdHotKeyStore.isHotKey(String key)
