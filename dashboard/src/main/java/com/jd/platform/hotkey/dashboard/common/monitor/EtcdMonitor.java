@@ -4,15 +4,14 @@ import cn.hutool.core.util.StrUtil;
 import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
 import com.ibm.etcd.client.kv.KvClient;
-import com.ibm.etcd.client.kv.WatchUpdate;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
-import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
+import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.service.WorkerService;
@@ -27,7 +26,9 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @ProjectName: hotkey
@@ -43,10 +44,12 @@ public class EtcdMonitor {
 
     @Resource
     private IConfigCenter configCenter;
-    @Resource
-    private ChangeLogMapper logMapper;
+
     @Resource
     private WorkerService workerService;
+
+    @Resource
+    private SummaryMapper summaryMapper;
 
     @Resource
     private DataHandler dataHandler;
@@ -54,25 +57,13 @@ public class EtcdMonitor {
     @Resource
     private ReceiveCountMapper receiveCountMapper;
 
-//    @PostConstruct
-//    public void init() {
-//        CompletableFuture.runAsync(() -> {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            for (int i = 0; i < 200; i++) {
-//                configCenter.put(ConfigConstant.hotKeyRecordPath + "abc/" + i, UUID.randomUUID().toString());
-//            }
-//        });
-//    }
+    public static final ExecutorService threadPoolExecutor = Executors.newCachedThreadPool();
 
     /**
      * 监听新来的热key，该key的产生是来自于手工在控制台添加
      */
     public void watchHandOperationHotKey() {
-        CompletableFuture.runAsync(() -> {
+        threadPoolExecutor.submit(() -> {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
@@ -89,7 +80,7 @@ public class EtcdMonitor {
      * 监听新来的热key，该key的产生是来自于worker集群推送过来的
      */
     public void watchHotKeyRecord() {
-        CompletableFuture.runAsync(() -> {
+        threadPoolExecutor.submit(() -> {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyRecordPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
@@ -125,7 +116,7 @@ public class EtcdMonitor {
         fetchRuleFromEtcd();
 
         //规则拉取完毕后才能去开始入库
-        dataHandler.insertRecords();
+        insertRecords();
 
         //开始监听热key产生
         watchHotKeyRecord();
@@ -136,22 +127,30 @@ public class EtcdMonitor {
         watchRule();
 
         watchWorkers();
+
+        //观察热key访问次数和总访问次数，并做统计
+        watchHitCount();
+    }
+
+    private void insertRecords() {
+        threadPoolExecutor.submit(() -> {
+            dataHandler.insertRecords();
+        });
     }
 
     /**
      * 异步监听rule规则变化
      */
-
-    public void watchRule() {
-        CompletableFuture.runAsync(() -> {
+    private void watchRule() {
+        threadPoolExecutor.submit(() -> {
             try {
                 KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
                 //如果有新事件，即rule的变更，就重新拉取所有的信息
                 while (watchIterator.hasNext()) {
                     //这句必须写，next会让他卡住，除非真的有新rule变更
-                    WatchUpdate watchUpdate = watchIterator.next();
-                    List<Event> eventList = watchUpdate.getEvents();
+                    Event event = event(watchIterator);
 
+                    log.info("---------watch rule change---------");
                     //全量拉取rule信息
                     fetchRuleFromEtcd();
                 }
@@ -197,7 +196,7 @@ public class EtcdMonitor {
     }
 
     private void watchWorkers() {
-        CompletableFuture.runAsync(() -> {
+        threadPoolExecutor.submit(() -> {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.workersPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
@@ -218,9 +217,8 @@ public class EtcdMonitor {
         });
     }
 
-    //@PostConstruct
-    public void watchReceiveKeyCount() {
-        CompletableFuture.runAsync(() -> {
+    private void watchReceiveKeyCount() {
+        threadPoolExecutor.submit(() -> {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.totalReceiveKeyCount);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
@@ -239,6 +237,28 @@ public class EtcdMonitor {
         });
     }
 
+    /**
+     * 监听热key访问次数和总访问次数
+     */
+    private void watchHitCount() {
+        threadPoolExecutor.submit(() -> {
+            //key：ConfigConstant.keyHitCountPath + appName + "/" + IpUtils.getIp() + "-" + System.currentTimeMillis()
+            //value：FastJsonUtils.convertObjectToJSON(map)
+            //map的key是 appName + #**# + pin__#**#2020-10-23 21:11:22
+            //map的value是"67-1937" 前面是热key访问量，后面是总访问量
+            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.keyHitCountPath);
+            while (watchIterator.hasNext()) {
+                Event event = event(watchIterator);
+                KeyValue kv = event.getKv();
+                String k = kv.getKey().toStringUtf8();
+                String v = kv.getValue().toStringUtf8();
+                Map<String, String> map = FastJsonUtils.stringToCollect(v);
+                for (String key : map.keySet()) {
+//                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+                }
+            }
+        });
+    }
 
     private Event event(KvClient.WatchIterator watchIterator) {
         return watchIterator.next().getEvents().get(0);

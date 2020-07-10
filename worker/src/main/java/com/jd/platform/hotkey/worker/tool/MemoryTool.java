@@ -1,11 +1,15 @@
 package com.jd.platform.hotkey.worker.tool;
 
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import sun.misc.JavaNioAccess;
 import sun.misc.SharedSecrets;
 
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author wuweifeng
@@ -37,5 +41,15 @@ public class MemoryTool {
 
     public static JavaNioAccess.BufferPool getNioBufferPool(){
         return SharedSecrets.getJavaNioAccess().getDirectBufferPool();
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < 1000; i++) {
+
+            map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        }
+        double m = ObjectSizeCalculator.getObjectSize(map);
+        System.out.println(m);
     }
 }

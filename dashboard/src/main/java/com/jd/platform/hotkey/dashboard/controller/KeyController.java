@@ -44,7 +44,8 @@ public class KeyController extends BaseController {
 	@PostMapping("/ruleLineChart")
 	@ResponseBody
 	public HotKeyLineChartVo ruleLineChart(SearchReq req){
-		return keyService.ruleLineChart(req);
+		String app = appName();
+		return keyService.ruleLineChart(req,app);
 	}
 
 
@@ -117,6 +118,7 @@ public class KeyController extends BaseController {
 	@ResponseBody
 	public Result add(KeyTimely key){
 		checkApp(key.getAppName());
+		key.setUpdater(userName());
 		int b = keyService.insertKeyByUser(key);
 		return b == 0 ? Result.fail():Result.success();
 	}
@@ -126,7 +128,7 @@ public class KeyController extends BaseController {
 	public Result remove(String key){
 		String[] arr = key.split("/");
 		checkApp(arr[0]);
-		int b = keyService.delKeyByUser(new KeyTimely(key));
+		int b = keyService.delKeyByUser(new KeyTimely(key,userName()));
 		return b == 0 ? Result.fail():Result.success();
 	}
 

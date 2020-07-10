@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
@@ -57,36 +56,34 @@ public class DataHandler {
     }
 
     public void insertRecords() {
-        CompletableFuture.runAsync(() -> {
-            while (true) {
-                TwoTuple<KeyTimely, KeyRecord> twoTuple;
-                try {
-                    twoTuple = handHotKey(queue.take());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    log.error("handHotKey error ," + e.getCause());
-                    continue;
-                }
-                KeyRecord keyRecord = twoTuple.getSecond();
-                KeyTimely keyTimely = twoTuple.getFirst();
-
-                if (keyTimely.getUuid() == null) {
-                    keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
-                } else {
-                    try {
-                        keyTimelyMapper.insertSelective(keyTimely);
-                    } catch (Exception e) {
-                        log.info("insert timely error");
-                    }
-                }
-
-                if (keyRecord != null) {
-                    //插入记录
-                    keyRecordMapper.insertSelective(keyRecord);
-                }
-
+        while (true) {
+            TwoTuple<KeyTimely, KeyRecord> twoTuple;
+            try {
+                twoTuple = handHotKey(queue.take());
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("handHotKey error ," + e.getCause());
+                continue;
             }
-        });
+            KeyRecord keyRecord = twoTuple.getSecond();
+            KeyTimely keyTimely = twoTuple.getFirst();
+
+            if (keyTimely.getUuid() == null) {
+                keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
+            } else {
+                try {
+                    keyTimelyMapper.insertSelective(keyTimely);
+                } catch (Exception e) {
+                    log.info("insert timely error");
+                }
+            }
+
+            if (keyRecord != null) {
+                //插入记录
+                keyRecordMapper.insertSelective(keyRecord);
+            }
+
+        }
 
     }
 
@@ -128,7 +125,6 @@ public class DataHandler {
     }
 
 
-
     /**
      * 每小时 统计一次record 表 结果记录到统计表
      */
@@ -164,7 +160,9 @@ public class DataHandler {
                 log.info("每小时统计规则,时间：{}, data list：{}", now.toString(), JSON.toJSONString(statistics));
                 records.addAll(statistics);
             }
-            int row = statisticsMapper.batchInsert(records);
+            if (records.size() > 0) {
+                int row = statisticsMapper.batchInsert(records);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

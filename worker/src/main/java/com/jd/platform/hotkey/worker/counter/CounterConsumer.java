@@ -6,15 +6,15 @@ import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.common.tool.IpUtils;
+import com.jd.platform.hotkey.worker.tool.AsyncPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
-import static com.jd.platform.hotkey.worker.counter.CounterConfig.DELAY_QUEUE;
+import static com.jd.platform.hotkey.worker.counter.CounterConfig.COUNTER_QUEUE;
 
 /**
  * @author wuweifeng
@@ -25,13 +25,11 @@ public class CounterConsumer {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public void beginConsume(IConfigCenter configCenter) {
-        CompletableFuture.runAsync(() -> {
-
+        AsyncPool.asyncDo(() -> {
             Map<String, String> map = new HashMap<>(500);
-
             while (true) {
                 try {
-                    KeyCountItem item = DELAY_QUEUE.take();
+                    KeyCountItem item = COUNTER_QUEUE.take();
                     //每个List是一个client的10秒内的数据，一个rule如果每秒都有数据，那list里就有10条
                     List<KeyCountModel> keyCountModels = item.getList();
                     String appName = item.getAppName();
