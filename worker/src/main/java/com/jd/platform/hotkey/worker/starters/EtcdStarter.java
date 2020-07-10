@@ -17,6 +17,7 @@ import com.jd.platform.hotkey.worker.netty.filter.HotKeyFilter;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
 import com.jd.platform.hotkey.worker.rule.KeyRuleHolder;
+import com.jd.platform.hotkey.worker.tool.AsyncPool;
 import io.grpc.StatusRuntimeException;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -24,14 +25,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +59,8 @@ public class EtcdStarter {
     @Value("${etcd.workerPath}")
     private String workerPath;
 
+    private static final String DEFAULT_PATH = "default";
+
     private static final String MAO = ":";
     private static final String ETCD_DOWN = "etcd is unConnected . please do something";
     private static final String EMPTY_RULE = "very important warn !!! rule info is null!!!";
@@ -73,12 +74,24 @@ public class EtcdStarter {
     //Close：貌似是关闭当前客户端建立的所有租约。
 
     /**
+     * 该worker是否只服务于一个应用
+     */
+    private boolean isForSingle() {
+        return !DEFAULT_PATH.equals(workerPath);
+    }
+
+    /**
      * 启动回调监听器，监听rule变化
      */
     @PostConstruct
     public void watch() {
-        CompletableFuture.runAsync(() -> {
-            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+        AsyncPool.asyncDo(() -> {
+            KvClient.WatchIterator watchIterator;
+            if (isForSingle()) {
+                watchIterator = configCenter.watch(ConfigConstant.rulePath + workerPath);
+            } else {
+                watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+            }
             while (watchIterator.hasNext()) {
                 WatchUpdate watchUpdate = watchIterator.next();
                 List<Event> eventList = watchUpdate.getEvents();
@@ -97,7 +110,7 @@ public class EtcdStarter {
      */
     @PostConstruct
     public void watchWhiteList() {
-        CompletableFuture.runAsync(() -> {
+        AsyncPool.asyncDo(() -> {
             //获取所有白名单
             fetchWhite();
 
@@ -127,20 +140,23 @@ public class EtcdStarter {
      */
     @Scheduled(fixedRate = 60000)
     public void pullRules() {
-        List<KeyValue> keyValues;
         try {
-            keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
+            if (isForSingle()) {
+                String value = configCenter.get(ConfigConstant.rulePath + workerPath);
+                if (!StrUtil.isEmpty(value)) {
+                    List<KeyRule> keyRules = FastJsonUtils.toList(value, KeyRule.class);
+                    KeyRuleHolder.put(workerPath, keyRules);
+                }
+            } else {
+                List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
+                for (KeyValue keyValue : keyValues) {
+                    ruleChange(keyValue);
+                }
+            }
         } catch (StatusRuntimeException ex) {
             logger.error(ETCD_DOWN);
-            return;
         }
-        if (CollectionUtils.isEmpty(keyValues)) {
-            logger.warn(EMPTY_RULE);
-            return;
-        }
-        for (KeyValue keyValue : keyValues) {
-            ruleChange(keyValue);
-        }
+
     }
 
     /**
@@ -189,6 +205,7 @@ public class EtcdStarter {
         try {
             String hostName = IpUtils.getHostName();
             configCenter.delete(ConfigConstant.workersPath + hostName);
+            AsyncPool.shutDown();
         } catch (Exception e) {
             logger.error("worker connect to etcd failure");
         }

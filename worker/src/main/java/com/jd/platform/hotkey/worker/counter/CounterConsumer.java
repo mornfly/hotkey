@@ -6,13 +6,13 @@ import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.common.tool.IpUtils;
+import com.jd.platform.hotkey.worker.tool.AsyncPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static com.jd.platform.hotkey.worker.counter.CounterConfig.COUNTER_QUEUE;
 
@@ -25,10 +25,8 @@ public class CounterConsumer {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public void beginConsume(IConfigCenter configCenter) {
-        CompletableFuture.runAsync(() -> {
-
+        AsyncPool.asyncDo(() -> {
             Map<String, String> map = new HashMap<>(500);
-
             while (true) {
                 try {
                     KeyCountItem item = COUNTER_QUEUE.take();
