@@ -175,7 +175,7 @@ CREATE TABLE `hk_summary`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uniq_uuid`(`uuid`) USING BTREE COMMENT '防重索引',
   INDEX `idx_apprule`(`app`, `rule`) USING BTREE COMMENT '查询索引',
-  INDEX `ix_ct`(`create_time`) USING BTREE COMMENT '事件索引'
+  INDEX `ix_ct`(`create_time`) USING BTREE COMMENT '时间索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '汇总表' ROW_FORMAT = Compact;
 
 

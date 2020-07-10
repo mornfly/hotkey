@@ -8,6 +8,7 @@ import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
+import com.jd.platform.hotkey.common.tool.IpUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
 import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
@@ -15,6 +16,7 @@ import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.service.WorkerService;
+import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
@@ -23,10 +25,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -253,8 +252,9 @@ public class EtcdMonitor {
                 String k = kv.getKey().toStringUtf8();
                 String v = kv.getValue().toStringUtf8();
                 Map<String, String> map = FastJsonUtils.stringToCollect(v);
+
                 for (String key : map.keySet()) {
-//                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
                 }
             }
         });
