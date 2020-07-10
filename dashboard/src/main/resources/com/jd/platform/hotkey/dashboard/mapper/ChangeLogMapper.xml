@@ -92,9 +92,7 @@
     <if test="startTime != null">
       <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
     </if>
-    <if test="bizType != null">
-      and biz_type = #{bizType}
-    </if >
+
     <if test="app !=null and app !=''">
       and app_name = #{app}
     </if >

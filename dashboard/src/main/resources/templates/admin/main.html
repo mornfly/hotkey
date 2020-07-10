@@ -14,43 +14,35 @@
             <div class="body-nest" id="search_div"  style="display: block">
                 <div class="form_left" style="margin-left: 5%; margin-top: 3%">
                     <form role="form" class="form-inline">
-
-                        <div class="form-group" style="padding-top: 5px;width: 36%">
-                            <label class="control-label" style="float: left;padding-top: 10px">固定时间查询：</label>
-                            <select name="type"  class="form-control" style="width: 100px" id="type">
-                                <option value="5">近30分</option>
-                                <option value="6">近1天</option>
-                                <option value="7">近7天</option>
-                            </select>
-                            <button onclick="ruleSearch()" class="btn btn-success" type="button" style="margin-left: 15%"><i class="fa fa-search"></i>&nbsp;查询</button>
-                        </div>
-
-                       <!-- <div class="form-group">
+                       <div class="form-group">
                          <label class="control-label" style="float: left;padding-top: 15px">日期：</label>
                          <span class='input-group date datetimepicker' style="width: 14%;float: left" id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
-                            <input type='text' class="form-control" name="startTime"/>
+                            <input type='text' class="form-control" name="startTime" id="lineSt"/>
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
                          </span>
                          <label class="control-label" style="float: left;padding-top: 10px">~</label>
                          <span class='input-group date datetimepicker'  style="width: 14%;float: left"  id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
-                            <input type='text' class="form-control"  name="endTime"/>
+                            <input type='text' class="form-control"  name="endTime" id="lineEt"/>
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
                          </span>
-
+                           <label class="control-label timeBut2" style="margin-left: 2%">所属APP：</label>
+                           <select name="app" id="apps" class="form-control" style="width: 10%">
+                           </select>
                             <div class="form-group" style="margin-left: 3%; padding-top: 5px;width: 36%">
                                 <label class="control-label" style="float: left;padding-top: 10px">固定时间查询：</label>
                                 <select name="type"  class="form-control" style="width: 100px" id="type">
-                                    <option value="5">近30分</option>
+                                    <option value="4"></option>
+                                    <option value="5" selected="selected">近30分</option>
                                     <option value="6">近1天</option>
                                     <option value="7">近7天</option>
                                 </select>
                                 <button onclick="ruleSearch()" class="btn btn-success" type="button" style="margin-left: 15%"><i class="fa fa-search"></i>&nbsp;查询</button>
                             </div>
-                        </div>-->
+                        </div>
                     </form>
                 </div>
             </div>
@@ -71,6 +63,36 @@
 
 
 <script type="text/javascript">
+
+    $.ajax({
+        cache : true,
+        type : "POST",
+        url : "/user/info",
+        headers: {
+            "Authorization":getCookie("token")
+        },
+        async : false,
+        error : function(XMLHttpRequest){
+            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
+        },
+        success : function(data) {
+            console.log(data)
+            let role = data.role;
+            if(role === "ADMIN"){
+                $("#apps").append("<option></option>");
+            }
+            let apps = data.appNames;
+            let appName = data.appName;
+            for (let i = 0; i < apps.length; i++) {
+                let app = apps[i];
+                if(app === appName){
+                    $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
+                }else{
+                    $("#apps").append("<option>" + apps[i] + "</option>");
+                }
+            }
+        }
+    });
 
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('ruleLineChart'));
@@ -122,36 +144,9 @@
         ]
     };
     //加载数据
-    //initLegend(option);
-    loadData(option, "", {"type":5});
+    loadData(option, "", {"type":5,"app":$("#apps").val()});
     // 使用刚指定的配置项和数据显示图表。
     myChart.setOption(option);
-
-
-    function initLegend(option){
-        $.ajax({
-            cache : true,
-            type : "POST",
-            url : "/rule/listRules",
-            headers: {
-                "Authorization":getCookie("token")
-            },
-            async : false,
-            error : function() {
-                $.modal.alertError("系统错误");
-            },
-            success : function(data) {
-                console.log(data)
-               // let selected_item = {};
-                for (let i = 0; i < data.length; i++) {
-                  //  selected_item[data[i]] = i === 0;
-                    option.legend.data.push(data[i]);
-                 //   option.legend.selected = selected_item;
-                }
-            }
-        });
-    }
-
 
     function loadData(option,color,param){
         $.ajax({
@@ -171,7 +166,7 @@
                     //初始化option.series[0]中的data
                     option.series = [];
                     let i = 0;
-                    if(result.xAxis == 0){
+                    if(result.legend.length === 0){
                         myChart.clear();
                     }else{
                         for(let key in result.series2){
@@ -210,10 +205,11 @@
 
 
     function ruleSearch(){
-        let st = $("#datetimepicker1").val();
-        let et = $("#datetimepicker2").val();
+        let st = $("#lineSt").val();
+        let et = $("#lineEt").val();
         let type = $("#type").val();
-        let param = {"startTime":st,"endTime":et,"type":type};
+        let app = $("#apps").val();
+        let param = {"startTime":st,"endTime":et,"type":type,"app":app};
         loadData(option,"",param);
         myChart.setOption(option);
     }

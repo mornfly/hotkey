@@ -37,6 +37,17 @@
       <if test="state != null and state != ''"> and state = #{state}</if>
     </where>
   </select>
+
+
+  <select id="selectByUserName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from hk_user where user_name = #{userName}
+  </select>
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from hk_user
     where id = #{id,jdbcType=INTEGER}

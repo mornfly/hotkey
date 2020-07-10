@@ -1,7 +1,8 @@
 package com.jd.platform.hotkey.dashboard.service.impl;
 
 
-import com.alibaba.fastjson.JSON;
+import cn.hutool.core.date.SystemClock;
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ibm.etcd.api.Event;
@@ -12,14 +13,8 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
-import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
-import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
-import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
-import com.jd.platform.hotkey.dashboard.model.KeyRecord;
-import com.jd.platform.hotkey.dashboard.model.KeyTimely;
-import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
-import com.jd.platform.hotkey.dashboard.model.Statistics;
+import com.jd.platform.hotkey.dashboard.mapper.*;
+import com.jd.platform.hotkey.dashboard.model.*;
 import com.jd.platform.hotkey.dashboard.service.KeyService;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
@@ -37,7 +32,6 @@ import java.util.stream.Collectors;
 /**
  * @ProjectName: hotkey
  * @ClassName: KeyServiceImpl
- * @Description: TODO(一句话描述该类的功能)
  * @Author: liyunfeng31
  * @Date: 2020/4/17 17:53
  */
@@ -56,6 +50,8 @@ public class KeyServiceImpl implements KeyService {
     private StatisticsMapper statisticsMapper;
     @Resource
     private RuleService ruleService;
+    @Resource
+    private ChangeLogMapper logMapper;
 
     /**
      * 折线图
@@ -63,29 +59,43 @@ public class KeyServiceImpl implements KeyService {
      * @return vo
      */
     @Override
-    public HotKeyLineChartVo ruleLineChart(SearchReq req) {
+    public HotKeyLineChartVo ruleLineChart(SearchReq req, String app) {
         int type = req.getType();
+        String appReq = req.getApp();
+        // admin 全查
+        if(StrUtil.isNotEmpty(appReq)){
+            app = appReq;
+        }
+        req.setApp(null);
         LocalDateTime now = LocalDateTime.now();
         req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
-
         List<String> rules = ruleService.listRules(null);
+        if(type == 4){
+            LocalDateTime st = req.getStartTime() == null? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
+            req.setStartTime(DateUtil.ldtToDate(st));
+            LocalDateTime et = DateUtil.dateToLdt(req.getEndTime());
+            boolean longTime = Duration.between(st,et).toHours()>2;
+            req.setType(longTime ? 6 : 5);
+            List<Statistics> list = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(st,et,list,!longTime,rules,app);
+        }
+
         if(type == 5){
             LocalDateTime startTime = now.minusMinutes(31);
             req.setStartTime(DateUtil.ldtToDate(startTime));
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime,now,list,true,rules);
+            return CommonUtil.processData(startTime,now,list,true,rules,app);
         }else if(type == 6){
             LocalDateTime startTime2 = now.minusHours(25);
             req.setStartTime(DateUtil.ldtToDate(startTime2));
             List<Statistics> list2 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime2,now,list2,false,rules);
+            return CommonUtil.processData(startTime2,now,list2,false,rules,app);
         }else{
             LocalDateTime startTime3 = now.minusDays(7).minusHours(1);
             req.setStartTime(DateUtil.ldtToDate(startTime3));
             req.setType(6);
             List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime3,now,list3,false,rules);
-
+            return CommonUtil.processData(startTime3,now,list3,false,rules,app);
         }
     }
 
@@ -188,7 +198,8 @@ public class KeyServiceImpl implements KeyService {
     public int insertKeyByUser(KeyTimely key) {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
-        return 1;
+        return logMapper.insertSelective(new ChangeLog(key.getAppName(), Constant.HOTKEY_CHANGE, "",
+                key.getKey(), key.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override
@@ -211,10 +222,8 @@ public class KeyServiceImpl implements KeyService {
 
         KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
-
         recordMapper.insertSelective(keyRecord);
-
-        return 1;
+        return   logMapper.insertSelective(new ChangeLog(arr[0], Constant.HOTKEY_CHANGE, arr[1],"", keyTimely.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override

@@ -8,7 +8,6 @@ import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
-import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.RulesMapper;
 import com.jd.platform.hotkey.dashboard.model.ChangeLog;
@@ -120,16 +119,7 @@ public class RuleServiceImpl implements RuleService {
     public int save(Rules rules) {
         String app = rules.getApp();
         String from = "";
-//        Rules oldRules = rulesMapper.select(app);
-//        if(oldRules == null){
-//            rulesMapper.insert(rules);
-//        }else{
-//            from = JSON.toJSONString(oldRules);
-//            rulesMapper.update(rules);
-//        }
         String to = JSON.toJSONString(rules);
-//        logMapper.insertSelective(new ChangeLog(app, 1, from, to,
-//        rules.getUpdateUser(), app, SystemClock.nowDate()));
         configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
         return 1;
     }

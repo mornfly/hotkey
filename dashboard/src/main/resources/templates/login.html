@@ -166,8 +166,8 @@ function sub(){
 					data : user,
 					async : false,
 					dataType : "json",
-					error : function(request) {
-						$.modal.alertError("系统错误");
+					error : function(XMLHttpRequest){
+						$.modal.alertError(XMLHttpRequest.responseJSON.msg);
 					},
 					success : function(result) {
 						if(result.code==200){

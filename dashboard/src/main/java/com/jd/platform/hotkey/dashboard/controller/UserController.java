@@ -1,14 +1,12 @@
 package com.jd.platform.hotkey.dashboard.controller;
 
-import java.util.*;
-
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
-import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
+import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
 import com.jd.platform.hotkey.dashboard.model.User;
 import com.jd.platform.hotkey.dashboard.service.UserService;
@@ -23,6 +21,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Controller
@@ -78,7 +78,7 @@ public class UserController extends BaseController {
 		assert authHeader != null;
 		Claims claims = JwtTokenUtil.claims(authHeader.substring(2));
 		String role = claims.get("role",String.class);
-		String appName = claims.get("appName",String.class);
+		String appName = userService.selectByUserName(claims.getSubject()).getAppName();
 		return new User(role, userService.listApp(),appName);
 	}
 

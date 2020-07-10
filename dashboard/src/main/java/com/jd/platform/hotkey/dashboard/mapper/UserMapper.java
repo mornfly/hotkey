@@ -24,4 +24,5 @@ public interface UserMapper {
 
     List<User> selectHkUserList(User user);
 
+    User selectByUserName(String userName);
 }

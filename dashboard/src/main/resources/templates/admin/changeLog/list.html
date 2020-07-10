@@ -126,7 +126,7 @@ var options = {
 			    title: '序号'
 			}, 
 			{
-			    field: 'bizKey',
+			    field: 'key',
 			    title: '业务Key'
 			},
 			{
@@ -135,8 +135,11 @@ var options = {
                 formatter: function (value) {
 			        if(value == 1){
                         return "规则变更";
+                    }else if(value == 2){
+                        return "worker变更";
+                    }else if(value == 3){
+                        return "热点变更";
                     }
-                    return "worker变更";
                 }
 			},
             {

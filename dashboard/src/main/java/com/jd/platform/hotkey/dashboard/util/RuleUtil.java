@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.dashboard.util;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ public class RuleUtil {
 
     public static void put(String appName, List<KeyRule> list) {
         synchronized (RULE_MAP) {
+            logger.info("更新了appName:{}  rule:{}",appName, JSON.toJSONString(list));
             RULE_MAP.put(appName, list);
         }
     }
@@ -34,13 +36,17 @@ public class RuleUtil {
      * 根据APP的key，获取该key对应的rule
      */
     public static String rule(String key) {
-        KeyRule keyRule = findByKey(key);
-        if (keyRule != null) {
-            String[] appKey = key.split("/");
-            String appName = appKey[0];
-            return appName + "-" + keyRule.getKey();
-        } else {
-            logger.info("rule is null，key is " + key);
+        try {
+            KeyRule keyRule = findByKey(key);
+            if (keyRule != null) {
+                String[] appKey = key.split("/");
+                String appName = appKey[0];
+                return appName + "-" + keyRule.getKey();
+            } else {
+                logger.info("rule is null，key is " + key);
+            }
+        }catch (Exception e){
+            logger.error("findByKey error",e);
         }
         return null;
     }
