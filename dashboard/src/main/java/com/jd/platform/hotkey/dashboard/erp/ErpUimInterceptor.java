@@ -4,7 +4,6 @@ import com.jd.common.springmvc.interceptor.SpringSSOInterceptor;
 import com.jd.common.web.LoginContext;
 import com.jd.platform.hotkey.dashboard.model.User;
 import com.jd.platform.hotkey.dashboard.service.UserService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.Cookie;
@@ -12,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
-@Slf4j
 public class ErpUimInterceptor extends SpringSSOInterceptor {
 
     @Autowired

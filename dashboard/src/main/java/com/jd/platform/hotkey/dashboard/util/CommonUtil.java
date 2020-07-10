@@ -4,9 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
-import org.apache.commons.lang3.StringUtils;
+import com.jd.platform.hotkey.dashboard.model.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
@@ -182,7 +183,7 @@ public class CommonUtil {
 		});
 		HotKeyLineChartVo vo = new HotKeyLineChartVo();
 		vo.setxAxis2(xAxisSet);
-		if(StringUtils.isNotEmpty(app)){
+		if(!StringUtils.isEmpty(app)){
 			ruleDataMap.forEach((rule,data)->{
 				if(!rule.startsWith(app)){
 					ruleDataMap.remove(rule);
@@ -194,7 +195,7 @@ public class CommonUtil {
 		Set<String> etcdRuleSet = new HashSet<>(rules);
 		Set<String> legend = new CopyOnWriteArraySet<>(etcdRuleSet);
 		legend.retainAll(ruleSet);
-		if(StringUtils.isNotEmpty(app)){
+		if(!StringUtils.isEmpty(app)){
 			legend.forEach(x->{
 				if(!x.startsWith(app)){ legend.remove(x); }
 			});
@@ -204,4 +205,28 @@ public class CommonUtil {
 	}
 
 
+	/**
+	 * build存入对象
+	 * @param key key是 appName + #**# + pin__#**#2020-10-23 21:11:22
+	 * @param map value是"67-1937" 前面是热key访问量，后面是总访问量
+	 * @return Summary
+	 */
+	public static Summary buildSummary(String key, Map<String, String> map){
+		String[] args = key.split(com.jd.platform.hotkey.common.tool.Constant.BAK_DELIMITER);
+		String app = args[0];
+		String rule = args[1];
+		String hitTime = args[2];
+		Date time = DateUtil.strToDate(hitTime);
+		assert time != null;
+		LocalDateTime ldt = DateUtil.dateToLdt(time);
+		int day = DateUtil.nowDay(ldt);
+		int hour = DateUtil.nowHour(ldt);
+		int minus = DateUtil.nowMinus(ldt);
+		long seconds = time.getTime()/1000;
+		String[] counts = map.get(key).split("-");
+		int hitCount = Integer.parseInt(counts[0]);
+		int totalCount = Integer.parseInt(counts[1]);
+		String uuid =app+rule+hitTime;
+		return new Summary(rule,rule,app,totalCount,hitCount,day,hour,minus,(int)seconds,1,uuid);
+	}
 }

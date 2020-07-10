@@ -54,6 +54,14 @@ public class JdEtcdClient implements IConfigCenter {
         this.kvClient = kvClient;
     }
 
+    public LockClient getLockClient() {
+        return lockClient;
+    }
+
+    public void setLockClient(LockClient lockClient) {
+        this.lockClient = lockClient;
+    }
+
     @Override
     public void put(String key, String value) {
         kvClient.put(ByteString.copyFromUtf8(key), ByteString.copyFromUtf8(value)).sync();

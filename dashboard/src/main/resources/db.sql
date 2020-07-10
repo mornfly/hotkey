@@ -30,11 +30,6 @@ CREATE TABLE `hk_user`  (
   UNIQUE INDEX `uniq_userName`(`user_name`) USING BTREE COMMENT '账号唯一索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
--- ----------------------------
--- Records of hk_user
--- ----------------------------
-INSERT INTO `hk_user` VALUES (1, 'lyfa', 'lyf', '202cb962ac59075b964b07152d234b70', '', 'ADMIN', '', '2020-04-24 02:28:33', 1);
-
 
 
 DROP TABLE IF EXISTS `hk_key_rule`;
@@ -101,12 +96,6 @@ CREATE TABLE `hk_key_timely`  (
   UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
--- ----------------------------
--- Records of hk_key_timely
--- ----------------------------
-INSERT INTO `hk_key_timely` VALUES (1, 'testk1', 'testv1', '/jd/hotkeys/test/', 'test', 60000, 1212121);
---INSERT INTO `hk_key_timely` VALUES (2, 'testk2', 'testv2', '/jd/hotkeys/test/', 'test', 10000, 123443345);
-
 
 DROP TABLE IF EXISTS `hk_app_info`;
 CREATE TABLE `hk_app_info` (
@@ -164,5 +153,29 @@ CREATE TABLE `hk_rules`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uniq_app`(`app`) USING BTREE COMMENT '防重索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = Compact;
+
+
+
+CREATE TABLE `hk_summary`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `index_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '指标名称',
+  `rule` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '规则',
+  `app` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT 'app',
+  `index_val1` int(11) NOT NULL DEFAULT 0 COMMENT '指标值1',
+  `index_val2` int(11) NOT NULL DEFAULT 0 COMMENT '指标值2',
+  `index_val3` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '指标值3',
+  `days` int(11) NOT NULL DEFAULT 0 COMMENT '天数',
+  `hours` int(11) NOT NULL DEFAULT 0 COMMENT '小时数',
+  `minutes` int(11) NOT NULL DEFAULT 0 COMMENT '分钟数',
+  `seconds` int(11) NOT NULL DEFAULT 0 COMMENT '秒数',
+  `biz_type` tinyint(2) NOT NULL DEFAULT 0 COMMENT '类型',
+  `uuid` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '防重ID',
+  `create_time` datetime(0) NOT NULL COMMENT '创建时间',
+  `update_time` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uniq_uuid`(`uuid`) USING BTREE COMMENT '防重索引',
+  INDEX `idx_apprule`(`app`, `rule`) USING BTREE COMMENT '查询索引',
+  INDEX `ix_ct`(`create_time`) USING BTREE COMMENT '事件索引'
+) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '汇总表' ROW_FORMAT = Compact;
 
 

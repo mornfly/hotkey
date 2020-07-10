@@ -15,9 +15,9 @@ import com.jd.platform.hotkey.dashboard.model.ChangeLog;
 import com.jd.platform.hotkey.dashboard.model.Rule;
 import com.jd.platform.hotkey.dashboard.model.Rules;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;

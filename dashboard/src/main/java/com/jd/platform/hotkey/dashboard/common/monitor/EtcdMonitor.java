@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.common.monitor;
 
+import cn.hutool.core.date.SystemClock;
 import cn.hutool.core.util.StrUtil;
 import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
@@ -13,9 +14,14 @@ import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
 import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
+import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
+import com.jd.platform.hotkey.dashboard.model.Summary;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.service.WorkerService;
+import com.jd.platform.hotkey.dashboard.util.CommonUtil;
+import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.LockUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
@@ -24,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,30 +51,22 @@ public class EtcdMonitor {
 
     @Resource
     private IConfigCenter configCenter;
-    @Resource
-    private ChangeLogMapper logMapper;
+
     @Resource
     private WorkerService workerService;
+
+    @Resource
+    private SummaryMapper summaryMapper;
 
     @Resource
     private DataHandler dataHandler;
 
     @Resource
-    private ReceiveCountMapper receiveCountMapper;
+    private LockUtil lockUtil;
 
-//    @PostConstruct
-//    public void init() {
-//        CompletableFuture.runAsync(() -> {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            for (int i = 0; i < 200; i++) {
-//                configCenter.put(ConfigConstant.hotKeyRecordPath + "abc/" + i, UUID.randomUUID().toString());
-//            }
-//        });
-//    }
+    @Resource
+    private ReceiveCountMapper receiveCountMapper;
+    
 
     /**
      * 监听新来的热key，该key的产生是来自于手工在控制台添加
@@ -256,24 +255,18 @@ public class EtcdMonitor {
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
                 KeyValue kv = event.getKv();
-//                String k = kv.getKey().toStringUtf8();
+                String k = kv.getKey().toStringUtf8();
+                Long leaseId = lockUtil.lock(k);
+                if(leaseId == 0){ continue; }
                 String v = kv.getValue().toStringUtf8();
                 Map<String, String> map = FastJsonUtils.stringToCollect(v);
                 for (String key : map.keySet()) {
-                    String[] args = key.split(com.jd.platform.hotkey.common.tool.Constant.COUNT_DELIMITER);
-                    String appName = args[0];
-                    String ruleKey = args[1];
-                    String hitTime = args[2];
-                    String[] counts = map.get(key).split("-");
-                    int hotCount = Integer.valueOf(counts[0]);
-                    int totalCount = Integer.valueOf(counts[1]);
-                    //TODO 入库操作，注意事项：需要按照appName+ruleKey+hitTime 三个维度作为唯一的标志，在入库时，如果这三个维度存在重复的值了，就将数量进行累加并入库
-                    //供将来查询
+                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
                 }
+                lockUtil.unLock(k, leaseId);
             }
         });
     }
-
 
     private Event event(KvClient.WatchIterator watchIterator) {
         return watchIterator.next().getEvents().get(0);

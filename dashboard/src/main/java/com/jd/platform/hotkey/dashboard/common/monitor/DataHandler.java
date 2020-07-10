@@ -164,7 +164,9 @@ public class DataHandler {
                 log.info("每小时统计规则,时间：{}, data list：{}", now.toString(), JSON.toJSONString(statistics));
                 records.addAll(statistics);
             }
-            int row = statisticsMapper.batchInsert(records);
+            if(records.size()>0){
+                int row = statisticsMapper.batchInsert(records);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

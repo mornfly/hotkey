@@ -23,6 +23,8 @@ public class Constant {
      */
     public static String COUNT_DELIMITER = "#**#";
 
+    public static String BAK_DELIMITER = "#\\*\\*#";
+
     //单次包最大2M
     public static int MAX_LENGTH = 2 * 1024 * 1024;
 
