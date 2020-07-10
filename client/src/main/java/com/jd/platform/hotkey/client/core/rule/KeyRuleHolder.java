@@ -75,29 +75,11 @@ public class KeyRuleHolder {
         if (StrUtil.isEmpty(key)) {
             return null;
         }
-        synchronized (KEY_RULES) {
-            LocalCache prefix = null;
-            LocalCache common = null;
-
-            //遍历该app的所有rule，找到与key匹配的rule。优先全匹配->prefix匹配-> * 通配
-            //这一段虽然看起来比较奇怪，但是没毛病，不要乱改
-            for (KeyRule keyRule : KEY_RULES) {
-                if (key.equals(keyRule.getKey())) {
-                    return RULE_CACHE_MAP.get(keyRule.getDuration());
-                }
-                if ((keyRule.isPrefix() && key.startsWith(keyRule.getKey()))) {
-                    prefix = RULE_CACHE_MAP.get(keyRule.getDuration());
-                }
-                if ("*".equals(keyRule.getKey())) {
-                    common = RULE_CACHE_MAP.get(keyRule.getDuration());
-                }
-            }
-
-            if (prefix != null) {
-                return prefix;
-            }
-            return common;
+        KeyRule keyRule = findRule(key);
+        if (keyRule == null) {
+            return null;
         }
+        return RULE_CACHE_MAP.get(keyRule.getDuration());
 
     }
 
@@ -105,17 +87,38 @@ public class KeyRuleHolder {
      * 判断该key命中了哪个rule
      */
     public static String rule(String key) {
-        String prefix = "";
-        String common = "";
+        KeyRule keyRule = findRule(key);
+        if (keyRule != null) {
+            return keyRule.getKey();
+        }
+        return "";
+    }
+
+    /**
+     * 获取该key应该缓存多久
+     */
+    public static int duration(String key) {
+        KeyRule keyRule = findRule(key);
+        if (keyRule != null) {
+            return keyRule.getDuration();
+        }
+        return 0;
+    }
+
+    //遍历该app的所有rule，找到与key匹配的rule。优先全匹配->prefix匹配-> * 通配
+    //这一段虽然看起来比较奇怪，但是没毛病，不要乱改
+    private static KeyRule findRule(String key) {
+        KeyRule prefix = null;
+        KeyRule common = null;
         for (KeyRule keyRule : KEY_RULES) {
             if (key.equals(keyRule.getKey())) {
-                return keyRule.getKey();
+                return keyRule;
             }
             if ((keyRule.isPrefix() && key.startsWith(keyRule.getKey()))) {
-                prefix = keyRule.getKey();
+                prefix = keyRule;
             }
             if ("*".equals(keyRule.getKey())) {
-                common = keyRule.getKey();
+                common = keyRule;
             }
         }
         if (prefix != null) {

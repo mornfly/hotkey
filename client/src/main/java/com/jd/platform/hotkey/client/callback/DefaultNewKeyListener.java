@@ -2,7 +2,6 @@ package com.jd.platform.hotkey.client.callback;
 
 import com.jd.platform.hotkey.client.cache.CacheFactory;
 import com.jd.platform.hotkey.common.model.typeenum.KeyType;
-import com.jd.platform.hotkey.common.tool.Constant;
 
 /**
  * @author wuweifeng wrote on 2020-02-24
@@ -13,7 +12,12 @@ public class DefaultNewKeyListener extends AbsReceiveNewKey {
 
     @Override
     void addKey(String key, KeyType keyType, long createTime) {
-        CacheFactory.getNonNullCache(key).set(key, Constant.MAGIC_NUMBER);
+        ValueModel valueModel = ValueModel.defaultValue(key);
+        if (valueModel == null) {
+            //不符合任何规则
+            return;
+        }
+        JdHotKeyStore.setValueDirectly(key, valueModel);
     }
 
     @Override

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.jd.platform.hotkey.worker.counter.CounterConfig.DELAY_QUEUE;
+import static com.jd.platform.hotkey.worker.counter.CounterConfig.COUNTER_QUEUE;
 
 /**
  * 对热key访问次数和总访问次数进行累计
@@ -67,7 +67,11 @@ public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
             return;
         }
         //将收到的key放入延时队列，15秒后进行累加并发送
-        DELAY_QUEUE.put(new KeyCountItem(appName, models.get(0).getCreateTime(), models));
+        try {
+            COUNTER_QUEUE.put(new KeyCountItem(appName, models.get(0).getCreateTime(), models));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

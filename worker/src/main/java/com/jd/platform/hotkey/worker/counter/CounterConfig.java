@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
-import java.util.concurrent.DelayQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author wuweifeng
@@ -17,7 +17,7 @@ public class CounterConfig {
     /**
      * 队列
      */
-    public static DelayQueue<KeyCountItem> DELAY_QUEUE = new DelayQueue<>();
+    public static LinkedBlockingQueue<KeyCountItem> COUNTER_QUEUE = new LinkedBlockingQueue<>();
 
     @Resource
     private IConfigCenter configCenter;

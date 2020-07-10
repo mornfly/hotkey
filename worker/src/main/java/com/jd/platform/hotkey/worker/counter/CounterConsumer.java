@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static com.jd.platform.hotkey.worker.counter.CounterConfig.DELAY_QUEUE;
+import static com.jd.platform.hotkey.worker.counter.CounterConfig.COUNTER_QUEUE;
 
 /**
  * @author wuweifeng
@@ -31,7 +31,7 @@ public class CounterConsumer {
 
             while (true) {
                 try {
-                    KeyCountItem item = DELAY_QUEUE.take();
+                    KeyCountItem item = COUNTER_QUEUE.take();
                     //每个List是一个client的10秒内的数据，一个rule如果每秒都有数据，那list里就有10条
                     List<KeyCountModel> keyCountModels = item.getList();
                     String appName = item.getAppName();
