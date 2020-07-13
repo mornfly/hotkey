@@ -99,7 +99,11 @@ public class EtcdStarter {
                 KeyValue keyValue = eventList.get(0).getKv();
                 logger.info("rule changed : " + keyValue);
 
-                ruleChange(keyValue);
+                try {
+                    ruleChange(keyValue);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -119,7 +123,11 @@ public class EtcdStarter {
                 WatchUpdate watchUpdate = watchIterator.next();
                 logger.info("whiteList changed ");
 
-                fetchWhite();
+                try {
+                    fetchWhite();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 

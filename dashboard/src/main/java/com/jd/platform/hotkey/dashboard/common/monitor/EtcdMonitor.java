@@ -15,6 +15,7 @@ import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.service.WorkerService;
+import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
@@ -143,19 +144,20 @@ public class EtcdMonitor {
      */
     private void watchRule() {
         threadPoolExecutor.submit(() -> {
-            try {
-                KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
-                //如果有新事件，即rule的变更，就重新拉取所有的信息
-                while (watchIterator.hasNext()) {
-                    //这句必须写，next会让他卡住，除非真的有新rule变更
-                    Event event = event(watchIterator);
 
+            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+            //如果有新事件，即rule的变更，就重新拉取所有的信息
+            while (watchIterator.hasNext()) {
+                //这句必须写，next会让他卡住，除非真的有新rule变更
+                Event event = event(watchIterator);
+
+                try {
                     log.info("---------watch rule change---------");
                     //全量拉取rule信息
                     fetchRuleFromEtcd();
+                } catch (Exception e) {
+                    log.error("watch rule err");
                 }
-            } catch (Exception e) {
-                log.error("watch rule err");
             }
 
         });
@@ -250,15 +252,26 @@ public class EtcdMonitor {
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
                 KeyValue kv = event.getKv();
+                Event.EventType eventType = event.getType();
+                if (Event.EventType.DELETE.equals(eventType)) {
+                    continue;
+                }
                 String k = kv.getKey().toStringUtf8();
                 String v = kv.getValue().toStringUtf8();
-                Map<String, String> map = FastJsonUtils.stringToCollect(v);
-                for (String key : map.keySet()) {
-//                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+
+                try {
+                    Map<String, String> map = FastJsonUtils.stringToCollect(v);
+                    for (String key : map.keySet()) {
+                        int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
             }
         });
     }
+
 
     private Event event(KvClient.WatchIterator watchIterator) {
         return watchIterator.next().getEvents().get(0);
