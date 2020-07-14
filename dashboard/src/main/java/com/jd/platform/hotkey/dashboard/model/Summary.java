@@ -41,22 +41,6 @@ public class Summary implements Serializable {
     public Summary() {
     }
 
-    public Summary(String indexName, String rule, String app, Integer totalCount, Integer hitCount, Integer days, Integer hours, Integer minutes, Integer seconds, Integer bizType, String uuid) {
-        this.indexName = indexName;
-        this.rule = rule;
-        this.app = app;
-        this.val1 = totalCount;
-        this.val2 = hitCount;
-        this.val3 = BigDecimal.ZERO;
-        this.days = days;
-        this.hours = hours;
-        this.minutes = minutes;
-        this.seconds = seconds;
-        this.bizType = bizType;
-        this.uuid = uuid;
-        this.createTime = new Date();
-    }
-
     public Integer getId() {
         return id;
     }
@@ -167,5 +151,119 @@ public class Summary implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+
+    public static SummaryBuilder aSummary() {
+        return new SummaryBuilder();
+    }
+
+    public static final class SummaryBuilder {
+        private Integer id;
+        private String indexName;
+        private String rule;
+        private String app;
+        private Integer val1;
+        private Integer val2;
+        private BigDecimal val3;
+        private Integer days;
+        private Integer hours;
+        private Integer minutes;
+        private Integer seconds;
+        private Integer bizType;
+        private String uuid;
+        private Date createTime;
+
+        private SummaryBuilder() {
+        }
+
+        public SummaryBuilder id(Integer id) {
+            this.id = id;
+            return this;
+        }
+
+        public SummaryBuilder indexName(String indexName) {
+            this.indexName = indexName;
+            return this;
+        }
+
+        public SummaryBuilder rule(String rule) {
+            this.rule = rule;
+            return this;
+        }
+
+        public SummaryBuilder app(String app) {
+            this.app = app;
+            return this;
+        }
+
+        public SummaryBuilder val1(Integer val1) {
+            this.val1 = val1;
+            return this;
+        }
+
+        public SummaryBuilder val2(Integer val2) {
+            this.val2 = val2;
+            return this;
+        }
+
+        public SummaryBuilder val3(BigDecimal val3) {
+            this.val3 = val3;
+            return this;
+        }
+
+        public SummaryBuilder days(Integer days) {
+            this.days = days;
+            return this;
+        }
+
+        public SummaryBuilder hours(Integer hours) {
+            this.hours = hours;
+            return this;
+        }
+
+        public SummaryBuilder minutes(Integer minutes) {
+            this.minutes = minutes;
+            return this;
+        }
+
+        public SummaryBuilder seconds(Integer seconds) {
+            this.seconds = seconds;
+            return this;
+        }
+
+        public SummaryBuilder bizType(Integer bizType) {
+            this.bizType = bizType;
+            return this;
+        }
+
+        public SummaryBuilder uuid(String uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public SummaryBuilder createTime(Date createTime) {
+            this.createTime = createTime;
+            return this;
+        }
+
+        public Summary build() {
+            Summary summary = new Summary();
+            summary.setId(id);
+            summary.setIndexName(indexName);
+            summary.setRule(rule);
+            summary.setApp(app);
+            summary.setVal1(val1);
+            summary.setVal2(val2);
+            summary.setVal3(val3);
+            summary.setDays(days);
+            summary.setHours(hours);
+            summary.setMinutes(minutes);
+            summary.setSeconds(seconds);
+            summary.setBizType(bizType);
+            summary.setUuid(uuid);
+            summary.setCreateTime(createTime);
+            return summary;
+        }
     }
 }

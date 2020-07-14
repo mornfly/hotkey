@@ -8,12 +8,9 @@ import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.common.tool.IpUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
-import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
 import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
-import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.service.WorkerService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
@@ -22,10 +19,14 @@ import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,8 +54,6 @@ public class EtcdMonitor {
     @Resource
     private DataHandler dataHandler;
 
-    @Resource
-    private ReceiveCountMapper receiveCountMapper;
 
     public static final ExecutorService threadPoolExecutor = Executors.newCachedThreadPool();
 
@@ -142,19 +141,20 @@ public class EtcdMonitor {
      */
     private void watchRule() {
         threadPoolExecutor.submit(() -> {
-            try {
-                KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
-                //如果有新事件，即rule的变更，就重新拉取所有的信息
-                while (watchIterator.hasNext()) {
-                    //这句必须写，next会让他卡住，除非真的有新rule变更
-                    Event event = event(watchIterator);
 
+            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+            //如果有新事件，即rule的变更，就重新拉取所有的信息
+            while (watchIterator.hasNext()) {
+                //这句必须写，next会让他卡住，除非真的有新rule变更
+                Event event = event(watchIterator);
+
+                try {
                     log.info("---------watch rule change---------");
                     //全量拉取rule信息
                     fetchRuleFromEtcd();
+                } catch (Exception e) {
+                    log.error("watch rule err");
                 }
-            } catch (Exception e) {
-                log.error("watch rule err");
             }
 
         });
@@ -216,49 +216,37 @@ public class EtcdMonitor {
         });
     }
 
-    private void watchReceiveKeyCount() {
-        threadPoolExecutor.submit(() -> {
-            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.totalReceiveKeyCount);
-            while (watchIterator.hasNext()) {
-                Event event = event(watchIterator);
-                KeyValue kv = event.getKv();
-                Event.EventType eventType = event.getType();
-                String k = kv.getKey().toStringUtf8();
-                String v = kv.getValue().toStringUtf8();
-                long version = kv.getModRevision();
-                String uuid = k + Constant.JOIN + version;
-                if (eventType.equals(Event.EventType.PUT)) {
-                    receiveCountMapper.insert(new ReceiveCount(k, Long.parseLong(v), uuid));
-                } else if (eventType.equals(Event.EventType.DELETE)) {
-                    receiveCountMapper.insert(new ReceiveCount(k, 0L, uuid));
-                }
-            }
-        });
-    }
+
 
     /**
      * 监听热key访问次数和总访问次数
      */
     private void watchHitCount() {
         threadPoolExecutor.submit(() -> {
-            //key：ConfigConstant.keyHitCountPath + appName + "/" + IpUtils.getIp() + "-" + System.currentTimeMillis()
-            //value：FastJsonUtils.convertObjectToJSON(map)
-            //map的key是 appName + #**# + pin__#**#2020-10-23 21:11:22
-            //map的value是"67-1937" 前面是热key访问量，后面是总访问量
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.keyHitCountPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
                 KeyValue kv = event.getKv();
+                Event.EventType eventType = event.getType();
+                if (Event.EventType.DELETE.equals(eventType)) {
+                    continue;
+                }
                 String k = kv.getKey().toStringUtf8();
                 String v = kv.getValue().toStringUtf8();
-                Map<String, String> map = FastJsonUtils.stringToCollect(v);
 
-                for (String key : map.keySet()) {
-                    int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+                try {
+                    Map<String, String> map = FastJsonUtils.stringToCollect(v);
+                    for (String key : map.keySet()) {
+                        int row = summaryMapper.saveOrUpdate(CommonUtil.buildSummary(key, map));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
             }
         });
     }
+
 
     private Event event(KvClient.WatchIterator watchIterator) {
         return watchIterator.next().getEvents().get(0);

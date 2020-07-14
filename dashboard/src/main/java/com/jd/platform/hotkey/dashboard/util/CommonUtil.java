@@ -204,28 +204,33 @@ public class CommonUtil {
 	}
 
 
-	/**
-	 * build存入对象
-	 * @param key key是 appName + #**# + pin__#**#2020-10-23 21:11:22
-	 * @param map value是"67-1937" 前面是热key访问量，后面是总访问量
-	 * @return Summary
-	 */
-	public static Summary buildSummary(String key, Map<String, String> map){
-		String[] args = key.split(com.jd.platform.hotkey.common.tool.Constant.BAK_DELIMITER);
-		String app = args[0];
-		String rule = args[1];
-		String hitTime = args[2];
-		Date time = DateUtil.strToDate(hitTime);
-		assert time != null;
-		LocalDateTime ldt = DateUtil.dateToLdt(time);
-		int day = DateUtil.nowDay(ldt);
-		int hour = DateUtil.nowHour(ldt);
-		int minus = DateUtil.nowMinus(ldt);
-		long seconds = time.getTime()/1000;
-		String[] counts = map.get(key).split("-");
-		int hitCount = Integer.parseInt(counts[0]);
-		int totalCount = Integer.parseInt(counts[1]);
-		String uuid =app+rule+hitTime;
-		return new Summary(rule,rule,app,totalCount,hitCount,day,hour,minus,(int)seconds,1,uuid);
-	}
+    /**
+     * build存入对象
+     *
+     * @param key key是 appName + #**# + pin__#**#2020-10-23 21:11:22
+     * @param map value是"67-1937" 前面是热key访问量，后面是总访问量
+     * @return Summary
+     */
+    public static Summary buildSummary(String key, Map<String, String> map) {
+        String[] args = key.split(com.jd.platform.hotkey.common.tool.Constant.BAK_DELIMITER);
+        String app = args[0];
+        String rule = args[1];
+        String hitTime = args[2];
+        Date time = DateUtil.strToDate(hitTime);
+        assert time != null;
+        LocalDateTime ldt = DateUtil.dateToLdt(time);
+        int day = DateUtil.nowDay(ldt);
+        int hour = DateUtil.nowHour(ldt);
+        int minus = DateUtil.nowMinus(ldt);
+        long seconds = time.getTime() / 1000;
+        String[] counts = map.get(key).split("-");
+        int hitCount = Integer.parseInt(counts[0]);
+        int totalCount = Integer.parseInt(counts[1]);
+        String uuid = app + "-" + rule + hitTime;
+
+        return Summary.aSummary().indexName(rule).rule(rule).app(app)
+                .val1(totalCount).val2(hitCount)
+                .days(day).hours(hour).minutes(minus).seconds((int) seconds)
+                .bizType(1).uuid(uuid).build();
+    }
 }

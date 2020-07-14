@@ -26,4 +26,6 @@ public interface KeyTimelyMapper {
     int batchInsert(List<KeyTimely> list);
 
     void batchDeleted(List<KeyTimely> deleteList);
+
+    void saveOrUpdate(KeyTimely keyTimely);
 }

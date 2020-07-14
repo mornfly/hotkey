@@ -72,7 +72,7 @@ public class DataHandler {
                 keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
             } else {
                 try {
-                    keyTimelyMapper.insertSelective(keyTimely);
+                    keyTimelyMapper.saveOrUpdate(keyTimely);
                 } catch (Exception e) {
                     log.info("insert timely error");
                 }
@@ -109,16 +109,14 @@ public class DataHandler {
         if (eventType.equals(Event.EventType.PUT)) {
             //手工添加的是时间戳13位，worker传过来的是uuid
             String source = value.length() == 13 ? Constant.HAND : Constant.SYSTEM;
-            timelyKeyRecordTwoTuple.setFirst(new KeyTimely(key, value, appName, ttl, uuid, date));
-
-            // 这是一个骚操作 在线上不方便新增rule字段的时候 临时用下val
+            timelyKeyRecordTwoTuple.setFirst(KeyTimely.aKeyTimely().key(key).val(value).appName(appName).duration(ttl).uuid(appKey).createTime(date).build());
             String rule = RuleUtil.rule(appKey);
             KeyRecord keyRecord = new KeyRecord(key, rule, appName, ttl, source, type, uuid, date);
             keyRecord.setRule(rule);
             timelyKeyRecordTwoTuple.setSecond(keyRecord);
             return timelyKeyRecordTwoTuple;
         } else if (eventType.equals(Event.EventType.DELETE)) {
-            timelyKeyRecordTwoTuple.setFirst(new KeyTimely(key, null, appName, 0L, null, null));
+            timelyKeyRecordTwoTuple.setFirst(KeyTimely.aKeyTimely().key(key).appName(appName).build());
             return timelyKeyRecordTwoTuple;
         }
         return timelyKeyRecordTwoTuple;

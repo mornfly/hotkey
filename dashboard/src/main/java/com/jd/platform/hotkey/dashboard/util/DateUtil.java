@@ -12,12 +12,15 @@ import java.util.Date;
  */
 public class DateUtil {
 
+    public static final String PATTERN_SECONDS="yyMMddHHmmss";
 
     public static final String PATTERN_MINUS="yyMMddHHmm";
 
     public static final String PATTERN_HOUR="yyMMddHH";
 
     public static final String PATTERN_DAY="yyMMdd";
+
+    private static final DateTimeFormatter FORMAT_SECONDS = DateTimeFormatter.ofPattern(PATTERN_SECONDS);
 
     private static final DateTimeFormatter FORMAT_MINUS = DateTimeFormatter.ofPattern(PATTERN_MINUS);
 
@@ -44,6 +47,8 @@ public class DateUtil {
 
     public static int reviseTime(LocalDateTime time, int diff, int type){
         switch (type){
+            case 0:
+                return Integer.parseInt(FORMAT_SECONDS.format(time.plusSeconds(diff)));
             case 1:
                 return Integer.parseInt(FORMAT_MINUS.format(time.plusMinutes(diff)));
             case 2:

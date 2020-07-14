@@ -41,7 +41,5 @@ public interface KeyService {
 
     HotKeyLineChartVo getLineChart(ChartReq chartReq);
 
-    HotKeyLineChartVo getQpsLineChart(ChartReq chartReq);
-
     HotKeyLineChartVo ruleLineChart(SearchReq req, String app);
 }
