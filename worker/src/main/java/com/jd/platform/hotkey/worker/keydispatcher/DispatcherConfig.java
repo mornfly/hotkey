@@ -41,12 +41,6 @@ public class DispatcherConfig {
         //将实际值赋给static变量
         if(threadCount != 0) {
             nowCount = threadCount;
-        } else {
-            if (nowCount >= 8) {
-                nowCount = nowCount / 2;
-            } else if(nowCount > 1){
-                nowCount = nowCount - 1;
-            }
         }
 
         List<KeyConsumer> consumerList = new ArrayList<>();
