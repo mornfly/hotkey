@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -236,8 +237,9 @@ public class CommonUtil {
         String uuid = app + "-" + rule + hitTime;
 
         return Summary.aSummary().indexName(rule).rule(rule).app(app)
-                .val1(totalCount).val2(hitCount)
+                .val1(totalCount).val2(hitCount).val3(BigDecimal.ZERO)
                 .days(day).hours(hour).minutes(minus).seconds((int) seconds)
-                .bizType(1).uuid(uuid).build();
+                .bizType(1).uuid(uuid).createTime(new Date()).build();
     }
+
 }
