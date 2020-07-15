@@ -41,7 +41,7 @@ public class BaseController {
         Claims claims = JwtTokenUtil.claims(authHeader.substring(2));
         String role = claims.get("role",String.class);
         if(!role.equals(Constant.ADMIN)){
-            if(!appName().equals(app)){
+            if(!ownApp().equals(app)){
                 throw new BizException(ResultEnum.NO_PERMISSION);
             }
         }
@@ -65,7 +65,7 @@ public class BaseController {
     }
 
 
-    public String appName(){
+    public String ownApp(){
         String authHeader = JwtTokenUtil.getAuthHeader(request);
         assert authHeader != null;
         Claims claims = JwtTokenUtil.claims(authHeader.substring(2));

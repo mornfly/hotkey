@@ -1,7 +1,6 @@
 package com.jd.platform.hotkey.dashboard.service;
 
 import com.github.pagehelper.PageInfo;
-import com.jd.platform.hotkey.dashboard.common.domain.dto.KeyCountDto;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
@@ -41,8 +40,6 @@ public interface KeyService {
     List<Statistics> listMaxHot(SearchReq searchReq);
 
     HotKeyLineChartVo getLineChart(ChartReq chartReq);
-
-    HotKeyLineChartVo getQpsLineChart(ChartReq chartReq);
 
     HotKeyLineChartVo ruleLineChart(SearchReq req, String app);
 }

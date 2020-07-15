@@ -2,9 +2,10 @@
 <div  th:fragment="leftMenu">
 	<!-- 左边菜单 -->
 	<div id="skin-select">
-	    <div id="logo">
-	     	<h1>HotKey<span>v1</span></h1>
-	    </div>
+		<div id="logo">
+			<a href="/user/index"/>
+			<h1>HotKey<span>v1</span></h1>
+		</div>
 	    <a id="toggle">
 	        <span class="entypo-menu"></span>
 	    </a>
@@ -29,6 +30,11 @@
 	                    </li>
 	                     
 	                    <li>
+							<a class="tooltip-tip" href="/rule/viewHitCount"
+							   target="mainFrame">
+								<i class="fa fa-magic"></i>
+								<span>秒级监控</span>
+							</a>
 							<a class="tooltip-tip" href="/worker/view"
 							   target="mainFrame">
 								<i class="fa fa-home"></i>

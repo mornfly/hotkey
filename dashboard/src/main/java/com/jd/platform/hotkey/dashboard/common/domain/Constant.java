@@ -1,7 +1,6 @@
 package com.jd.platform.hotkey.dashboard.common.domain;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Constant {
@@ -22,6 +21,7 @@ public class Constant {
 
     public static final int HOTKEY_CHANGE = 3;
 
+    public static final String MONITOR_VIEW = "秒级监控";
 
     public static final String CHANG_LOG_VIEW = "变更记录";
 

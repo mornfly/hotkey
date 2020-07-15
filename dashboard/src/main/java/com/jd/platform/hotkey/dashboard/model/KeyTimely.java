@@ -121,4 +121,75 @@ public class KeyTimely implements Serializable {
     public void setUpdater(String updater) {
         this.updater = updater;
     }
+
+    public static Builder aKeyTimely() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private String key;
+        private String appName;
+        private String val;
+        private Long duration;
+        private Date createTime;
+        private String uuid;
+        private transient String ruleDesc;
+        private String updater;
+
+        private Builder() {
+        }
+
+        public Builder key(String key) {
+            this.key = key;
+            return this;
+        }
+
+        public Builder appName(String appName) {
+            this.appName = appName;
+            return this;
+        }
+
+        public Builder val(String val) {
+            this.val = val;
+            return this;
+        }
+
+        public Builder duration(Long duration) {
+            this.duration = duration;
+            return this;
+        }
+
+        public Builder createTime(Date createTime) {
+            this.createTime = createTime;
+            return this;
+        }
+
+        public Builder uuid(String uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public Builder ruleDesc(String ruleDesc) {
+            this.ruleDesc = ruleDesc;
+            return this;
+        }
+
+        public Builder updater(String updater) {
+            this.updater = updater;
+            return this;
+        }
+
+        public KeyTimely build() {
+            KeyTimely keyTimely = new KeyTimely();
+            keyTimely.setKey(key);
+            keyTimely.setAppName(appName);
+            keyTimely.setVal(val);
+            keyTimely.setDuration(duration);
+            keyTimely.setCreateTime(createTime);
+            keyTimely.setUuid(uuid);
+            keyTimely.setRuleDesc(ruleDesc);
+            keyTimely.setUpdater(updater);
+            return keyTimely;
+        }
+    }
 }

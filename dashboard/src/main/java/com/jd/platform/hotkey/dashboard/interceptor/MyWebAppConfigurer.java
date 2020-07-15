@@ -33,13 +33,13 @@ public class MyWebAppConfigurer  implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry){
 	}
-	
+
 	/** 静态资源处理 **/
 	@Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/templates/**").addResourceLocations("classpath:/templates/");
-    }
+	}
 
 	/** 默认静态资源处理器 **/
 	@Override
@@ -48,6 +48,6 @@ public class MyWebAppConfigurer  implements WebMvcConfigurer {
 	}
 
 
-	
-	
+
+
 }

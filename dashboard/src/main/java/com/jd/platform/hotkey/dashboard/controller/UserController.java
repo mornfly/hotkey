@@ -184,15 +184,6 @@ public class UserController extends BaseController {
 	@PostMapping("getUserName")
 	@ResponseBody
 	public String getUserName(HttpServletRequest request, HttpServletResponse response){
-		/*Cookie[] cookies = request.getCookies();
-		String userName = "";
-		for(Cookie cookie : cookies){
-			if("erp".equals(cookie.getName())){
-				userName = cookie.getValue();
-				break;
-			}
-		}
-		return userName;*/
 		return userName();
 	}
 }

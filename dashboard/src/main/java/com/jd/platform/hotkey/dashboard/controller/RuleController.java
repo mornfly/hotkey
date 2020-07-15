@@ -10,6 +10,8 @@ import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
+import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
 import com.jd.platform.hotkey.dashboard.common.ex.BizException;
 import com.jd.platform.hotkey.dashboard.model.Rule;
@@ -104,6 +106,20 @@ public class RuleController extends BaseController {
 	@ResponseBody
 	public List<String> rules(){
 		return ruleService.listRules(null);
+	}
+
+
+	@GetMapping("/viewHitCount")
+	public String viewHitCount(ModelMap modelMap){
+		modelMap.put("title", Constant.MONITOR_VIEW);
+		return "admin/rule/listhitcount";
+	}
+
+	@PostMapping("/listHitCount")
+	@ResponseBody
+	public Page<HitCountVo> pageRuleHitCount(PageReq page, SearchReq req){
+		PageInfo<HitCountVo> info = ruleService.pageRuleHitCount(page, req, ownApp());
+		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
 	}
 
 

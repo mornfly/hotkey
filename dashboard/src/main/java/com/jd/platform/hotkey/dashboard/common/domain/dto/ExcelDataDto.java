@@ -1,11 +1,11 @@
-package com.jd.platform.hotkey.dashboard.common.domain;
+package com.jd.platform.hotkey.dashboard.common.domain.dto;
 
 import java.util.List;
 
 /**
  * @author liyunfeng31
  */
-public class ExcelData {
+public class ExcelDataDto {
     /**
      * 文件名
      */
@@ -19,7 +19,7 @@ public class ExcelData {
      */
     private List<List<String>> rows;
 
-    public ExcelData(String fileName, List<String> head, List<List<String>> rows) {
+    public ExcelDataDto(String fileName, List<String> head, List<List<String>> rows) {
         this.fileName = fileName;
         this.head = head;
         this.rows = rows;

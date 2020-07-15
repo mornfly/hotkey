@@ -2,17 +2,19 @@ package com.jd.platform.hotkey.dashboard.service.impl;
 
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
+import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
 import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.RulesMapper;
-import com.jd.platform.hotkey.dashboard.model.ChangeLog;
-import com.jd.platform.hotkey.dashboard.model.Rule;
-import com.jd.platform.hotkey.dashboard.model.Rules;
+import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
+import com.jd.platform.hotkey.dashboard.model.*;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,8 @@ public class RuleServiceImpl implements RuleService {
     @Resource
     private ChangeLogMapper logMapper;
 
+    @Resource
+    private SummaryMapper summaryMapper;
 
 
     @Override
@@ -142,4 +146,14 @@ public class RuleServiceImpl implements RuleService {
         }
         return rules;
     }
+
+    @Override
+    public PageInfo<HitCountVo> pageRuleHitCount(PageReq pageReq, SearchReq req, String ownApp) {
+        PageHelper.startPage(pageReq.getPageNum(),pageReq.getPageSize());
+        List<HitCountVo> hitCountVos = summaryMapper.listRuleHitCount(req);
+        return  new PageInfo<>(hitCountVos);
+    }
+
+
+
 }

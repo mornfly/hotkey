@@ -4,7 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.ExcelData;
+import com.jd.platform.hotkey.dashboard.common.domain.dto.ExcelDataDto;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
@@ -44,8 +44,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/ruleLineChart")
 	@ResponseBody
 	public HotKeyLineChartVo ruleLineChart(SearchReq req){
-		String app = appName();
-		return keyService.ruleLineChart(req,app);
+		return keyService.ruleLineChart(req,ownApp());
 	}
 
 
@@ -54,15 +53,6 @@ public class KeyController extends BaseController {
 	public HotKeyLineChartVo lineChart(ChartReq chartReq){
 		return keyService.getLineChart(chartReq);
 	}
-
-
-	//@PostMapping("/qps")
-	@GetMapping("/qps")
-	@ResponseBody
-	public HotKeyLineChartVo qpsLineChart(ChartReq ChartReq) {
-		return keyService.getQpsLineChart(ChartReq);
-	}
-
 
 
 	@GetMapping("/view")
@@ -163,7 +153,7 @@ public class KeyController extends BaseController {
 		req.setKey(key);
 		List<Statistics> records = keyService.listMaxHot(req);
 		List<List<String>> rows = transform(records);
-		ExcelData data = new ExcelData("hotKey.xlsx", Constant.HEAD,rows);
+		ExcelDataDto data = new ExcelDataDto("hotKey.xlsx", Constant.HEAD,rows);
 		ExcelUtil.exportExcel(resp,data);
 	}
 

@@ -234,6 +234,10 @@ public class CommonUtil {
         int hitCount = Integer.parseInt(counts[0]);
         int totalCount = Integer.parseInt(counts[1]);
         String uuid = app + "-" + rule + hitTime;
-        return new Summary(rule, rule, app, totalCount, hitCount, day, hour, minus, (int) seconds, 1, uuid);
+
+        return Summary.aSummary().indexName(rule).rule(rule).app(app)
+                .val1(totalCount).val2(hitCount)
+                .days(day).hours(hour).minutes(minus).seconds((int) seconds)
+                .bizType(1).uuid(uuid).build();
     }
 }

@@ -46,8 +46,6 @@ public class KeyServiceImpl implements KeyService {
     @Resource
     private KeyTimelyMapper keyTimelyMapper;
     @Resource
-    private ReceiveCountMapper countMapper;
-    @Resource
     private StatisticsMapper statisticsMapper;
     @Resource
     private RuleService ruleService;
@@ -145,41 +143,6 @@ public class KeyServiceImpl implements KeyService {
             list.add(hour+"时");
         }
         return new HotKeyLineChartVo(list,keyDateMap);
-    }
-
-
-    @Override
-    public HotKeyLineChartVo getQpsLineChart(ChartReq chartReq) {
-        if(chartReq.getStartTime() == null || chartReq.getEndTime() == null){
-         /*   chartReq.setStartTime(DateUtil.preTime());
-            chartReq.setEndTime(new Date());*/
-        }
-        List<ReceiveCount> countList = countMapper.list(chartReq);
-        Map<String, int []> map = new HashMap<>(10);
-        Set<String> minutes = new HashSet<>();
-        List<List<ReceiveCount>> workerList = new ArrayList<>();
-        countList.stream().collect(Collectors.groupingBy(ReceiveCount::getWorkerName,Collectors.toList()))
-                .forEach((name,data)-> workerList.add(data));
-        for (List<ReceiveCount> cts : workerList) {
-            int size = cts.size();
-            for (int i = 0; i < size; i++) {
-                ReceiveCount dto = cts.get(i);
-                String k = dto.getWorkerName();
-                Long v = dto.getReceiveCount();
-                Integer ms = dto.getMinutes();
-                minutes.add(ms.toString());
-                if(map.get(k) == null){
-                    int [] data = new int[size];
-                    data[i] = v.intValue();
-                    map.put(k, data);
-                }else{
-                    int [] data = map.get(k);
-                    data[i] = v.intValue();
-                    map.put(k, data);
-                }
-            }
-        }
-        return new HotKeyLineChartVo(new ArrayList<>(minutes),map);
     }
 
 

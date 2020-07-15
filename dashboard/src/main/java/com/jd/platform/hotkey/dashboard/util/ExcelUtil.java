@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.jd.platform.hotkey.dashboard.common.domain.ExcelData;
+import com.jd.platform.hotkey.dashboard.common.domain.dto.ExcelDataDto;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.xssf.usermodel.*;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ public class ExcelUtil {
 
     private static Logger log = LoggerFactory.getLogger(ExcelUtil.class);
 
-    public static void exportExcel(HttpServletResponse response, ExcelData data) {
+    public static void exportExcel(HttpServletResponse response, ExcelDataDto data) {
         log.info("导出解析开始，fileName:{}",data.getFileName());
         try {
             //实例化HSSFWorkbook
