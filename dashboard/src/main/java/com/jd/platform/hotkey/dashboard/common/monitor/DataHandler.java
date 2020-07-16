@@ -61,7 +61,7 @@ public class DataHandler {
             try {
                 twoTuple = handHotKey(queue.take());
                 if (twoTuple == null) {
-                    return;
+                    continue;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
