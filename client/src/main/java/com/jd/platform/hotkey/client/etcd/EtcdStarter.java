@@ -76,7 +76,7 @@ public class EtcdStarter {
             }
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
         }
 
     }
@@ -168,7 +168,7 @@ public class EtcdStarter {
             notifyWorkerChange(addresses);
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
         }
 
     }
@@ -222,12 +222,12 @@ public class EtcdStarter {
                             EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
                         }
                     } catch (Exception e) {
-                        JdLogger.error(getClass(), "new key err ：" + keyValue);
+                        JdLogger.error(getClass(), "new key err ：" + keyValue, e);
                     }
 
                 }
             } catch (Exception e) {
-                JdLogger.error(getClass(), "watch err");
+                JdLogger.error(getClass(), "watch err", e);
             }
         });
 
@@ -262,10 +262,10 @@ public class EtcdStarter {
             return true;
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
             return false;
         } catch (Exception e) {
-            JdLogger.error(getClass(), "fetch rule failure, please check the rule info in etcd");
+            JdLogger.error(getClass(), "fetch rule failure, please check the rule info in etcd", e);
             return true;
         }
 
@@ -291,10 +291,8 @@ public class EtcdStarter {
                     fetchRuleFromEtcd();
                 }
             } catch (Exception e) {
-                JdLogger.error(getClass(), "watch err");
+                JdLogger.error(getClass(), "watch err", e);
             }
-
-
         });
     }
 
