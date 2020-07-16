@@ -60,6 +60,9 @@ public class DataHandler {
             TwoTuple<KeyTimely, KeyRecord> twoTuple;
             try {
                 twoTuple = handHotKey(queue.take());
+                if (twoTuple == null) {
+                    return;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("handHotKey error ," + e.getCause());
@@ -107,6 +110,11 @@ public class DataHandler {
         //组建成对象，供累计后批量插入、删除
         TwoTuple<KeyTimely, KeyRecord> timelyKeyRecordTwoTuple = new TwoTuple<>();
         if (eventType.equals(Event.EventType.PUT)) {
+            //如果是客户端删除时发出的put指令
+            if (com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE.equals(value)) {
+                log.info("client remove key event : " + appKey);
+                return null;
+            }
             //手工添加的是时间戳13位，worker传过来的是uuid
             String source = value.length() == 13 ? Constant.HAND : Constant.SYSTEM;
             timelyKeyRecordTwoTuple.setFirst(KeyTimely.aKeyTimely().key(key).val(value).appName(appName).duration(ttl).uuid(appKey).createTime(date).build());

@@ -13,8 +13,14 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
-import com.jd.platform.hotkey.dashboard.mapper.*;
-import com.jd.platform.hotkey.dashboard.model.*;
+import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
+import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
+import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
+import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
+import com.jd.platform.hotkey.dashboard.model.ChangeLog;
+import com.jd.platform.hotkey.dashboard.model.KeyRecord;
+import com.jd.platform.hotkey.dashboard.model.KeyTimely;
+import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.service.KeyService;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
@@ -178,8 +184,13 @@ public class KeyServiceImpl implements KeyService {
         //app + "_" + key
         String[] arr = keyTimely.getKey().split("/");
         //删除client监听目录的key
-        String ectdKey = ConfigConstant.hotKeyPath + arr[0] + "/" + arr[1];
-        configCenter.delete(ectdKey);
+        String etcdKey = ConfigConstant.hotKeyPath + arr[0] + "/" + arr[1];
+        if (configCenter.get(etcdKey) == null) {
+            //如果手工目录也就是client监听的目录里没有该key，那么就往里面放一个，然后再删掉它，这样client才能监听到删除事件
+            configCenter.putAndGrant(etcdKey, com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE, 1);
+        }
+        configCenter.delete(etcdKey);
+
         //也删除Record目录下的该key，因为不确定要删的key到底在哪
         String recordKey = ConfigConstant.hotKeyRecordPath + arr[0] + "/" + arr[1];
         configCenter.delete(recordKey);
