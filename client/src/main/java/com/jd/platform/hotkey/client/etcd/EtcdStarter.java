@@ -19,7 +19,6 @@ import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import io.grpc.StatusRuntimeException;
 import io.netty.util.internal.StringUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -251,15 +250,13 @@ public class EtcdStarter {
         IConfigCenter configCenter = EtcdConfigFactory.configCenter();
         try {
             List<KeyRule> ruleList = new ArrayList<>();
-            //从etcd获取自己的rule
             String rules = configCenter.get(ConfigConstant.rulePath + Context.APP_NAME);
+
             if (StringUtil.isNullOrEmpty(rules)) {
                 JdLogger.warn(getClass(), "rule is empty");
-                //会清空本地缓存队列
-                notifyRuleChange(ruleList);
-                return true;
+            } else {
+                ruleList = FastJsonUtils.toList(rules, KeyRule.class);
             }
-            ruleList = FastJsonUtils.toList(rules, KeyRule.class);
 
             notifyRuleChange(ruleList);
             return true;
