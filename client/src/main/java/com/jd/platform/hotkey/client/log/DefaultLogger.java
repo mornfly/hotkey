@@ -8,23 +8,29 @@ import org.slf4j.LoggerFactory;
  * @date 2020-04-21
  */
 public class DefaultLogger implements HotKeyLogger {
+
     @Override
-    public void debug(Class<?> className, String info) {
-        LoggerFactory.getLogger(className).debug(info);
+    public void debug(Class<?> loggerClass, String info) {
+        LoggerFactory.getLogger(loggerClass).debug(info);
     }
 
     @Override
-    public void info(Class<?> className, String info) {
-        LoggerFactory.getLogger(className).info(info);
+    public void info(Class<?> loggerClass, String info) {
+        LoggerFactory.getLogger(loggerClass).info(info);
     }
 
     @Override
-    public void error(Class<?> className, String info) {
-        LoggerFactory.getLogger(className).error(info);
+    public void warn(Class<?> loggerClass, String info) {
+        LoggerFactory.getLogger(loggerClass).warn(info);
     }
 
     @Override
-    public void warn(Class<?> className, String info) {
-        LoggerFactory.getLogger(className).warn(info);
+    public void error(Class<?> loggerClass, String info) {
+        LoggerFactory.getLogger(loggerClass).error(info);
+    }
+
+    @Override
+    public void error(Class<?> loggerClass, String message, Throwable cause) {
+        LoggerFactory.getLogger(loggerClass).error(message, cause);
     }
 }

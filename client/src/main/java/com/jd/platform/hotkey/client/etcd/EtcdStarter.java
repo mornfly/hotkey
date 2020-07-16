@@ -19,7 +19,6 @@ import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import io.grpc.StatusRuntimeException;
 import io.netty.util.internal.StringUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -77,7 +76,7 @@ public class EtcdStarter {
             }
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
         }
 
     }
@@ -169,7 +168,7 @@ public class EtcdStarter {
             notifyWorkerChange(addresses);
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
         }
 
     }
@@ -223,12 +222,12 @@ public class EtcdStarter {
                             EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
                         }
                     } catch (Exception e) {
-                        JdLogger.error(getClass(), "new key err ：" + keyValue);
+                        JdLogger.error(getClass(), "new key err ：" + keyValue, e);
                     }
 
                 }
             } catch (Exception e) {
-                JdLogger.error(getClass(), "watch err");
+                JdLogger.error(getClass(), "watch err", e);
             }
         });
 
@@ -251,24 +250,22 @@ public class EtcdStarter {
         IConfigCenter configCenter = EtcdConfigFactory.configCenter();
         try {
             List<KeyRule> ruleList = new ArrayList<>();
-            //从etcd获取自己的rule
             String rules = configCenter.get(ConfigConstant.rulePath + Context.APP_NAME);
+
             if (StringUtil.isNullOrEmpty(rules)) {
                 JdLogger.warn(getClass(), "rule is empty");
-                //会清空本地缓存队列
-                notifyRuleChange(ruleList);
-                return true;
+            } else {
+                ruleList = FastJsonUtils.toList(rules, KeyRule.class);
             }
-            ruleList = FastJsonUtils.toList(rules, KeyRule.class);
 
             notifyRuleChange(ruleList);
             return true;
         } catch (StatusRuntimeException ex) {
             //etcd连不上
-            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!");
+            JdLogger.error(getClass(), "etcd connected fail. Check the etcd address!!!", ex);
             return false;
         } catch (Exception e) {
-            JdLogger.error(getClass(), "fetch rule failure, please check the rule info in etcd");
+            JdLogger.error(getClass(), "fetch rule failure, please check the rule info in etcd", e);
             return true;
         }
 
@@ -294,10 +291,8 @@ public class EtcdStarter {
                     fetchRuleFromEtcd();
                 }
             } catch (Exception e) {
-                JdLogger.error(getClass(), "watch err");
+                JdLogger.error(getClass(), "watch err", e);
             }
-
-
         });
     }
 

@@ -102,14 +102,14 @@ public class ClientStarter {
         //开启worker重连器
         WorkerRetryConnector.retryConnectWorkers();
 
-        registEventBus();
+        registerEventBus();
 
         EtcdStarter starter = new EtcdStarter();
         //与etcd相关的监听都开启
         starter.start();
     }
 
-    private void registEventBus() {
+    private void registerEventBus() {
         //netty连接器会关注WorkerInfoChangeEvent事件
         EventBusCenter.register(new WorkerChangeSubscriber());
         //热key探测回调关注热key事件
