@@ -134,6 +134,9 @@ public class JdHotKeyStore {
         getCache(key).set(key, value);
     }
 
+    /**
+     * 删除某key，会通知整个集群删除
+     */
     public static void remove(String key) {
         getCache(key).delete(key);
         HotKeyPusher.remove(key);

@@ -19,7 +19,7 @@ public class ReceiveNewKeySubscribe {
         if (hotKeyModel == null) {
             return;
         }
-        //收到新key推送，可能是新增，也可能是删除
+        //收到新key推送
         if (receiveNewKeyListener != null) {
             receiveNewKeyListener.newKey(hotKeyModel);
         }
