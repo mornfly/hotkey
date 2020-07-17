@@ -215,7 +215,7 @@ public class EtcdStarter {
                             JdLogger.info(getClass(), "etcd receive new key : " + key + " --value:" + value);
                             //如果这是一个删除指令，就什么也不干
                             if (Constant.DEFAULT_DELETE_VALUE.equals(value)) {
-                                return;
+                                continue;
                             }
 
                             //手工创建的value是时间戳
