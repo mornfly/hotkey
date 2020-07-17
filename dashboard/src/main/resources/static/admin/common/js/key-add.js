@@ -4,9 +4,34 @@ $("#form-add").validate({
 	}
 });
 
-/**
- *
- */
+$.ajax({
+	cache : true,
+	type : "POST",
+	url : "/user/info",
+	headers: {
+		"Authorization":getCookie("token")
+	},
+	async : false,
+	error : function(XMLHttpRequest){
+		$.modal.alertError(XMLHttpRequest.responseJSON.msg);
+	},
+	success : function(data) {
+		console.log(data)
+		let role = data.role;
+		if(role === "ADMIN"){
+			$("#apps").val("");
+		}
+		let apps = data.appNames;
+		let appName = data.appName;
+		for (let i = 0; i < apps.length; i++) {
+			let app = apps[i];
+			if(app === appName){
+				$("#apps").val(apps[i]);
+			}
+		}
+	}
+});
+
 function add() {
 	var dataFormJson=$("#form-add").serialize();
 	$.ajax({
