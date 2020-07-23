@@ -62,8 +62,8 @@ https://mp.weixin.qq.com/s/xOzEj5HtCeh_ezHDPHw6Jw
 
 ### 界面效果
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0622/163805_0aa68d4b_303698.png "屏幕截图.png")
-### 微信群
-![输入图片说明](https://images.gitee.com/uploads/images/2020/0720/110150_fee90b3e_303698.jpeg "11.jpeg")
+### 加我微信拉入群
+![输入图片说明](https://images.gitee.com/uploads/images/2020/0723/165039_67a40b9f_303698.jpeg "WechatIMG77.jpeg")
 
 
 #### 安装教程
