@@ -35,7 +35,7 @@ public class CaffeineBuilder {
         return Caffeine.newBuilder()
                 .initialCapacity(256)//初始大小
                 .maximumSize(50000)//最大数量
-                .expireAfterWrite(10, TimeUnit.SECONDS)//过期时间
+                .expireAfterWrite(5, TimeUnit.SECONDS)//过期时间
                 .executor(executorService)
                 .softValues()
                 .build();
