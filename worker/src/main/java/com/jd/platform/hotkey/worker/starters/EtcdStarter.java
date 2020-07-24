@@ -59,6 +59,9 @@ public class EtcdStarter {
     @Value("${etcd.workerPath}")
     private String workerPath;
 
+    @Value("${local.address}")
+    private String localAddress;
+
     private static final String DEFAULT_PATH = "default";
 
     private static final String MAO = ":";
@@ -245,6 +248,9 @@ public class EtcdStarter {
     }
 
     private String buildKey() {
+        if (StrUtil.isNotEmpty(localAddress)) {
+            return localAddress;
+        }
         String hostName = IpUtils.getHostName();
         return ConfigConstant.workersPath + workerPath + "/" + hostName;
     }

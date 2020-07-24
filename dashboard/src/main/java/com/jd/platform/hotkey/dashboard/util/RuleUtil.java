@@ -48,7 +48,7 @@ public class RuleUtil {
         }catch (Exception e){
             logger.error("findByKey error",e);
         }
-        return null;
+        return "";
     }
 
     /**
@@ -59,7 +59,7 @@ public class RuleUtil {
         if (keyRule != null) {
             return keyRule.getDesc();
         }
-        return null;
+        return "";
     }
 
     private static KeyRule findByKey(String appNameKey) {
@@ -72,6 +72,10 @@ public class RuleUtil {
             String realKey = appKey[1];
             KeyRule prefix = null;
             KeyRule common = null;
+
+            if (RULE_MAP.get(appName) == null) {
+                return null;
+            }
             //遍历该app的所有rule，找到与key匹配的rule。优先全匹配->prefix匹配-> * 通配
             //这一段虽然看起来比较奇怪，但是没毛病，不要乱改
             for (KeyRule keyRule : RULE_MAP.get(appName)) {
