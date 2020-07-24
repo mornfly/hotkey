@@ -18,6 +18,7 @@ import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
 import com.jd.platform.hotkey.worker.rule.KeyRuleHolder;
 import com.jd.platform.hotkey.worker.tool.AsyncPool;
+import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.grpc.StatusRuntimeException;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -62,11 +63,27 @@ public class EtcdStarter {
     @Value("${local.address}")
     private String localAddress;
 
+    @Value("${open.monitor}")
+    private boolean openMonitor;
+
     private static final String DEFAULT_PATH = "default";
 
     private static final String MAO = ":";
     private static final String ETCD_DOWN = "etcd is unConnected . please do something";
     private static final String EMPTY_RULE = "very important warn !!! rule info is null!!!";
+
+    /**
+     * 用来存储临时收到的key总量，来判断是否很久都没收到key了
+     */
+    private long tempTotalReceiveKeyCount;
+    /**
+     * 每次10秒没收到key发过来，就将这个加1，加到3时，就停止自己注册etcd 30秒
+     */
+    private int mayBeErrorTimes = 0;
+    /**
+     * 是否可以继续上报自己的ip
+     */
+    private volatile boolean canUpload = true;
 
     //Grant：分配一个租约。
     //Revoke：释放一个租约。
@@ -192,11 +209,53 @@ public class EtcdStarter {
             configCenter.putAndGrant(ConfigConstant.totalReceiveKeyCount + ip, totalCount, 13);
 
             logger.info(totalCount + " expireCount:" + expireTotalCount + " offerCount:" + totalOfferCount);
+
+            //如果是稳定一直有key发送的应用，建议开启该监控，以避免可能发生的网络故障
+            if (openMonitor) {
+                checkReceiveKeyCount();
+            }
 //            configCenter.putAndGrant(ConfigConstant.bufferPoolPath + ip, MemoryTool.getBufferPool() + "", 10);
         } catch (Exception ex) {
             logger.error(ETCD_DOWN);
         }
     }
+
+    /**
+     * 校验一下receive的key数量，如果一段时间没变，考虑网络问题，就将worker注册自己到etcd的心跳给断掉30秒，让各client重连一下自己
+     */
+    private void checkReceiveKeyCount() {
+        //如果一样，说明10秒没收到新key了
+        if (tempTotalReceiveKeyCount == HotKeyFilter.totalReceiveKeyCount.get()) {
+            if (canUpload) {
+                mayBeErrorTimes++;
+            }
+        } else {
+            tempTotalReceiveKeyCount = HotKeyFilter.totalReceiveKeyCount.get();
+        }
+        if (mayBeErrorTimes >= 6) {
+            logger.error("network maybe error …… i stop the heartbeat to etcd");
+            canUpload = false;
+            new Thread(() -> {
+                try {
+                    Thread.sleep(35000);
+                    canUpload = true;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            //需要把注册ip到etcd停一段时间，让各client和自己断连，重新连接
+            mayBeErrorTimes = 0;
+            //清零各个数据
+            tempTotalReceiveKeyCount = 0;
+            HotKeyFilter.totalReceiveKeyCount.set(0);
+            InitConstant.totalDealCount.reset();
+            InitConstant.totalOfferCount.reset();
+            InitConstant.expireTotalCount.reset();
+        }
+
+
+    }
+
 
     /**
      * rule发生变化时，更新缓存的rule
@@ -232,7 +291,9 @@ public class EtcdStarter {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
 
             try {
-                uploadSelfInfo();
+                if (canUpload) {
+                    uploadSelfInfo();
+                }
             } catch (Exception e) {
                 //do nothing
             }
