@@ -11,19 +11,26 @@ public class CpuNum {
      * netty worker线程数量. cpu密集型
      */
     public static int workerCount() {
-        int count = 1;
-        if (isNewerVersion()) {
-            count = Runtime.getRuntime().availableProcessors();
-        }
+        //取cpu核数，新版jdk在docker里取的就是真实分配的，老版jdk取的是宿主机的，可能特别大，如32核
+        int count = Runtime.getRuntime().availableProcessors();
+//        if (isNewerVersion()) {
+//            if (count >= 4) {
+//                count = count / 2;
+//            }
+//        } else {
+//            if (count >= 8) {
+//                count = 4;
+//            }
+//        }
         if (count >= 4) {
             count = count / 2;
         }
-
         return count;
     }
 
     public static void main(String[] args) {
-        System.out.println(isNewerVersion());
+//        System.out.println(isNewerVersion());
+        System.out.println(Runtime.getRuntime().availableProcessors());
     }
 
 

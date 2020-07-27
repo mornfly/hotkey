@@ -30,23 +30,28 @@ public class JdHotKeyStore {
      * 判断是否是key，如果不是，则发往netty
      */
     public static boolean isHotKey(String key) {
-        if (!inRule(key)) {
+        try {
+            if (!inRule(key)) {
+                return false;
+            }
+            boolean isHot = isHot(key);
+            if (!isHot) {
+                HotKeyPusher.push(key, null);
+            } else {
+                ValueModel valueModel = getValueSimple(key);
+                //判断是否过期时间小于1秒，小于1秒的话也发送
+                if (isNearExpire(valueModel)) {
+                    HotKeyPusher.push(key, null);
+                }
+            }
+
+            //统计计数
+            KeyHandlerFactory.getCounter().collect(new KeyHotModel(key, isHot));
+            return isHot;
+        } catch (Exception e) {
             return false;
         }
-        boolean isHot = isHot(key);
-        if (!isHot) {
-            HotKeyPusher.push(key, null);
-        } else {
-            ValueModel valueModel = getValueSimple(key);
-            //判断是否过期时间小于1秒，小于1秒的话也发送
-            if (isNearExpire(valueModel)) {
-                HotKeyPusher.push(key, null);
-            }
-        }
 
-        //统计计数
-        KeyHandlerFactory.getCounter().collect(new KeyHotModel(key, isHot));
-        return isHot;
     }
 
     /**
@@ -82,34 +87,39 @@ public class JdHotKeyStore {
      * 获取value，如果value不存在则发往netty
      */
     public static Object getValue(String key, KeyType keyType) {
-        //如果没有为该key配置规则，就不用上报key
-        if (!inRule(key)) {
+        try {
+            //如果没有为该key配置规则，就不用上报key
+            if (!inRule(key)) {
+                return null;
+            }
+            Object userValue = null;
+
+            ValueModel value = getValueSimple(key);
+
+            if (value == null) {
+                HotKeyPusher.push(key, keyType);
+            } else {
+                //临近过期了，也发
+                if (isNearExpire(value)) {
+                    HotKeyPusher.push(key, keyType);
+                }
+                Object object = value.getValue();
+                //如果是默认值，也返回null
+                if (object instanceof Integer && Constant.MAGIC_NUMBER == (int) object) {
+                    userValue = null;
+                } else {
+                    userValue = object;
+                }
+            }
+
+            //统计计数
+            KeyHandlerFactory.getCounter().collect(new KeyHotModel(key, value != null));
+
+            return userValue;
+        } catch (Exception e) {
             return null;
         }
-        Object userValue = null;
 
-        ValueModel value = getValueSimple(key);
-
-        if (value == null) {
-            HotKeyPusher.push(key, keyType);
-        } else {
-            //临近过期了，也发
-            if (isNearExpire(value)) {
-                HotKeyPusher.push(key, keyType);
-            }
-            Object object = value.getValue();
-            //如果是默认值，也返回null
-            if (object instanceof Integer && Constant.MAGIC_NUMBER == (int) object) {
-                userValue = null;
-            } else {
-                userValue = object;
-            }
-        }
-
-        //统计计数
-        KeyHandlerFactory.getCounter().collect(new KeyHotModel(key, value != null));
-
-        return userValue;
     }
 
     public static Object getValue(String key) {
@@ -134,6 +144,9 @@ public class JdHotKeyStore {
         getCache(key).set(key, value);
     }
 
+    /**
+     * 删除某key，会通知整个集群删除
+     */
     public static void remove(String key) {
         getCache(key).delete(key);
         HotKeyPusher.remove(key);

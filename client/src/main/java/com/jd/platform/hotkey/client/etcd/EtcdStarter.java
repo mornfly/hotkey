@@ -16,16 +16,14 @@ import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.rule.KeyRule;
+import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import io.grpc.StatusRuntimeException;
 import io.netty.util.internal.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * etcd连接管理器
@@ -133,8 +131,9 @@ public class EtcdStarter {
     private void fetchWorkerInfo() {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
-        scheduledExecutorService.scheduleAtFixedRate(() -> { JdLogger.info(getClass(), "trying to connect to etcd and fetch worker info");
-        fetch();
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            JdLogger.info(getClass(), "trying to connect to etcd and fetch worker info");
+            fetch();
 
         }, 0, 30, TimeUnit.SECONDS);
     }
@@ -183,10 +182,11 @@ public class EtcdStarter {
     }
 
     /**
-     * 异步开始监听热key变化信息
+     * 异步开始监听热key变化信息，该目录里只有手工添加的key信息
      */
     private void startWatchHotKey() {
-        CompletableFuture.runAsync(() -> {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {
             JdLogger.info(getClass(), "--- begin watch hotKey change ----");
             IConfigCenter configCenter = EtcdConfigFactory.configCenter();
             try {
@@ -208,16 +208,18 @@ public class EtcdStarter {
                             model.setKey(key);
                             EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
                         } else {
-                            JdLogger.info(getClass(), "etcd receive new key : " + key);
                             HotKeyModel model = new HotKeyModel();
                             model.setRemove(false);
-                            //value是uuid的，就是worker推到etcd推送过来的。value是时间戳的，就是手工创建的
-                            //该功能已摒弃，client不再监听worker发往etcd的key了，只监听etcd手工的和client发到etcd的
-                            if (keyValue.getValue().toStringUtf8().length() != 13) {
-                                model.setCreateTime(System.currentTimeMillis());
-                            } else {
-                                model.setCreateTime(Long.valueOf(keyValue.getValue().toStringUtf8()));
+                            String value = keyValue.getValue().toStringUtf8();
+                            //新增热key
+                            JdLogger.info(getClass(), "etcd receive new key : " + key + " --value:" + value);
+                            //如果这是一个删除指令，就什么也不干
+                            if (Constant.DEFAULT_DELETE_VALUE.equals(value)) {
+                                continue;
                             }
+
+                            //手工创建的value是时间戳
+                            model.setCreateTime(Long.valueOf(keyValue.getValue().toStringUtf8()));
 
                             model.setKey(key);
                             EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
@@ -278,7 +280,8 @@ public class EtcdStarter {
      * 异步监听rule规则变化
      */
     private void startWatchRule() {
-        CompletableFuture.runAsync(() -> {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {
             JdLogger.info(getClass(), "--- begin watch rule change ----");
             try {
                 IConfigCenter configCenter = EtcdConfigFactory.configCenter();

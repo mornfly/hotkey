@@ -2,6 +2,7 @@ package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 
@@ -17,6 +18,8 @@ public class HitCountVo implements Serializable {
     private Integer hitCount;
 
     private Integer totalCount;
+
+    private BigDecimal ratio;
 
     private Integer days;
 
@@ -58,6 +61,14 @@ public class HitCountVo implements Serializable {
 
     public void setTotalCount(Integer totalCount) {
         this.totalCount = totalCount;
+    }
+
+    public BigDecimal getRatio() {
+        return ratio;
+    }
+
+    public void setRatio(BigDecimal ratio) {
+        this.ratio = ratio;
     }
 
     public Integer getDays() {
@@ -111,6 +122,7 @@ public class HitCountVo implements Serializable {
         private String app;
         private Integer hitCount;
         private Integer totalCount;
+        private BigDecimal ratio;
         private Integer days;
         private Integer hours;
         private Integer minutes;
@@ -120,47 +132,52 @@ public class HitCountVo implements Serializable {
         private HitCountVoBuilder() {
         }
 
-        public HitCountVoBuilder withRule(String rule) {
+        public HitCountVoBuilder rule(String rule) {
             this.rule = rule;
             return this;
         }
 
-        public HitCountVoBuilder withApp(String app) {
+        public HitCountVoBuilder app(String app) {
             this.app = app;
             return this;
         }
 
-        public HitCountVoBuilder withHitCount(Integer hitCount) {
+        public HitCountVoBuilder hitCount(Integer hitCount) {
             this.hitCount = hitCount;
             return this;
         }
 
-        public HitCountVoBuilder withTotalCount(Integer totalCount) {
+        public HitCountVoBuilder totalCount(Integer totalCount) {
             this.totalCount = totalCount;
             return this;
         }
 
-        public HitCountVoBuilder withDays(Integer days) {
+        public HitCountVoBuilder ratio(BigDecimal ratio) {
+            this.ratio = ratio;
+            return this;
+        }
+
+        public HitCountVoBuilder days(Integer days) {
             this.days = days;
             return this;
         }
 
-        public HitCountVoBuilder withHours(Integer hours) {
+        public HitCountVoBuilder hours(Integer hours) {
             this.hours = hours;
             return this;
         }
 
-        public HitCountVoBuilder withMinutes(Integer minutes) {
+        public HitCountVoBuilder minutes(Integer minutes) {
             this.minutes = minutes;
             return this;
         }
 
-        public HitCountVoBuilder withSeconds(Integer seconds) {
+        public HitCountVoBuilder seconds(Integer seconds) {
             this.seconds = seconds;
             return this;
         }
 
-        public HitCountVoBuilder withCreateTime(Date createTime) {
+        public HitCountVoBuilder createTime(Date createTime) {
             this.createTime = createTime;
             return this;
         }
@@ -171,6 +188,7 @@ public class HitCountVo implements Serializable {
             hitCountVo.setApp(app);
             hitCountVo.setHitCount(hitCount);
             hitCountVo.setTotalCount(totalCount);
+            hitCountVo.setRatio(ratio);
             hitCountVo.setDays(days);
             hitCountVo.setHours(hours);
             hitCountVo.setMinutes(minutes);

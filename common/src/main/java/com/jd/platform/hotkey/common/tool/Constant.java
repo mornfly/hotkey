@@ -25,6 +25,11 @@ public class Constant {
 
     public static String BAK_DELIMITER = "#\\*\\*#";
 
+    /**
+     * 当客户端要删除某个key时，就往etcd里赋值这个value，设置1秒过期，就算删除了
+     */
+    public static String DEFAULT_DELETE_VALUE = "#[DELETE]#";
+
     //单次包最大2M
     public static int MAX_LENGTH = 2 * 1024 * 1024;
 

@@ -109,7 +109,13 @@ public class RuleController extends BaseController {
 	}
 
 
-	@PostMapping("/listRuleHitCount")
+	@GetMapping("/viewHitCount")
+	public String viewHitCount(ModelMap modelMap){
+		modelMap.put("title", Constant.MONITOR_VIEW);
+		return "admin/rule/listhitcount";
+	}
+
+	@PostMapping("/listHitCount")
 	@ResponseBody
 	public Page<HitCountVo> pageRuleHitCount(PageReq page, SearchReq req){
 		PageInfo<HitCountVo> info = ruleService.pageRuleHitCount(page, req, ownApp());

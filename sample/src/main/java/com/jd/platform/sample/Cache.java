@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
@@ -85,8 +84,12 @@ public class Cache {
         JdHotKeyStore.remove(key);
         //do your job
     }
-private Logger logger = LoggerFactory.getLogger(getClass());
-    @PostConstruct
+
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+
+//    @PostConstruct
     public void test() {
 
         CompletableFuture.runAsync(() -> {

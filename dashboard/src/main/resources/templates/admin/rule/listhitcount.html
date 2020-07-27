@@ -8,10 +8,17 @@
     <link th:href="@{/static/admin/assets/js/bootstrap/css/bootstrap-table/bootstrap-table.min.css}" rel="stylesheet"/>
 
     <style type="text/css">
-
         .select-list ul li{
             list-style-type: none;
             float: left;
+        }
+        .timeBut{
+            float: left;
+            padding-top: 15px
+        }
+        .timeBut2{
+            float: left;
+            padding-top: 10px
         }
     </style>
 
@@ -36,12 +43,30 @@
                         <div class="body-nest" id="search_div"  style="display: block">
                             <div class="form_left">
                                 <form role="form" class="form-inline">
-                                    <div class="form-group" style="width: 16%">
-                                        <label class="control-label timeBut2" style="float: left;padding-top: 10px">所属APP：</label>
-                                        <select name="app" id="apps"  class="form-control" style="width: 66%">
+                                    <div class="form-group" style="width: 23%" >
+                                        <label class="control-label timeBut" >选择日期：</label>
+                                        <div class='input-group date datetimepicker' id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
+                                            <input type='text' class="form-control" name="startTime"/>
+                                            <span class="input-group-addon">
+                                                    <span class="glyphicon glyphicon-calendar"></span>
+                                                </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="width: 18%" >
+                                        <label class="control-label timeBut">~</label>
+                                        <div class='input-group date datetimepicker' id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
+                                            <input type='text' class="form-control"  name="endTime"/>
+                                            <span class="input-group-addon">
+                                                    <span class="glyphicon glyphicon-calendar"></span>
+                                                </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="width: 20%;margin-left: 40px" >
+                                        <label class="control-label timeBut2" >所属APP：</label>
+                                        <select name="app" id="apps" class="form-control" style="width: 62%">
                                         </select>
                                     </div>
-                                    <button onclick="$.table.search(this)" class="btn btn-success" style="margin-left: 2%;" id="recordSearch" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
+                                    <button onclick="$.table.search(this)" class="btn btn-success" style="margin-left: 10%" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
                                 </form>
                             </div>
                         </div>
@@ -64,13 +89,6 @@
                         </div>
 
                         <div class="body-nest" id="Blank_Page_Content">
-                            <!-- 工具条 -->
-                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
-                                <button onclick="addRules()" type="button" class="btn btn-primary">
-                                    <span class="entypo-plus-squared"></span>&nbsp;&nbsp;新增
-                                </button>
-                            </div>
-                            <!-- 工具条 end-->
                             <table id="dataTable" class="table-striped footable-res footable metro-blue" data-page-size="6">
                             </table>
 
@@ -99,29 +117,20 @@
 <script th:src="@{/static/admin/assets/js/blockUI/jquery.blockUI.js}" type="text/javascript"></script>
 
 <script type="text/javascript">
-    var dataUrl="/rule/list";
-    var removeUrl="/rule/remove";
-    var createUrl="/rule/add";
-    var updateUrl="/rule/edit/";
     var options = {
-        dataUrl: dataUrl,
-        createUrl: createUrl,
-        updateUrl: updateUrl,
-        removeUrl: removeUrl,
+        dataUrl: "/rule/listHitCount",
         sortName: "key",
         modalName: "规则",
         search: false,
         dataColumns: [
-            { field: 'app', title: 'app',width:100,align:"center"},
-            { field: 'rules', title: '规则'},
-            {
-                title: '操作',
-                formatter: function (value, row, index) {
-                    var id = row.id;
-                    var actions = [];
-                    actions.push('<a class="btn btn-success btn-xs"  href="#" onclick="editRules(\'' + (row.app) + '\')"><i class="fa fa-edit"></i>编辑</a> ');
-                    actions.push('<a class="btn btn-danger btn-xs" href="#" onclick="$.operate.remove(\'' + (row.app) + '\')"><i class="fa fa-remove"></i>删除</a>');
-                    return actions.join('');
+            { field: 'rule', title: '规则',align:"center"},
+            { field: 'app', title: '所属APP',align:"center"},
+            { field: 'hitCount', title: '命中数'},
+            { field: 'totalCount', title: '总数'},
+            { field: 'ratio', title: '命中率'},
+            { field: 'seconds', title: '时间',
+                formatter:function (val) {
+                    return timestampToTime(val*1000);
                 }
             }]
     };
@@ -158,13 +167,22 @@
         var oTab=$.table.oTableInit(options);
         oTab.Init();
     })
-    function addRules(){
-        $.modal.open("添加规则", createUrl, 1100, 600);
-    }
 
-    function editRules(app){
-        $.modal.open("编辑规则", updateUrl+app, 1100, 600);
-    }
+
+
+    $('.datetimepicker').datetimepicker({
+        language: 'zh-CN',
+        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
+        weekStart: 1,
+        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
+        autoclose: 1,           //选完时间自动关闭
+        todayHighlight: 1,      //当天时间高亮
+        startView: 2,           //从月视图开始，选天
+        minView: 0,             //提供选择分钟的视图
+        forceParse: 0,
+        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
+    });
+
 
 </script>
 
