@@ -1,6 +1,6 @@
 netty:
-  port: ${netty-port:11111}
-  heartBeat: ${heart-beat:10}
+  port: ${nettyPort:11111}
+  heartBeat: ${heartBeat:10}
   timeOut: ${timeOut:5000}
 local:
   address: ${localAddress:} #有些获取到的ip不能用，需要手工配worker的地址
