@@ -192,5 +192,11 @@ Object JdHotKeyStore.getValue(String key)
 
              }
 
+### 测试环境
+
+我司为方便大家快速接入试用、查看hotkey效果，提供了1台公网etcd机器（16c16g）、2台worker机器（8c12g），供快速接入测试。
+
+
+etcd地址为： **http://open-etcd.jd.com:2000** ，可以在下载项目后，在sample项目、dashboard项目里yml文件修改etcd连接地址为该地址，然后启动dashboard，进入界面控制台，即可看到当前连接的worker，之后可以在sample项目里，进行hotkey测试。
 
 
