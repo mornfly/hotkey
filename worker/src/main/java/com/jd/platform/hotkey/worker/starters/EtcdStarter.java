@@ -309,15 +309,17 @@ public class EtcdStarter {
     }
 
     private String buildKey() {
-        if (StrUtil.isNotEmpty(localAddress)) {
-            return localAddress;
-        }
         String hostName = IpUtils.getHostName();
         return ConfigConstant.workersPath + workerPath + "/" + hostName;
     }
 
     private String buildValue() {
-        String ip = IpUtils.getIp();
+        String ip;
+        if (StrUtil.isNotEmpty(localAddress)) {
+            ip = localAddress;
+        } else {
+            ip = IpUtils.getIp();
+        }
         return ip + MAO + port;
     }
 
