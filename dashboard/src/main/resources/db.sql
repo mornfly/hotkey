@@ -31,6 +31,11 @@ CREATE TABLE `hk_user`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 
+-- pwd: 123456
+INSERT INTO `hk_user` VALUES (2, 'admin', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '1888888', 'ADMIN', '', '2020-07-28 14:01:03', 1);
+
+
+
 DROP TABLE IF EXISTS `hk_key_record`;
 CREATE TABLE `hk_key_record`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',

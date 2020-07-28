@@ -53,7 +53,7 @@
 				        },
 				        onLoadError: function(status){  //加载失败时执行
                             let token = getCookie("token");
-                            if(status === 500 && ( token == "undefined" || token =="")){
+                            if(status === 1000 && ( token == "undefined" || token =="")){
                                 top.location.href = '/user/login';
                             }
 				            console.info("加载数据失败");

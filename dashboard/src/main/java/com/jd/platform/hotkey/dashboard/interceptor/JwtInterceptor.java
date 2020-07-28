@@ -29,9 +29,8 @@ public class JwtInterceptor extends HandlerInterceptorAdapter{
         }
         String header = request.getHeader("x-requested-with");
         if(!StringUtils.isEmpty(header) && "XMLHttpRequest".endsWith(header) && request.getMethod().equals(Constant.POST)){
-            final String authHeader = JwtTokenUtil.getAuthHeader(request);
-            if (StringUtils.isEmpty(authHeader)
-                    || !authHeader.startsWith(JwtTokenUtil.TOKEN_PREFIX)) {
+            String authHeader = request.getHeader(JwtTokenUtil.AUTH_HEADER_KEY);
+            if (StringUtils.isEmpty(authHeader) || !authHeader.startsWith(JwtTokenUtil.TOKEN_PREFIX)) {
                 throw new BizException(ResultEnum.NO_LOGIN);
             }
             final String token = authHeader.substring(2);
