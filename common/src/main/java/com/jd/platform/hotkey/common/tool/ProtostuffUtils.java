@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
- * @author 周志刚
- * @date 2019/6/18
+ * @author wuweifeng10
+ * @date 2020/7/18
  **/
 public class ProtostuffUtils {
     /**
@@ -50,11 +50,6 @@ public class ProtostuffUtils {
 
     /**
      * 反序列化方法，将字节数组反序列化成指定Class类型
-     *
-     * @param data
-     * @param clazz
-     * @param <T>
-     * @return
      */
     public static <T> T deserialize(byte[] data, Class<T> clazz) {
         Schema<T> schema = getSchema(clazz);
