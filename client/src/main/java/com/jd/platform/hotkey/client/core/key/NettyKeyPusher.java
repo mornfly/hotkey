@@ -80,7 +80,7 @@ public class NettyKeyPusher implements IKeyPusher {
                 List<KeyCountModel> batch = map.get(channel);
                 HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_HIT_COUNT, Context.APP_NAME);
                 hotKeyMsg.setKeyCountModels(batch);
-                channel.writeAndFlush(hotKeyMsg);
+                channel.writeAndFlush(hotKeyMsg).sync();
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();
