@@ -1,7 +1,7 @@
-package com.jd.platform.hotkey.worker.tool;
+package com.jd.platform.hotkey.common.tool;
 
 import io.protostuff.LinkedBuffer;
-import io.protostuff.ProtostuffIOUtil;
+import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
@@ -17,8 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProtostuffUtils {
     /**
      * 避免每次序列化都重新申请Buffer空间
+     * 这句话在实际生产上没有意义，耗时减少的极小，但高并发下，如果还用这个buffer，会报异常说buffer还没清空，就又被使用了
      */
-    private static LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+//    private static LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
     /**
      * 缓存Schema
      */
@@ -35,9 +36,11 @@ public class ProtostuffUtils {
     public static <T> byte[] serialize(T obj) {
         Class<T> clazz = (Class<T>) obj.getClass();
         Schema<T> schema = getSchema(clazz);
+        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         byte[] data;
         try {
-            data = ProtostuffIOUtil.toByteArray(obj, schema, buffer);
+            data = ProtobufIOUtil.toByteArray(obj, schema, buffer);
+//            data = ProtostuffIOUtil.toByteArray(obj, schema, buffer);
         } finally {
             buffer.clear();
         }
@@ -56,7 +59,8 @@ public class ProtostuffUtils {
     public static <T> T deserialize(byte[] data, Class<T> clazz) {
         Schema<T> schema = getSchema(clazz);
         T obj = schema.newMessage();
-        ProtostuffIOUtil.mergeFrom(data, obj, schema);
+        ProtobufIOUtil.mergeFrom(data, obj, schema);
+//        ProtostuffIOUtil.mergeFrom(data, obj, schema);
         return obj;
     }
 

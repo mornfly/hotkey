@@ -77,7 +77,7 @@ public class TestController {
 
     @RequestMapping("")
     public Object a() {
-        if (JdHotKeyStore.isHotKey("pin_tianyalei")) {
+        if (JdHotKeyStore.isHotKey("VENDER_ID_2111")) {
             logger.error("isHot");
         } else {
             logger.error("noHot");

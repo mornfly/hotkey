@@ -2,8 +2,11 @@ package com.jd.platform.hotkey.common.model;
 
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 
+import java.util.List;
+
 /**
  * netty通信消息
+ *
  * @author wuweifeng wrote on 2020-01-06
  * @version 1.0
  */
@@ -16,14 +19,17 @@ public class HotKeyMsg {
 
     private String body;
 
-    public HotKeyMsg(MessageType messageType, String body) {
-        this(null, messageType, body);
+    private List<HotKeyModel> hotKeyModels;
+
+    private List<KeyCountModel> keyCountModels;
+
+    public HotKeyMsg(MessageType messageType) {
+        this(messageType, null);
     }
 
-    public HotKeyMsg(String appName, MessageType messageType, String body) {
+    public HotKeyMsg(MessageType messageType, String appName) {
         this.appName = appName;
         this.messageType = messageType;
-        this.body = body;
     }
 
     public HotKeyMsg() {
@@ -33,9 +39,28 @@ public class HotKeyMsg {
     public String toString() {
         return "HotKeyMsg{" +
                 "magicNumber=" + magicNumber +
+                ", appName='" + appName + '\'' +
                 ", messageType=" + messageType +
                 ", body='" + body + '\'' +
+                ", hotKeyModels=" + hotKeyModels +
+                ", keyCountModels=" + keyCountModels +
                 '}';
+    }
+
+    public List<HotKeyModel> getHotKeyModels() {
+        return hotKeyModels;
+    }
+
+    public void setHotKeyModels(List<HotKeyModel> hotKeyModels) {
+        this.hotKeyModels = hotKeyModels;
+    }
+
+    public List<KeyCountModel> getKeyCountModels() {
+        return keyCountModels;
+    }
+
+    public void setKeyCountModels(List<KeyCountModel> keyCountModels) {
+        this.keyCountModels = keyCountModels;
     }
 
     public String getAppName() {

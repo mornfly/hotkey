@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hotkey</artifactId>
         <groupId>com.jd.platform.hotkey</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.4-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -21,9 +21,22 @@
         <hp-etcd.version>0.0.14</hp-etcd.version>
         <caffeine.version>2.8.0</caffeine.version>
         <hutool.version>5.1.0</hutool.version>
+        <protostuff.version>1.7.2</protostuff.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>${protostuff.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>${protostuff.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>

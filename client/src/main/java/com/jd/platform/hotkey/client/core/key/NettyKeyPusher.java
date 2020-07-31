@@ -6,9 +6,7 @@ import com.jd.platform.hotkey.client.log.JdLogger;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.KeyCountModel;
-import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
-import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
@@ -44,8 +42,11 @@ public class NettyKeyPusher implements IKeyPusher {
         for (Channel channel : map.keySet()) {
             try {
                 List<HotKeyModel> batch = map.get(channel);
-                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_NEW_KEY, FastJsonUtils.convertObjectToJSON(batch))));
+                HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_NEW_KEY, Context.APP_NAME);
+                hotKeyMsg.setHotKeyModels(batch);
+                channel.writeAndFlush(hotKeyMsg).sync();
             } catch (Exception e) {
+                e.printStackTrace();
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();
                     JdLogger.error(getClass(),"flush error " + insocket.getAddress().getHostAddress());
@@ -77,8 +78,9 @@ public class NettyKeyPusher implements IKeyPusher {
         for (Channel channel : map.keySet()) {
             try {
                 List<KeyCountModel> batch = map.get(channel);
-                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(Context.APP_NAME,
-                        MessageType.REQUEST_HIT_COUNT, FastJsonUtils.convertObjectToJSON(batch))));
+                HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_HIT_COUNT, Context.APP_NAME);
+                hotKeyMsg.setKeyCountModels(batch);
+                channel.writeAndFlush(hotKeyMsg);
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();

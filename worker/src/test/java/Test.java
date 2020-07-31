@@ -1,7 +1,11 @@
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
+import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.worker.tool.ProtostuffUtils;
+import com.jd.platform.hotkey.common.tool.ProtostuffUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wuweifeng
@@ -16,10 +20,20 @@ public class Test {
         hotKeyModel.setCount(1);
         hotKeyModel.setKey("pin_xx");
         hotKeyModel.setAppName("cartsoa");
-        hotKeyMsg.setBody(FastJsonUtils.convertObjectToJSON(hotKeyModel));
+
+        List<HotKeyModel> hotKeyModels = new ArrayList<>();
+        for (int i = 0; i < 500; i++) {
+            hotKeyModels.add(hotKeyModel);
+        }
+        hotKeyMsg.setHotKeyModels(hotKeyModels);
+
+        KeyCountModel keyCountModel = new KeyCountModel();
+        keyCountModel.setHotHitCount(11);
+        List<KeyCountModel> keyCountModels = new ArrayList<>();
+        keyCountModels.add(keyCountModel);
+//        hotKeyMsg.setKeyCountModels(keyCountModels);
 
         byte[] serialize = ProtostuffUtils.serialize(hotKeyMsg);
-        String msg = FastJsonUtils.convertObjectToJSON(hotKeyMsg);
 
         long time1 = System.currentTimeMillis();
         for (int i = 0; i < 300000; i++) {
@@ -27,6 +41,7 @@ public class Test {
         }
         System.out.println(System.currentTimeMillis() - time1);
 
+        String msg = FastJsonUtils.convertObjectToJSON(hotKeyMsg);
         long time = System.currentTimeMillis();
         for (int i = 0; i < 300000; i++) {
             HotKeyMsg hhh = FastJsonUtils.toBean(msg, HotKeyMsg.class);

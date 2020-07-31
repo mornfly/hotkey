@@ -5,7 +5,7 @@
     <packaging>pom</packaging>
     <groupId>com.jd.platform.hotkey</groupId>
     <artifactId>hotkey</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>hotkey</name>
     <description>Jd HotKey</description>
 

@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>worker</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>worker</name>
     <packaging>jar</packaging>
 
@@ -19,17 +19,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>io.protostuff</groupId>
-            <artifactId>protostuff-core</artifactId>
-            <version>1.7.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.protostuff</groupId>
-            <artifactId>protostuff-runtime</artifactId>
-            <version>1.7.2</version>
-        </dependency>
 
         <dependency>
             <groupId>com.jd.platform.hotkey</groupId>

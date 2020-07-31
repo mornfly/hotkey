@@ -1,10 +1,10 @@
 package com.jd.platform.hotkey.worker.netty.filter;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.SystemClock;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
-import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.keydispatcher.KeyProducer;
 import com.jd.platform.hotkey.worker.mq.IMqMessageReceiver;
@@ -40,7 +40,7 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
         if (MessageType.REQUEST_NEW_KEY == message.getMessageType()) {
             totalReceiveKeyCount.incrementAndGet();
 
-            publishMsg(message.getBody(), ctx);
+            publishMsg(message, ctx);
 
             return false;
         }
@@ -50,21 +50,15 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
 
     @Override
     public void receive(String msg) {
-        publishMsg(msg, null);
+//        publishMsg(msg, null);
     }
 
-    private void publishMsg(String message, ChannelHandlerContext ctx) {
-        //这个是给测试用的，实际走的是下面那个
-        if (message.startsWith("{")) {
-            HotKeyModel model = FastJsonUtils.toBean(message, HotKeyModel.class);
-            if (WhiteListHolder.contains(model.getKey())) {
-                return;
-            }
-            keyProducer.push(model);
+    private void publishMsg(HotKeyMsg message, ChannelHandlerContext ctx) {
+        //老版的用的单个HotKeyModel，新版用的数组
+        List<HotKeyModel> models = message.getHotKeyModels();
+        if (CollectionUtil.isEmpty(models)) {
             return;
         }
-        //老版的用的单个HotKeyModel，新版用的数组
-        List<HotKeyModel> models = FastJsonUtils.toList(message, HotKeyModel.class);
         for (HotKeyModel model : models) {
             //白名单key不处理
             if (WhiteListHolder.contains(model.getKey())) {

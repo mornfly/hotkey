@@ -2,8 +2,8 @@ package com.jd.platform.hotkey.client.netty;
 
 import com.jd.platform.hotkey.client.core.worker.WorkerInfoHolder;
 import com.jd.platform.hotkey.client.log.JdLogger;
-import com.jd.platform.hotkey.common.coder.Codec;
-import com.jd.platform.hotkey.common.coder.NettyCodec;
+import com.jd.platform.hotkey.common.coder.MsgDecoder;
+import com.jd.platform.hotkey.common.coder.MsgEncoder;
 import com.jd.platform.hotkey.common.tool.Constant;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -13,7 +13,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.List;
@@ -27,9 +26,6 @@ public class NettyClient {
     private static final NettyClient nettyClient = new NettyClient();
 
     private Bootstrap bootstrap;
-
-    private Codec codec = new NettyCodec();
-
 
     public static NettyClient getInstance() {
         return nettyClient;
@@ -56,9 +52,8 @@ public class NettyClient {
                         ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
                         ch.pipeline()
                                 .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
-//                                .addLast(codec.newEncoder())
-//                                .addLast(codec.newDecoder())
-                                .addLast(new StringDecoder())
+                                .addLast(new MsgDecoder())
+                                .addLast(new MsgEncoder())
                                 //10秒没消息时，就发心跳包过去
                                 .addLast(new IdleStateHandler(0, 0, 30))
                                 .addLast(nettyClientHandler);
