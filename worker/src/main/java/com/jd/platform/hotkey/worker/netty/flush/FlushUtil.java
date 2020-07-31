@@ -16,19 +16,19 @@ public class FlushUtil {
      * 往channel里输出消息
      */
     public static void flush(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) {
-        if (channelHandlerContext.channel().isWritable()) {
-            channelHandlerContext.channel().writeAndFlush(byteBuf).addListener(future -> {
-                if (!future.isSuccess()) {
-                    logger.warn("flush error " + future.cause().getMessage());
-                }
-            });
-        } else {
+//        if (channelHandlerContext.channel().isWritable()) {
+//            channelHandlerContext.channel().writeAndFlush(byteBuf).addListener(future -> {
+//                if (!future.isSuccess()) {
+//                    logger.warn("flush error " + future.cause().getMessage());
+//                }
+//            });
+//        } else {
             try {
                 //同步发送
                 channelHandlerContext.channel().writeAndFlush(byteBuf).sync();
             } catch (InterruptedException e) {
                 logger.error("flush error " + e.getMessage());
             }
-        }
+//        }
     }
 }

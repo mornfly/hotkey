@@ -44,7 +44,7 @@ public class NettyKeyPusher implements IKeyPusher {
         for (Channel channel : map.keySet()) {
             try {
                 List<HotKeyModel> batch = map.get(channel);
-                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_NEW_KEY, FastJsonUtils.convertObjectToJSON(batch))));
+                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_NEW_KEY, FastJsonUtils.convertObjectToJSON(batch)))).sync();
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();
@@ -78,7 +78,7 @@ public class NettyKeyPusher implements IKeyPusher {
             try {
                 List<KeyCountModel> batch = map.get(channel);
                 channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(Context.APP_NAME,
-                        MessageType.REQUEST_HIT_COUNT, FastJsonUtils.convertObjectToJSON(batch))));
+                        MessageType.REQUEST_HIT_COUNT, FastJsonUtils.convertObjectToJSON(batch)))).sync();
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();
