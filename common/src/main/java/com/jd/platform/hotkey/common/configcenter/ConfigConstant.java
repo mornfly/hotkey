@@ -1,5 +1,7 @@
 package com.jd.platform.hotkey.common.configcenter;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author wuweifeng wrote on 2019-12-06
  * @version 1.0
@@ -54,4 +56,10 @@ public interface ConfigConstant {
      * 存放客户端hotKey访问次数和总访问次数的path
      */
     String keyHitCountPath = "/jd/keyHitCount/";
+
+    /**
+     * 清理历史数据的配置的path
+     * time unit : day
+     */
+    String clearCfgPath = "/jd/clearCfg/";
 }

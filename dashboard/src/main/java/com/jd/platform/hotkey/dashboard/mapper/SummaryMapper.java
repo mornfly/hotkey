@@ -6,6 +6,7 @@ import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.model.Summary;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,4 +23,6 @@ public interface SummaryMapper {
     int saveOrUpdate(Summary records);
 
     List<HitCountVo> listRuleHitCount(SearchReq req);
+
+    int clearExpireData(String app, Date expireDate);
 }

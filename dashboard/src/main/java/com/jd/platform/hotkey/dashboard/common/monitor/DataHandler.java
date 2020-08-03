@@ -3,12 +3,16 @@ package com.jd.platform.hotkey.dashboard.common.monitor;
 
 import com.alibaba.fastjson.JSON;
 import com.ibm.etcd.api.Event;
+import com.ibm.etcd.api.KeyValue;
+import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
+import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
 import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
 import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
+import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
@@ -38,6 +42,13 @@ public class DataHandler {
     private KeyTimelyMapper keyTimelyMapper;
     @Resource
     private StatisticsMapper statisticsMapper;
+
+    @Resource
+    private SummaryMapper summaryMapper;
+
+    @Resource
+    private IConfigCenter configCenter;
+
 
     /**
      * 队列
@@ -209,5 +220,31 @@ public class DataHandler {
         }
 
     }
+
+
+
+    /**
+     * 每天根据app的配置清理过期数据
+     */
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void clearExpireData() {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.clearCfgPath);
+            for (KeyValue kv : keyValues) {
+                String key = kv.getKey().toStringUtf8();
+                String ttl = kv.getValue().toStringUtf8();
+                String app = key.replace(ConfigConstant.clearCfgPath,"");
+                Date expireDate = DateUtil.ldtToDate(now.minusDays(Integer.parseInt(ttl)));
+                summaryMapper.clearExpireData(app, expireDate);
+                keyRecordMapper.clearExpireData(app, expireDate);
+                statisticsMapper.clearExpireData(app, expireDate);
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 }
