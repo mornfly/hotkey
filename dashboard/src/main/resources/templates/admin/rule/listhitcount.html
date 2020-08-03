@@ -46,7 +46,7 @@
                                     <div class="form-group" style="width: 23%" >
                                         <label class="control-label timeBut" >选择日期：</label>
                                         <div class='input-group date datetimepicker' id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
-                                            <input type='text' class="form-control" name="startTime"/>
+                                            <input type='text' class="form-control" name="startTime" id="startTime"/>
                                             <span class="input-group-addon">
                                                     <span class="glyphicon glyphicon-calendar"></span>
                                                 </span>
@@ -55,7 +55,7 @@
                                     <div class="form-group" style="width: 18%" >
                                         <label class="control-label timeBut">~</label>
                                         <div class='input-group date datetimepicker' id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
-                                            <input type='text' class="form-control"  name="endTime"/>
+                                            <input type='text' class="form-control"  name="endTime"id="endTime"/>
                                             <span class="input-group-addon">
                                                     <span class="glyphicon glyphicon-calendar"></span>
                                                 </span>
@@ -134,6 +134,27 @@
                 }
             }]
     };
+
+
+
+    $('.datetimepicker').datetimepicker({
+        language: 'zh-CN',
+        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
+        weekStart: 1,
+        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
+        autoclose: 1,           //选完时间自动关闭
+        todayHighlight: 1,      //当天时间高亮
+        startView: 2,           //从月视图开始，选天
+        minView: 0,             //提供选择分钟的视图
+        forceParse: 0,
+        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
+    });
+    let now = new Date();
+    $("#datetimepicker2").datetimepicker("setDate", now);
+    let pre5hours = now.setHours(now.getHours() - 5);
+    $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
+
+
     $(function(){
         $.ajax({
             cache : true,
@@ -164,24 +185,10 @@
                 }
             }
         });
-        var oTab=$.table.oTableInit(options);
+
+        let oTab=$.table.oTableInit(options);
         oTab.Init();
     })
-
-
-
-    $('.datetimepicker').datetimepicker({
-        language: 'zh-CN',
-        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
-        weekStart: 1,
-        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
-        autoclose: 1,           //选完时间自动关闭
-        todayHighlight: 1,      //当天时间高亮
-        startView: 2,           //从月视图开始，选天
-        minView: 0,             //提供选择分钟的视图
-        forceParse: 0,
-        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
-    });
 
 
 </script>
