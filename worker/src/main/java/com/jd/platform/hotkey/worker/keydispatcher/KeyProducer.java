@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.jd.platform.hotkey.worker.keydispatcher.DispatcherConfig.CONSUMERMAP;
 import static com.jd.platform.hotkey.worker.keydispatcher.DispatcherConfig.MAPQUEUE;
 import static com.jd.platform.hotkey.worker.keydispatcher.DispatcherConfig.QUEUE;
 import static com.jd.platform.hotkey.worker.tool.InitConstant.expireTotalCount;
@@ -46,11 +47,14 @@ public class KeyProducer {
             if (map.containsKey(threadId)) {
                 String index = map.get(threadId);
                 MAPQUEUE.get(index).add(model);
-
+                //通知
+                CONSUMERMAP.get(MAPQUEUE.get(index)).emptyCondition.signal();
             } else {
                 int index = atomicInteger.getAndIncrement();
                 map.put(threadId, index + "");
                 MAPQUEUE.get(index).add(model);
+                //通知
+                CONSUMERMAP.get(MAPQUEUE.get(index)).emptyCondition.signal();
             }
 
 

@@ -36,6 +36,7 @@ public class DispatcherConfig {
      */
     public static BlockingQueue<HotKeyModel> QUEUE = new LinkedBlockingQueue<>(2000000);
     public static Map<String, Queue<HotKeyModel>> MAPQUEUE = new ConcurrentHashMap<>();
+    public static Map<Queue, KeyConsumer> CONSUMERMAP = new ConcurrentHashMap<>();
 
     static {
         //
@@ -60,8 +61,9 @@ public class DispatcherConfig {
         for (int i = 0; i < nowCount; i++) {
             KeyConsumer keyConsumer = new KeyConsumer();
             keyConsumer.setKeyListener(iKeyListener);
-            keyConsumer.setQueue(MAPQUEUE.get(i+""));
+            keyConsumer.setQueue(MAPQUEUE.get(i + ""));
             consumerList.add(keyConsumer);
+            CONSUMERMAP.put(MAPQUEUE.get(i + ""), keyConsumer);
 
             threadPoolExecutor.submit(keyConsumer::beginConsume);
         }

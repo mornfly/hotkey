@@ -7,6 +7,8 @@ import com.jd.platform.hotkey.worker.keylistener.KeyEventOriginal;
 
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.jd.platform.hotkey.worker.keydispatcher.DispatcherConfig.QUEUE;
 import static com.jd.platform.hotkey.worker.tool.InitConstant.totalDealCount;
@@ -22,6 +24,9 @@ public class KeyConsumer {
     private IKeyListener iKeyListener;
 
     private Queue<HotKeyModel> queue;
+
+    ReentrantLock lock = new ReentrantLock();
+    Condition emptyCondition = lock.newCondition();
 
 
     public void setKeyListener(IKeyListener iKeyListener) {
@@ -40,7 +45,11 @@ public class KeyConsumer {
         while (true) {
             HotKeyModel model = queue.poll();
             if (model == null) {
-                continue;
+                try {
+                    emptyCondition.await();
+                } catch (Exception e) {
+                }
+
             }
             if (model.isRemove()) {
                 iKeyListener.removeKey(model, KeyEventOriginal.CLIENT);
