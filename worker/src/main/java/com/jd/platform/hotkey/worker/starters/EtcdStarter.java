@@ -20,7 +20,6 @@ import com.jd.platform.hotkey.worker.rule.KeyRuleHolder;
 import com.jd.platform.hotkey.worker.tool.AsyncPool;
 import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.grpc.StatusRuntimeException;
-import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -196,8 +194,7 @@ public class EtcdStarter {
             String ip = IpUtils.getIp();
             for (AppInfo appInfo : ClientInfoHolder.apps) {
                 String appName = appInfo.getAppName();
-                Map<String, ChannelHandlerContext> map = appInfo.getMap();
-                int count = map.values().size();
+                int count = appInfo.size();
                 //即便是full gc也不能超过3秒
                 configCenter.putAndGrant(ConfigConstant.clientCountPath + appName + "/" + ip, count + "", 13);
             }
