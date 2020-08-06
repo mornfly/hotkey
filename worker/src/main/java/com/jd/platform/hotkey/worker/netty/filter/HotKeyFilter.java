@@ -60,7 +60,7 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
             if (WhiteListHolder.contains(model.getKey())) {
                 return;
             }
-            keyProducer.push(model);
+            keyProducer.push(model, ctx);
             return;
         }
         //老版的用的单个HotKeyModel，新版用的数组
@@ -74,7 +74,7 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
             if (timeOut > 1000) {
                 logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
             }
-            keyProducer.push(model);
+            keyProducer.push(model,ctx);
         }
 
     }
