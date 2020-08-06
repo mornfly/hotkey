@@ -42,7 +42,6 @@ public class CaffeineCacheHolder {
     public static void clearCacheByAppName(String appName) {
         if(CACHE_MAP.get(appName) != null) {
             CACHE_MAP.get(appName).invalidateAll();
-            CACHE_MAP.put(appName, null);
         }
     }
 
@@ -60,4 +59,9 @@ public class CaffeineCacheHolder {
         return map;
     }
 
+
+    public static void main(String[] args) {
+        Cache cache = getCache("a");
+        clearCacheByAppName("a");
+    }
 }
