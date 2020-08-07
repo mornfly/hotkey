@@ -78,8 +78,8 @@ public class TestController {
     }
 
     @RequestMapping("")
-    public Object a() {
-        if (JdHotKeyStore.isHotKey("a")) {
+    public Object a(String s) {
+        if (JdHotKeyStore.isHotKey("ecitemcenter_itemV2_" + s)) {
             logger.error("isHot");
         } else {
             logger.error("noHot");
