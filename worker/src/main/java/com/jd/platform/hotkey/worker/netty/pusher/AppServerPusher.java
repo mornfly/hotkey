@@ -6,13 +6,9 @@ import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.worker.model.AppInfo;
-import com.jd.platform.hotkey.worker.netty.flush.FlushUtil;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * 推送到各客户端服务器
@@ -29,21 +25,14 @@ public class AppServerPusher implements IPusher {
     public void push(HotKeyModel model) {
         for (AppInfo appInfo : ClientInfoHolder.apps) {
             if (model.getAppName().equals(appInfo.getAppName())) {
-                Map<String, ChannelHandlerContext> map = appInfo.getMap();
 
                 HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.RESPONSE_NEW_KEY, FastJsonUtils.convertObjectToJSON(model));
                 String hotMsg = FastJsonUtils.convertObjectToJSON(hotKeyMsg);
 
-//                for (ChannelHandlerContext channel : map.values()) {
-//                    ByteBuf byteBuf = MsgBuilder.buildByteBuf(hotMsg);
-//                    FlushUtil.flush(channel, byteBuf);
-//                }
+                ByteBuf byteBuf = MsgBuilder.buildByteBuf(hotMsg);
 
-                //并行发送
-                map.values().parallelStream().forEach(channel -> {
-                    ByteBuf byteBuf = MsgBuilder.buildByteBuf(hotMsg);
-                    FlushUtil.flush(channel, byteBuf);
-                });
+                //整个app全部发送
+                appInfo.groupPush(byteBuf);
 
                 return;
             }
