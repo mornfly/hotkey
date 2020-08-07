@@ -1,12 +1,11 @@
 package com.jd.platform.hotkey.worker.netty.client;
 
+import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.model.AppInfo;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * 对客户端的管理，新来、断线的管理
@@ -20,7 +19,7 @@ public class ClientChangeListener implements IClientChangeListener {
 
     private static final String NEW_CLIENT = "监听到事件";
     private static final String NEW_CLIENT_JOIN = "new client join";
-    private static final String CLIENT_LOSE = "client removed";
+    private static final String CLIENT_LOSE = "client removed ";
 
     /**
      * 客户端新增
@@ -33,29 +32,24 @@ public class ClientChangeListener implements IClientChangeListener {
         for (AppInfo appInfo : ClientInfoHolder.apps) {
             if (appName.equals(appInfo.getAppName())) {
                 appExist = true;
-                appInfo.getMap().put(ip, ctx);
+                appInfo.add(ctx);
                 break;
             }
         }
         if (!appExist) {
-            AppInfo appInfo = new AppInfo();
-            appInfo.setAppName(appName);
+            AppInfo appInfo = new AppInfo(appName);
             ClientInfoHolder.apps.add(appInfo);
-            appInfo.getMap().put(ip, ctx);
+            appInfo.add(ctx);
         }
 
         logger.info(NEW_CLIENT_JOIN);
     }
 
     @Override
-    public synchronized void loseClient(String ip) {
+    public synchronized void loseClient(ChannelHandlerContext ctx) {
         for (AppInfo appInfo : ClientInfoHolder.apps) {
-            Map<String, ChannelHandlerContext> map = appInfo.getMap();
-            if (map.containsKey(ip)) {
-                map.remove(ip);
-                break;
-            }
+            appInfo.remove(ctx);
         }
-        logger.info(CLIENT_LOSE);
+        logger.info(CLIENT_LOSE + NettyIpUtil.clientIp(ctx));
     }
 }
