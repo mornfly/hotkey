@@ -57,7 +57,7 @@ https://mp.weixin.qq.com/s/xOzEj5HtCeh_ezHDPHw6Jw
 
 5 接口、用户维度限流
 
-6 单机接口、用户维度限流限流
+6 单机接口、用户维度限流
 
 7 集群用户维度限流
 
