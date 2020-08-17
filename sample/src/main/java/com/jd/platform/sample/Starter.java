@@ -2,7 +2,10 @@ package com.jd.platform.sample;
 
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.client.ClientStarter;
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +26,7 @@ public class Starter {
 
     @Resource
     private IConfigCenter iConfigCenter;
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
 
 
@@ -36,6 +40,21 @@ public class Starter {
         for (KeyValue keyValue : list) {
             System.out.println(keyValue.getKey() + keyValue.getValue().toStringUtf8());
         }
+
+//        a();
+    }
+
+    private void a() {
+        System.out.println("begin");
+        while (true) {
+            if (JdHotKeyStore.getValue("a") != null) {
+
+            } else {
+                JdHotKeyStore.smartSet("a", 1);
+                logger.error("smartSet");
+            }
+        }
+
     }
 
 }
