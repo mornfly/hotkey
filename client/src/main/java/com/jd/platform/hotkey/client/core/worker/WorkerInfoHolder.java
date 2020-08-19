@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.client.core.worker;
 
+import cn.hutool.core.lang.ConsistentHash;
 import cn.hutool.core.util.StrUtil;
 import com.jd.platform.hotkey.client.log.JdLogger;
 import com.jd.platform.hotkey.client.netty.NettyClient;
@@ -60,9 +61,9 @@ public class WorkerInfoHolder {
         if (StrUtil.isEmpty(key) || WORKER_HOLDER.size() == 0) {
             return null;
         }
-        int index = Math.abs(key.hashCode() % WORKER_HOLDER.size());
-
-        return WORKER_HOLDER.get(index).channel;
+        //使用一致性hash
+        ConsistentHash<Server> consistentHash = new ConsistentHash(3, WORKER_HOLDER);
+        return consistentHash.get(key).channel;
     }
 
     /**
