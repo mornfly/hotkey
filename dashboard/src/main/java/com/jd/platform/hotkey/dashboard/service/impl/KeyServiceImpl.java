@@ -198,7 +198,7 @@ public class KeyServiceImpl implements KeyService {
         KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
         recordMapper.insertSelective(keyRecord);
-        return   logMapper.insertSelective(new ChangeLog(arr[0], Constant.HOTKEY_CHANGE, arr[1],"", keyTimely.getUpdater(), SystemClock.now() + ""));
+        return   logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(),"", keyTimely.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override

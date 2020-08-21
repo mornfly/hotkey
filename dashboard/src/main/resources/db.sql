@@ -44,7 +44,7 @@ CREATE TABLE `hk_key_record`  (
   `uuid` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT '防重ID',
   `rule` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '''' COMMENT '规则',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引'
+  UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引',
   INDEX `idx_app_ct`(`app_name`, `create_time`) USING BTREE COMMENT '查询索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
