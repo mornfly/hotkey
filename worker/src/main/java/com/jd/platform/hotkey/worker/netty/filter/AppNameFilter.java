@@ -25,7 +25,7 @@ public class AppNameFilter implements INettyMsgFilter {
     @Override
     public boolean chain(HotKeyMsg message, ChannelHandlerContext ctx) {
         if (MessageType.APP_NAME == message.getMessageType()) {
-            String appName = message.getBody();
+            String appName = message.getAppName();
             if (clientEventListener != null) {
                 clientEventListener.newClient(appName, NettyIpUtil.clientIp(ctx), ctx);
             }
