@@ -15,5 +15,5 @@ public interface IClientChangeListener {
     /**
      * 客户端掉线
      */
-    void loseClient(String channelId);
+    void loseClient(ChannelHandlerContext ctx);
 }
