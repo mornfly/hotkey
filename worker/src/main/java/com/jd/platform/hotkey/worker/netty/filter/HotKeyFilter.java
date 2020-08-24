@@ -54,15 +54,6 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
     }
 
     private void publishMsg(String message, ChannelHandlerContext ctx) {
-        //这个是给测试用的，实际走的是下面那个
-        if (message.startsWith("{")) {
-            HotKeyModel model = FastJsonUtils.toBean(message, HotKeyModel.class);
-            if (WhiteListHolder.contains(model.getKey())) {
-                return;
-            }
-            keyProducer.push(model);
-            return;
-        }
         //老版的用的单个HotKeyModel，新版用的数组
         List<HotKeyModel> models = FastJsonUtils.toList(message, HotKeyModel.class);
         for (HotKeyModel model : models) {

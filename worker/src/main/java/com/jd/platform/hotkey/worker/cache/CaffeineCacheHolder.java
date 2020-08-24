@@ -59,9 +59,4 @@ public class CaffeineCacheHolder {
         return map;
     }
 
-
-    public static void main(String[] args) {
-        Cache cache = getCache("a");
-        clearCacheByAppName("a");
-    }
 }

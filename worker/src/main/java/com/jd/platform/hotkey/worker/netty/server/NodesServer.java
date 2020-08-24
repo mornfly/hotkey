@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.worker.netty.server;
 
-import com.jd.platform.hotkey.common.coder.Codec;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
@@ -27,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 public class NodesServer {
     private IClientChangeListener clientChangeListener;
     private List<INettyMsgFilter> messageFilters;
-    private Codec codec;
 
     public void startNettyServer(int port) throws Exception {
         //boss单线程
@@ -52,6 +50,7 @@ public class NodesServer {
             //等待服务器监听端口关闭
             future.channel().closeFuture().sync();
         } catch (Exception e) {
+            e.printStackTrace();
             //do nothing
             System.out.println("netty stop");
         } finally {
@@ -75,8 +74,6 @@ public class NodesServer {
             ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
             ch.pipeline()
                     .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
-//                    .addLast(codec.newEncoder())
-//                    .addLast(codec.newDecoder())
                     .addLast(new StringDecoder())
                     .addLast(serverHandler);
         }
@@ -90,7 +87,4 @@ public class NodesServer {
         this.messageFilters = messageFilters;
     }
 
-    public void setCodec(Codec codec) {
-        this.codec = codec;
-    }
 }
