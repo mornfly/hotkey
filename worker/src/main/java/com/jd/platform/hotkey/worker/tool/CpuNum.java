@@ -13,17 +13,13 @@ public class CpuNum {
     public static int workerCount() {
         //取cpu核数，新版jdk在docker里取的就是真实分配的，老版jdk取的是宿主机的，可能特别大，如32核
         int count = Runtime.getRuntime().availableProcessors();
-//        if (isNewerVersion()) {
-//            if (count >= 4) {
-//                count = count / 2;
-//            }
-//        } else {
-//            if (count >= 8) {
-//                count = 4;
-//            }
-//        }
-        if (count >= 4) {
+        if (isNewerVersion()) {
+            return count;
+        } else {
             count = count / 2;
+            if (count == 0) {
+                count = 1;
+            }
         }
         return count;
     }

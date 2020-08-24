@@ -2,6 +2,7 @@ package com.jd.platform.sample;
 
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.client.ClientStarter;
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,23 +53,23 @@ public class Starter {
             e.printStackTrace();
         }
 
-//        new Thread(() -> {
-//            long i1 = 0;
-//            while (true) {
-//                if (JdHotKeyStore.getValue(i1 + "") == null) {
-//                    i1++;
-//                    if (i1 % count == 0) {
-//                        try {
-//                            Thread.sleep(sleep);
-//                            logger.info("number: " + i1);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }).start();
+        new Thread(() -> {
+            long i1 = 0;
+            while (true) {
+                if (JdHotKeyStore.getValue(i1 + "") == null) {
+                    i1++;
+                    if (i1 % count == 0) {
+                        try {
+                            Thread.sleep(sleep);
+                            logger.info("number: " + i1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+        }).start();
     }
 
 }
