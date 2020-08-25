@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author wuweifeng wrote on 2020-01-14
@@ -28,6 +31,7 @@ public class Starter {
     private IConfigCenter iConfigCenter;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    private AtomicLong counter = new AtomicLong();
 
 
     @PostConstruct
@@ -41,6 +45,19 @@ public class Starter {
             System.out.println(keyValue.getKey() + keyValue.getValue().toStringUtf8());
         }
 
+
+        ExecutorService executorService = Executors.newFixedThreadPool(128);
+
+//        for (int i = 0; i < 200000; i++) {
+//            final int j = i;
+//            executorService.submit(() -> {
+//                    iConfigCenter.putAndGrant( j + "", UUID.randomUUID().toString(), 10000);
+//                    counter.incrementAndGet();
+//                    if (counter.get() % 5000 == 0) {
+//                        logger.info("counter:" + counter.get());
+//                    }
+//            });
+//        }
 //        a();
     }
 
