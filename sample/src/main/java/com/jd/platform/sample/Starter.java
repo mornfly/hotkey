@@ -51,7 +51,7 @@ public class Starter {
 //        for (int i = 0; i < 200000; i++) {
 //            final int j = i;
 //            executorService.submit(() -> {
-//                    iConfigCenter.putAndGrant( j + "", UUID.randomUUID().toString(), 10000);
+//                    iConfigCenter.putAndGrant( ConfigConstant.hotKeyRecordPath + "abc/" + j, UUID.randomUUID().toString(), 10000);
 //                    counter.incrementAndGet();
 //                    if (counter.get() % 5000 == 0) {
 //                        logger.info("counter:" + counter.get());

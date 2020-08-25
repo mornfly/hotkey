@@ -19,7 +19,6 @@ import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -55,7 +54,7 @@ public class EtcdMonitor {
     private DataHandler dataHandler;
 
 
-    public static final ExecutorService threadPoolExecutor = Executors.newCachedThreadPool();
+    public static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(256);
 
     /**
      * 监听新来的热key，该key的产生是来自于手工在控制台添加
@@ -82,12 +81,17 @@ public class EtcdMonitor {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyRecordPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
-                EventWrapper eventWrapper = build(event);
 
-                String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyRecordPath, "");
-                eventWrapper.setKey(appKey);
+                //提交获取该key的任务到线程池
+                threadPoolExecutor.submit(() -> {
+                    EventWrapper eventWrapper = build(event);
 
-                dataHandler.offer(eventWrapper);
+                    String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyRecordPath, "");
+                    eventWrapper.setKey(appKey);
+
+                    dataHandler.offer(eventWrapper);
+                });
+
             }
         });
     }
