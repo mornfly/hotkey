@@ -128,7 +128,7 @@ public class EtcdMonitor {
         //监听rule变化
         watchRule();
 
-        watchWorkers();
+//        watchWorkers();
 
         //观察热key访问次数和总访问次数，并做统计
         watchHitCount();
