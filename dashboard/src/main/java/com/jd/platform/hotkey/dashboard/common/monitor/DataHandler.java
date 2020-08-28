@@ -28,6 +28,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -68,34 +69,41 @@ public class DataHandler {
 
     public void insertRecords() {
         while (true) {
-            TwoTuple<KeyTimely, KeyRecord> twoTuple;
+            EventWrapper eventWrapper;
             try {
-                twoTuple = handHotKey(queue.take());
+                eventWrapper = queue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                continue;
+            }
+            try {
+                TwoTuple<KeyTimely, KeyRecord> twoTuple = handHotKey(eventWrapper);
                 if (twoTuple == null) {
                     continue;
                 }
+                KeyRecord keyRecord = twoTuple.getSecond();
+                KeyTimely keyTimely = twoTuple.getFirst();
+
+                if (keyTimely.getUuid() == null) {
+                    keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
+                } else {
+                    try {
+                        keyTimelyMapper.saveOrUpdate(keyTimely);
+                    } catch (Exception e) {
+                        log.info("insert timely error",e);
+                    }
+                }
+
+                if (keyRecord != null) {
+                    //插入记录
+                    keyRecordMapper.insertSelective(keyRecord);
+                }
             } catch (Exception e) {
+                log.error("eventWrapper:" + eventWrapper);
                 e.printStackTrace();
                 log.error("handHotKey error ," + e.getCause());
-                continue;
-            }
-            KeyRecord keyRecord = twoTuple.getSecond();
-            KeyTimely keyTimely = twoTuple.getFirst();
-
-            if (keyTimely.getUuid() == null) {
-                keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
-            } else {
-                try {
-                    keyTimelyMapper.saveOrUpdate(keyTimely);
-                } catch (Exception e) {
-                    log.info("insert timely error",e);
-                }
             }
 
-            if (keyRecord != null) {
-                //插入记录
-                keyRecordMapper.insertSelective(keyRecord);
-            }
 
         }
 
@@ -115,7 +123,7 @@ public class DataHandler {
         String[] arr = appKey.split("/");
         String appName = arr[0];
         String key = arr[1];
-        String uuid = eventWrapper.getUuid();
+        String uuid = UUID.randomUUID().toString();
         int type = eventType.getNumber();
 
         //组建成对象，供累计后批量插入、删除

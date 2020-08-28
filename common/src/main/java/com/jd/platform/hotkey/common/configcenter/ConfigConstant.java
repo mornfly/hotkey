@@ -1,7 +1,5 @@
 package com.jd.platform.hotkey.common.configcenter;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author wuweifeng wrote on 2019-12-06
  * @version 1.0
@@ -39,6 +37,10 @@ public interface ConfigConstant {
      * 每个app的热key记录放这里，供控制台监听入库用。格式如：jd/records/app1/userA
      */
     String hotKeyRecordPath = "/jd/keyRecords/";
+    /**
+     * 每个app的热key记录放这里，供控制台监听入库用。格式如：jd/batchRecords/ jd/records/app1/userA,jd/records/app1/userB  一个逗号分隔的巨大的key集合
+     */
+    String hotKeyBatchRecordPath = "/jd/keyBatchRecords/";
     /**
      * caffeine的size
      */

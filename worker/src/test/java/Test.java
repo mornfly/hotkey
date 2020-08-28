@@ -6,13 +6,20 @@
 public class Test {
     public static void main(String[] args) {
 //        HotKeyMsg hotKeyMsg = new HotKeyMsg();
-//        hotKeyMsg.setAppName("cartsoa");
+//        hotKeyMsg.setAppName("cartsoafewwfwfwfw");
 //        HotKeyModel hotKeyModel = new HotKeyModel();
 //        hotKeyModel.setCount(1);
-//        hotKeyModel.setKey("pin_xx");
+//        hotKeyModel.setKey("pin_xwefwfaregegax");
 //        hotKeyModel.setAppName("cartsoa");
 //        hotKeyMsg.setBody(FastJsonUtils.convertObjectToJSON(hotKeyModel));
 //
+
+//        for (int i = 0; i < 10000; i++) {
+//
+//        }
+//        String s = ConfigConstant.hotKeyRecordPath + hotKeyModel.getAppName() + "/" + hotKeyModel.getKey();
+//        double m = ObjectSizeCalculator.getObjectSize(s);
+//        System.out.println(m * 10000 / 1024);
 //        byte[] serialize = ProtostuffUtils.serialize(hotKeyMsg);
 //        String msg = FastJsonUtils.convertObjectToJSON(hotKeyMsg);
 //

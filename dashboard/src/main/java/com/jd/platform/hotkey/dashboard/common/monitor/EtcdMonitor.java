@@ -22,10 +22,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -96,6 +93,37 @@ public class EtcdMonitor {
         });
     }
 
+    /**
+     * 监听新来的批量热key，该key的产生是来自于worker集群推送过来的
+     */
+    public void watchBatchHotKeyRecord() {
+        threadPoolExecutor.submit(() -> {
+            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyBatchRecordPath);
+            while (watchIterator.hasNext()) {
+                Event event = event(watchIterator);
+
+                //提交获取该key的任务到线程池
+                threadPoolExecutor.submit(() -> {
+                    EventWrapper eventWrapper = build(event);
+
+                    String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyBatchRecordPath, "");
+                    String[] keyArray = appKey.split(",");
+                    for (int i = 0; i < keyArray.length; i++) {
+                        String key = keyArray[i];
+                        if (StrUtil.isEmpty(key)) {
+                            continue;
+                        }
+                        eventWrapper.setKey(key.replace(ConfigConstant.hotKeyRecordPath, ""));
+
+                        dataHandler.offer(eventWrapper);
+                    }
+
+                });
+
+            }
+        });
+    }
+
     private EventWrapper build(Event event) {
         KeyValue kv = event.getKv();
         long ttl = configCenter.timeToLive(kv.getLease());
@@ -107,7 +135,6 @@ public class EtcdMonitor {
         eventWrapper.setTtl(ttl);
         eventWrapper.setVersion(kv.getVersion());
         eventWrapper.setEventType(eventType);
-        eventWrapper.setUuid(v);
         return eventWrapper;
     }
 
@@ -123,6 +150,10 @@ public class EtcdMonitor {
         //开始监听热key产生
         watchHotKeyRecord();
 
+        //监听批量发来的热key
+        watchBatchHotKeyRecord();
+
+        //监听手工创建的key
         watchHandOperationHotKey();
 
         //监听rule变化
