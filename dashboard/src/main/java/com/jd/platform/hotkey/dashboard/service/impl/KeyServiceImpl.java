@@ -9,6 +9,7 @@ import com.ibm.etcd.api.Event;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
+import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
@@ -21,11 +22,15 @@ import com.jd.platform.hotkey.dashboard.model.ChangeLog;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
+import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
 import com.jd.platform.hotkey.dashboard.service.KeyService;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.PageUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -58,8 +63,11 @@ public class KeyServiceImpl implements KeyService {
     @Resource
     private ChangeLogMapper logMapper;
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     /**
      * 折线图
+     *
      * @param req req
      * @return vo
      */
@@ -68,52 +76,48 @@ public class KeyServiceImpl implements KeyService {
         int type = req.getType();
         String appReq = req.getApp();
         // admin 全查
-        if(StrUtil.isNotEmpty(appReq)){
+        if (StrUtil.isNotEmpty(appReq)) {
             app = appReq;
         }
         req.setApp(null);
         LocalDateTime now = LocalDateTime.now();
         req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
         List<String> rules = ruleService.listRules(null);
-        if(type == 4){
-            LocalDateTime st = req.getStartTime() == null? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
+        if (type == 4) {
+            LocalDateTime st = req.getStartTime() == null ? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
             req.setStartTime(DateUtil.ldtToDate(st));
             LocalDateTime et = DateUtil.dateToLdt(req.getEndTime());
-            boolean longTime = Duration.between(st,et).toHours()>2;
+            boolean longTime = Duration.between(st, et).toHours() > 2;
             req.setType(longTime ? 6 : 5);
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(st,et,list,!longTime,rules,app);
+            return CommonUtil.processData(st, et, list, !longTime, rules, app);
         }
 
-        if(type == 5){
+        if (type == 5) {
             LocalDateTime startTime = now.minusMinutes(31);
             req.setStartTime(DateUtil.ldtToDate(startTime));
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime,now,list,true,rules,app);
-        }else if(type == 6){
+            return CommonUtil.processData(startTime, now, list, true, rules, app);
+        } else if (type == 6) {
             LocalDateTime startTime2 = now.minusHours(25);
             req.setStartTime(DateUtil.ldtToDate(startTime2));
             List<Statistics> list2 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime2,now,list2,false,rules,app);
-        }else{
+            return CommonUtil.processData(startTime2, now, list2, false, rules, app);
+        } else {
             LocalDateTime startTime3 = now.minusDays(7).minusHours(1);
             req.setStartTime(DateUtil.ldtToDate(startTime3));
             req.setType(6);
             List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
-            return CommonUtil.processData(startTime3,now,list3,false,rules,app);
+            return CommonUtil.processData(startTime3, now, list3, false, rules, app);
         }
     }
 
 
     @Override
-    public PageInfo<KeyTimely> pageKeyTimely(PageReq page, SearchReq param) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
-        List<KeyTimely> listKey = keyTimelyMapper.listKeyTimely(param);
-        for (KeyTimely timely : listKey) {
-            timely.setKey(CommonUtil.keyName(timely.getKey()));
-            timely.setRuleDesc(RuleUtil.ruleDesc(timely.getAppName() + "/" + timely.getKey()));
-        }
-        return new PageInfo<>(listKey);
+    public Page<KeyTimely> pageKeyTimely(PageReq page, SearchReq param) {
+        List<KeyTimely> keyTimelies = HotKeyReceiver.list(param);
+        return PageUtil.pagination(keyTimelies, page.getPageSize(), page.getPageNum());
+
     }
 
     @Override
@@ -143,12 +147,12 @@ public class KeyServiceImpl implements KeyService {
         Map<String, int[]> keyDateMap = keyDateMap(statistics, hours);
         // 获取时间x轴
         List<String> list = new ArrayList<>();
-        for (int i = hours; i >0 ; i--) {
-            LocalDateTime time = LocalDateTime.now().minusHours(i-1);
+        for (int i = hours; i > 0; i--) {
+            LocalDateTime time = LocalDateTime.now().minusHours(i - 1);
             int hour = time.getHour();
-            list.add(hour+"时");
+            list.add(hour + "时");
         }
-        return new HotKeyLineChartVo(list,keyDateMap);
+        return new HotKeyLineChartVo(list, keyDateMap);
     }
 
 
@@ -198,7 +202,7 @@ public class KeyServiceImpl implements KeyService {
         KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
         recordMapper.insertSelective(keyRecord);
-        return   logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(),"", keyTimely.getUpdater(), SystemClock.now() + ""));
+        return logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(), "", keyTimely.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override
@@ -212,29 +216,29 @@ public class KeyServiceImpl implements KeyService {
     }
 
 
-
-
-    private Map<String, int[]> keyDateMap(List<Statistics> statistics, int hours){
+    private Map<String, int[]> keyDateMap(List<Statistics> statistics, int hours) {
         Map<String, int[]> map = new HashMap<>(10);
         Map<String, List<Statistics>> listMap = statistics.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
         for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
             int start = DateUtil.preHoursInt(5);
-            map.put(m.getKey(),new int[hours]);
+            map.put(m.getKey(), new int[hours]);
             int[] data = map.get(m.getKey());
             int tmp = 0;
             for (int i = 0; i < hours; i++) {
                 Statistics st;
                 try {
                     st = m.getValue().get(tmp);
-                    if(String.valueOf(start).endsWith("24")){ start = start + 77; }
-                    if(start != st.getHours()){
+                    if (String.valueOf(start).endsWith("24")) {
+                        start = start + 77;
+                    }
+                    if (start != st.getHours()) {
                         data[i] = 0;
-                    }else{
-                        tmp ++;
+                    } else {
+                        tmp++;
                         data[i] = st.getCount();
                     }
                     start++;
-                }catch (Exception e){
+                } catch (Exception e) {
                     data[i] = 0;
                 }
             }
@@ -243,9 +247,8 @@ public class KeyServiceImpl implements KeyService {
     }
 
 
-
     private void checkParam(SearchReq req) {
-        if(req.getStartTime() == null || req.getEndTime() == null){
+        if (req.getStartTime() == null || req.getEndTime() == null) {
             req.setStartTime(DateUtil.preTime(5));
             req.setEndTime(new Date());
         }

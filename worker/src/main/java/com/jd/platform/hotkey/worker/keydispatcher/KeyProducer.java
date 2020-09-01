@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.worker.keydispatcher;
 
-import cn.hutool.core.date.SystemClock;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.worker.tool.InitConstant;
 import org.springframework.stereotype.Component;
@@ -17,12 +16,12 @@ import static com.jd.platform.hotkey.worker.tool.InitConstant.totalOfferCount;
 @Component
 public class KeyProducer {
 
-    public void push(HotKeyModel model) {
+    public void push(HotKeyModel model, long now) {
         if (model == null || model.getKey() == null) {
             return;
         }
         //5秒前的过时消息就不处理了
-        if (SystemClock.now() - model.getCreateTime() > InitConstant.timeOut) {
+        if (now - model.getCreateTime() > InitConstant.timeOut) {
             expireTotalCount.increment();
             return;
         }

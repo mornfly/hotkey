@@ -56,16 +56,17 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
     private void publishMsg(String message, ChannelHandlerContext ctx) {
         //老版的用的单个HotKeyModel，新版用的数组
         List<HotKeyModel> models = FastJsonUtils.toList(message, HotKeyModel.class);
+        long now = SystemClock.now();
         for (HotKeyModel model : models) {
             //白名单key不处理
             if (WhiteListHolder.contains(model.getKey())) {
                 continue;
             }
-            long timeOut = SystemClock.now() - model.getCreateTime();
+            long timeOut = now - model.getCreateTime();
             if (timeOut > 1000) {
                 logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
             }
-            keyProducer.push(model);
+            keyProducer.push(model, now);
         }
 
     }

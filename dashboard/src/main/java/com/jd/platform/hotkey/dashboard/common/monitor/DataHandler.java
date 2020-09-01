@@ -6,6 +6,7 @@ import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
@@ -107,6 +108,24 @@ public class DataHandler {
 
         }
 
+    }
+
+    /**
+     * 插入记录表
+     * @param type 0是新增，1是删除
+     */
+    public void insertRecord(String appKey, int type) {
+        String source = Constant.SYSTEM;
+        String rule = RuleUtil.rule(appKey);
+        KeyRule keyRule = RuleUtil.findByKey(appKey);
+        //appName+"/"+"key"
+        String[] arr = appKey.split("/");
+        String appName = arr[0];
+        String key = arr[1];
+        String uuid = UUID.randomUUID().toString();
+        KeyRecord keyRecord = new KeyRecord(key, rule, appName, (long)keyRule.getDuration(), source, type, uuid, new Date());
+        keyRecord.setRule(rule);
+        keyRecordMapper.insertSelective(keyRecord);
     }
 
 

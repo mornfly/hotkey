@@ -57,8 +57,10 @@ public class Starter {
         for (int i = 0; i < 10000; i++) {
             builder1.append(UUID.randomUUID());
         }
-        logger.info("begin : " + System.currentTimeMillis());
-        iConfigCenter.putAndGrant( "/abc/" + builder1.toString(), UUID.randomUUID().toString(), 60);
+
+        a();
+//        logger.info("begin : " + System.currentTimeMillis());
+//        iConfigCenter.putAndGrant( "/abc/" + builder1.toString(), UUID.randomUUID().toString(), 60);
 //        for (int i = 0; i < 200000; i++) {
 //            final int j = i;
 //            executorService.submit(() -> {
@@ -89,11 +91,16 @@ public class Starter {
     private void a() {
         System.out.println("begin");
         while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (JdHotKeyStore.getValue("a") != null) {
-
+                System.out.println("ishot");
             } else {
                 JdHotKeyStore.smartSet("a", 1);
-                logger.error("smartSet");
+//                logger.error("smartSet");
             }
         }
 

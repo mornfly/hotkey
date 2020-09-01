@@ -1,4 +1,4 @@
-package com.jd.platform.hotkey.worker.netty.flush;
+package com.jd.platform.hotkey.common.tool.flush;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

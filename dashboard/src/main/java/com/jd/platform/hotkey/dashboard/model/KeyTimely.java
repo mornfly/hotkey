@@ -50,6 +50,21 @@ public class KeyTimely implements Serializable {
         this.createTime = createTime;
     }
 
+    @Override
+    public String toString() {
+        return "KeyTimely{" +
+                "id=" + id +
+                ", key='" + key + '\'' +
+                ", appName='" + appName + '\'' +
+                ", val='" + val + '\'' +
+                ", duration=" + duration +
+                ", createTime=" + createTime +
+                ", uuid='" + uuid + '\'' +
+                ", ruleDesc='" + ruleDesc + '\'' +
+                ", updater='" + updater + '\'' +
+                '}';
+    }
+
     public String getRuleDesc() {
         return ruleDesc;
     }

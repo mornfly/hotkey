@@ -14,6 +14,10 @@ public interface ConfigConstant {
      */
     String workersPath = "/jd/workers/";
     /**
+     * dashboard的ip存这里
+     */
+    String dashboardPath = "/jd/dashboard/";
+    /**
      * 该app所有的workers地址的path。需要手工分配，默认每个app都用所有的worker
      */
     String appWorkerPath = null;
@@ -64,4 +68,8 @@ public interface ConfigConstant {
      * time unit : day
      */
     String clearCfgPath = "/jd/clearCfg/";
+    /**
+     * 控制台启动的netty端口
+     */
+    int dashboardPort = 11112;
 }

@@ -53,4 +53,5 @@ public class HotKeyModel extends BaseModel {
     public void setKeyType(KeyType keyType) {
         this.keyType = keyType;
     }
+
 }

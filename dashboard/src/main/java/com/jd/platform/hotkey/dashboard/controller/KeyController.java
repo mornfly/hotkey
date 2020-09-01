@@ -79,8 +79,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/listTimely")
 	@ResponseBody
 	public Page<KeyTimely> listTimely(PageReq page, SearchReq searchReq){
-		PageInfo<KeyTimely> info = keyService.pageKeyTimely(page, searchReq);
-		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
+		return keyService.pageKeyTimely(page, searchReq);
 	}
 
 
