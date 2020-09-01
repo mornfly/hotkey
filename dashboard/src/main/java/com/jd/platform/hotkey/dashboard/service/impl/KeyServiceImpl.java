@@ -116,7 +116,7 @@ public class KeyServiceImpl implements KeyService {
     @Override
     public Page<KeyTimely> pageKeyTimely(PageReq page, SearchReq param) {
         List<KeyTimely> keyTimelies = HotKeyReceiver.list(param);
-        return PageUtil.pagination(keyTimelies, page.getPageSize(), page.getPageNum());
+        return PageUtil.pagination(keyTimelies, page.getPageSize(), page.getPageNum()-1);
 
     }
 
