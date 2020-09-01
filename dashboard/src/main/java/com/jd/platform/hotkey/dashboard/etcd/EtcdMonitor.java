@@ -77,59 +77,6 @@ public class EtcdMonitor {
         });
     }
 
-    /**
-     * 监听新来的热key，该key的产生是来自于worker集群推送过来的
-     */
-    public void watchHotKeyRecord() {
-        threadPoolExecutor.submit(() -> {
-            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyRecordPath);
-            while (watchIterator.hasNext()) {
-                Event event = event(watchIterator);
-
-                //提交获取该key的任务到线程池
-                threadPoolExecutor.submit(() -> {
-                    EventWrapper eventWrapper = build(event);
-
-                    String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyRecordPath, "");
-                    eventWrapper.setKey(appKey);
-
-                    dataHandler.offer(eventWrapper);
-                });
-
-            }
-        });
-    }
-
-    /**
-     * 监听新来的批量热key，该key的产生是来自于worker集群推送过来的
-     */
-//    public void watchBatchHotKeyRecord() {
-//        threadPoolExecutor.submit(() -> {
-//            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyBatchRecordPath);
-//            while (watchIterator.hasNext()) {
-//                Event event = event(watchIterator);
-//
-//                //提交获取该key的任务到线程池
-//                threadPoolExecutor.submit(() -> {
-//                    EventWrapper eventWrapper = build(event);
-//
-//                    String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyBatchRecordPath, "");
-//                    String[] keyArray = appKey.split(",");
-//                    for (int i = 0; i < keyArray.length; i++) {
-//                        String key = keyArray[i];
-//                        if (StrUtil.isEmpty(key)) {
-//                            continue;
-//                        }
-//                        eventWrapper.setKey(key.replace(ConfigConstant.hotKeyRecordPath, ""));
-//
-//                        dataHandler.offer(eventWrapper);
-//                    }
-//
-//                });
-//
-//            }
-//        });
-//    }
 
     private EventWrapper build(Event event) {
         KeyValue kv = event.getKv();
@@ -158,7 +105,7 @@ public class EtcdMonitor {
         dealHotkey();
 
         //开始监听热key产生
-        watchHotKeyRecord();
+//        watchHotKeyRecord();
 
         //监听批量发来的热key
 //        watchBatchHotKeyRecord();
@@ -199,21 +146,21 @@ public class EtcdMonitor {
      */
     private void dealHotkey() {
         threadPoolExecutor.submit(() -> {
-            try {
-                while (true) {
+            while (true) {
+                try {
                     //获取发来的这个热key，存入本地caffeine，设置过期时间
-                    HotKeyModel model = HotKeyReceiver.getQueue().take();
+                    HotKeyModel model = HotKeyReceiver.take();
 
                     //将该key放入实时热key本地缓存中
                     HotKeyReceiver.put(model);
 
                     //入库record表，TODO 需要改成batch入库
                     dataHandler.insertRecord(model.getAppName() + "/" + model.getKey(), 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
+
         });
     }
 

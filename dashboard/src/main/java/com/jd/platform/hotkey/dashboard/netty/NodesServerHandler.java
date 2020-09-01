@@ -37,8 +37,8 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
                 FlushUtil.flush(ctx, MsgBuilder.buildByteBuf(hotMsg));
             } else if (MessageType.REQUEST_HOT_KEY == msg.getMessageType()) {
                 List<HotKeyModel> list = FastJsonUtils.toList(msg.getBody(), HotKeyModel.class);
-                for (int i = 0; i < list.size(); i++) {
-                    HotKeyReceiver.push(list.get(0));
+                for (HotKeyModel hotKeyModel : list) {
+                    HotKeyReceiver.push(hotKeyModel);
                 }
             }
         } catch (Exception e) {

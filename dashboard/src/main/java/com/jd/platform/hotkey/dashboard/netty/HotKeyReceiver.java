@@ -5,10 +5,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.dashboard.cache.CaffeineBuilder;
-import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
-import com.jd.platform.hotkey.dashboard.util.PageUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +37,20 @@ public class HotKeyReceiver {
 
     private static Logger logger = LoggerFactory.getLogger("HotKeyReceiver");
 
+    /**
+     * netty收到的先存这里
+     */
     public static void push(HotKeyModel model) {
         hotKeyStoreQueue.offer(model);
     }
 
-    public static LinkedBlockingQueue<HotKeyModel> getQueue() {
-        return hotKeyStoreQueue;
+    public static HotKeyModel take() {
+        try {
+            return hotKeyStoreQueue.take();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -95,26 +101,26 @@ public class HotKeyReceiver {
 
     }
 
-    public static void main(String[] args) {
-        List<KeyTimely> keyTimelyList = new ArrayList<>();
-        for (int i = 0; i < 24; i++) {
-            KeyTimely keyTimely = new KeyTimely();
-            keyTimely.setKey(i + "");
-            keyTimely.setCreateTime(new Date());
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            keyTimelyList.add(keyTimely);
-        }
-        keyTimelyList.sort(Comparator.comparing(KeyTimely::getCreateTime).reversed());
-
-        Page<KeyTimely> page =PageUtil.pagination(keyTimelyList, 10, 3);
-        System.out.println(page.getTotal());
-        System.out.println(page.getPage());
-        System.out.println(page.getRows());
-    }
+//    public static void main(String[] args) {
+//        List<KeyTimely> keyTimelyList = new ArrayList<>();
+//        for (int i = 0; i < 24; i++) {
+//            KeyTimely keyTimely = new KeyTimely();
+//            keyTimely.setKey(i + "");
+//            keyTimely.setCreateTime(new Date());
+//            try {
+//                Thread.sleep(10);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            keyTimelyList.add(keyTimely);
+//        }
+//        keyTimelyList.sort(Comparator.comparing(KeyTimely::getCreateTime).reversed());
+//
+//        Page<KeyTimely> page =PageUtil.pagination(keyTimelyList, 10, 3);
+//        System.out.println(page.getTotal());
+//        System.out.println(page.getPage());
+//        System.out.println(page.getRows());
+//    }
 
 
 
