@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.ibm.etcd.api.Event;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
@@ -16,7 +17,6 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
 import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
 import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
 import com.jd.platform.hotkey.dashboard.model.ChangeLog;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
@@ -54,8 +54,6 @@ public class KeyServiceImpl implements KeyService {
     private IConfigCenter configCenter;
     @Resource
     private KeyRecordMapper recordMapper;
-    @Resource
-    private KeyTimelyMapper keyTimelyMapper;
     @Resource
     private StatisticsMapper statisticsMapper;
     @Resource
@@ -172,6 +170,12 @@ public class KeyServiceImpl implements KeyService {
     public int insertKeyByUser(KeyTimely key) {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
+
+        HotKeyModel hotKeyModel = new HotKeyModel();
+        hotKeyModel.setCreateTime(System.currentTimeMillis());
+        hotKeyModel.setAppName(key.getAppName());
+        hotKeyModel.setKey(key.getKey());
+        HotKeyReceiver.put(hotKeyModel);
         return logMapper.insertSelective(new ChangeLog(key.getAppName(), Constant.HOTKEY_CHANGE, "",
                 key.getKey(), key.getUpdater(), SystemClock.now() + ""));
     }
@@ -189,30 +193,20 @@ public class KeyServiceImpl implements KeyService {
         String[] arr = keyTimely.getKey().split("/");
         //删除client监听目录的key
         String etcdKey = ConfigConstant.hotKeyPath + arr[0] + "/" + arr[1];
+
+        //删除caffeine里的实时key
+        HotKeyReceiver.delete(arr[0] + "/" + arr[1]);
+
         if (configCenter.get(etcdKey) == null) {
             //如果手工目录也就是client监听的目录里没有该key，那么就往里面放一个，然后再删掉它，这样client才能监听到删除事件
             configCenter.putAndGrant(etcdKey, com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE, 1);
         }
         configCenter.delete(etcdKey);
 
-        //也删除Record目录下的该key，因为不确定要删的key到底在哪
-        String recordKey = ConfigConstant.hotKeyRecordPath + arr[0] + "/" + arr[1];
-        configCenter.delete(recordKey);
-
         KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
         recordMapper.insertSelective(keyRecord);
         return logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(), "", keyTimely.getUpdater(), SystemClock.now() + ""));
-    }
-
-    @Override
-    public KeyTimely selectByKey(String key) {
-        return keyTimelyMapper.selectByKey(key);
-    }
-
-    @Override
-    public KeyTimely selectByPk(Long id) {
-        return keyTimelyMapper.selectByPrimaryKey(id);
     }
 
 

@@ -64,7 +64,7 @@ public class HotKeyReceiver {
             return;
         }
         Cache<String, Object> cache = aliveKeyStore.computeIfAbsent(keyRule.getDuration(), s -> CaffeineBuilder.cache(keyRule.getDuration()));
-        cache.put(hotKeyModel.getAppName() + "/" + hotKeyModel.getKey(), hotKeyModel);
+        cache.put(appNameKey, hotKeyModel);
     }
 
     /**
@@ -73,11 +73,13 @@ public class HotKeyReceiver {
     public static List<KeyTimely> list(SearchReq searchReq) {
         List<KeyTimely> timelyList = new ArrayList<>();
 
+        long now = System.currentTimeMillis();
+
         for (Integer duration : aliveKeyStore.keySet()) {
             Cache<String, Object> cache = aliveKeyStore.get(duration);
             ConcurrentMap<String, Object> concurrentHashMap = cache.asMap();
             for (Map.Entry<String, Object> entry : concurrentHashMap.entrySet()) {
-                KeyTimely keyTimely = parse((HotKeyModel) entry.getValue());
+                KeyTimely keyTimely = parse((HotKeyModel) entry.getValue(), now);
                 if (keyTimely == null) {
                     continue;
                 }
@@ -87,18 +89,37 @@ public class HotKeyReceiver {
 
         if (searchReq != null) {
             if (StrUtil.isNotEmpty(searchReq.getApp())) {
-                timelyList = timelyList.stream().filter(keyTimely -> searchReq.getApp().equals(keyTimely.getAppName())).collect(Collectors.toList());
+                timelyList = timelyList.parallelStream().filter(keyTimely -> searchReq.getApp().equals(keyTimely.getAppName())).collect(Collectors.toList());
             }
             if (StrUtil.isNotEmpty(searchReq.getKey())) {
-                timelyList = timelyList.stream().filter(keyTimely -> searchReq.getKey().equals(keyTimely.getKey())).collect(Collectors.toList());
+                timelyList = timelyList.parallelStream().filter(keyTimely -> keyTimely.getKey().startsWith(searchReq.getKey())).collect(Collectors.toList());
             }
 
         }
 
         timelyList.sort(Comparator.comparing(KeyTimely::getCreateTime).reversed());
 
+        logger.info("query cost :" + (System.currentTimeMillis() - now));
         return timelyList;
+    }
 
+    /**
+     * 将hotkeyModel变成前端需要的对象
+     */
+    private static KeyTimely parse(HotKeyModel hotKeyModel, long now) {
+        String appNameKey = hotKeyModel.getAppName() + "/" + hotKeyModel.getKey();
+        KeyRule keyRule = RuleUtil.findByKey(appNameKey);
+        if (keyRule == null) {
+            return null;
+        }
+        long remainTime = keyRule.getDuration() * 1000 - (now - hotKeyModel.getCreateTime());
+        return KeyTimely.aKeyTimely()
+                .key(hotKeyModel.getKey())
+                .val(UUID.randomUUID().toString())
+                .appName(hotKeyModel.getAppName())
+                .duration(remainTime / 1000)
+                .ruleDesc(RuleUtil.ruleDesc(appNameKey))
+                .createTime(new Date(hotKeyModel.getCreateTime())).build();
     }
 
 //    public static void main(String[] args) {
@@ -124,24 +145,7 @@ public class HotKeyReceiver {
 
 
 
-    /**
-     * 将hotkeyModel变成前端需要的对象
-     */
-    private static KeyTimely parse(HotKeyModel hotKeyModel) {
-        String appNameKey = hotKeyModel.getAppName() + "/" + hotKeyModel.getKey();
-        KeyRule keyRule = RuleUtil.findByKey(appNameKey);
-        if (keyRule == null) {
-            return null;
-        }
-        long remainTime = keyRule.getDuration() * 1000 - (System.currentTimeMillis() - hotKeyModel.getCreateTime());
-        return KeyTimely.aKeyTimely()
-                .key(hotKeyModel.getKey())
-                .val(UUID.randomUUID().toString())
-                .appName(hotKeyModel.getAppName())
-                .duration(remainTime / 1000)
-                .ruleDesc(RuleUtil.ruleDesc(appNameKey))
-                .createTime(new Date(hotKeyModel.getCreateTime())).build();
-    }
+
 
     /**
      * 删除实时热key

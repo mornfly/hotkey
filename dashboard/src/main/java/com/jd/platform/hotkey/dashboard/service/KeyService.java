@@ -30,10 +30,6 @@ public interface KeyService {
 
     int delKeyByUser(KeyTimely keyTimely);
 
-    KeyTimely selectByKey(String key);
-
-    KeyTimely selectByPk(Long key);
-
     Page<KeyTimely> pageKeyTimely(PageReq page, SearchReq param);
 
     PageInfo<Statistics> pageMaxHot(PageReq page, SearchReq param);
