@@ -99,7 +99,6 @@ public class HotKeyReceiver {
 
         timelyList.sort(Comparator.comparing(KeyTimely::getCreateTime).reversed());
 
-        logger.info("query cost :" + (System.currentTimeMillis() - now));
         return timelyList;
     }
 

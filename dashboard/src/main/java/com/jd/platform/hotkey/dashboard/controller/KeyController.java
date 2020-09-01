@@ -122,13 +122,6 @@ public class KeyController extends BaseController {
 	}
 
 
-	@GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap modelMap){
-		modelMap.put("key", keyService.selectByPk(id));
-        return prefix + "/edit";
-    }
-	
-
     @PostMapping("/edit")
     @ResponseBody
     public Result editSave(KeyTimely key) {

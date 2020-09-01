@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class PageUtil {
      */
     public static <T> Page<T> pagination(final List<T> data, final int pageSize, final int pageNum) {
         if (CollectionUtils.isEmpty(data)) {
-            return new Page<>(0, 0, null);
+            return new Page<>(1, 0, new ArrayList<>());
         }
         List<List<T>> lists = Lists.partition(data, pageSize);
         int localPageNum = pageNum;
