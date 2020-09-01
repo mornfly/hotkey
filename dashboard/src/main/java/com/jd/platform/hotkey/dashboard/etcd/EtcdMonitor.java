@@ -104,12 +104,6 @@ public class EtcdMonitor {
         //开始入库
         dealHotkey();
 
-        //开始监听热key产生
-//        watchHotKeyRecord();
-
-        //监听批量发来的热key
-//        watchBatchHotKeyRecord();
-
         //监听手工创建的key
         watchHandOperationHotKey();
 
