@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.worker.netty.server;
 
-import com.jd.platform.hotkey.common.coder.Codec;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
@@ -17,6 +16,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 该server用于给各个微服务实例连接用。
@@ -26,7 +26,6 @@ import java.util.List;
 public class NodesServer {
     private IClientChangeListener clientChangeListener;
     private List<INettyMsgFilter> messageFilters;
-    private Codec codec;
 
     public void startNettyServer(int port) throws Exception {
         //boss单线程
@@ -44,9 +43,14 @@ public class NodesServer {
                     .childHandler(new ChildChannelHandler());
             //绑定端口，同步等待成功
             ChannelFuture future = bootstrap.bind(port).sync();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                bossGroup.shutdownGracefully (1000, 3000, TimeUnit.MILLISECONDS);
+                workerGroup.shutdownGracefully (1000, 3000, TimeUnit.MILLISECONDS);
+            }));
             //等待服务器监听端口关闭
             future.channel().closeFuture().sync();
         } catch (Exception e) {
+            e.printStackTrace();
             //do nothing
             System.out.println("netty stop");
         } finally {
@@ -70,8 +74,6 @@ public class NodesServer {
             ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
             ch.pipeline()
                     .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
-//                    .addLast(codec.newEncoder())
-//                    .addLast(codec.newDecoder())
                     .addLast(new StringDecoder())
                     .addLast(serverHandler);
         }
@@ -85,7 +87,4 @@ public class NodesServer {
         this.messageFilters = messageFilters;
     }
 
-    public void setCodec(Codec codec) {
-        this.codec = codec;
-    }
 }

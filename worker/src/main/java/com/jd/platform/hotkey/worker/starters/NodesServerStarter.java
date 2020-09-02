@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.worker.starters;
 
-import com.jd.platform.hotkey.common.coder.Codec;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
 import com.jd.platform.hotkey.worker.netty.server.NodesServer;
@@ -29,8 +28,6 @@ public class NodesServerStarter {
     private IClientChangeListener iClientChangeListener;
     @Resource
     private List<INettyMsgFilter> messageFilters;
-    @Resource
-    private Codec codec;
 
     @PostConstruct
     public void start() {
@@ -40,7 +37,6 @@ public class NodesServerStarter {
             NodesServer nodesServer = new NodesServer();
             nodesServer.setClientChangeListener(iClientChangeListener);
             nodesServer.setMessageFilters(messageFilters);
-            nodesServer.setCodec(codec);
             try {
                 nodesServer.startNettyServer(port);
             } catch (Exception e) {
