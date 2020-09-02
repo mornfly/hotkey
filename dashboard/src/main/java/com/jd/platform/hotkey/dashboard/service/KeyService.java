@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.dashboard.service;
 
 import com.github.pagehelper.PageInfo;
+import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
@@ -29,11 +30,7 @@ public interface KeyService {
 
     int delKeyByUser(KeyTimely keyTimely);
 
-    KeyTimely selectByKey(String key);
-
-    KeyTimely selectByPk(Long key);
-
-    PageInfo<KeyTimely> pageKeyTimely(PageReq page, SearchReq param);
+    Page<KeyTimely> pageKeyTimely(PageReq page, SearchReq param);
 
     PageInfo<Statistics> pageMaxHot(PageReq page, SearchReq param);
 

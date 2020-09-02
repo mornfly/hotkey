@@ -40,20 +40,13 @@
                         ajaxOptions:{
                             headers: {"Authorization": getCookie("token")}
                         },
-			            exportOptions:{
-			                ignoreColumn: [0,1],  //忽略某一列的索引
-			                fileName: '报表导出',  //文件名称设置
-			                worksheetName: 'sheet1',  //表格工作区名称
-			                tableName: '报表导出',
-			                excelstyles: ['background-color', 'color', 'font-size', 'font-weight']
-			            },
 			            onLoadSuccess: function(){  //加载成功时执行
                             var datas = $('#dataTable').bootstrapTable('getData');
 			                console.info("加载成功");
 				        },
 				        onLoadError: function(status){  //加载失败时执行
                             let token = getCookie("token");
-                            if(status === 1000 && ( token == "undefined" || token =="")){
+                            if(status === 500 && ( token == "undefined" || token =="")){
                                 top.location.href = '/user/login';
                             }
 				            console.info("加载数据失败");
@@ -70,7 +63,15 @@
                 if(app!==undefined && app != null && app!==""){
                     search.app = app;
                 }
-				 return search;
+                let time1 = $("#startTime").val();
+                if(time1!==undefined && time1 != null && time1!==""){
+                    search.startTime = time1;
+                }
+                let time2 = $("#endTime").val();
+                if(time2!==undefined && time2 != null && time2!==""){
+                    search.endTime = time2;
+                }
+                return search;
 				 
 			},
 			search:function(my){//查询条件

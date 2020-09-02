@@ -79,8 +79,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/listTimely")
 	@ResponseBody
 	public Page<KeyTimely> listTimely(PageReq page, SearchReq searchReq){
-		PageInfo<KeyTimely> info = keyService.pageKeyTimely(page, searchReq);
-		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
+		return keyService.pageKeyTimely(page, searchReq);
 	}
 
 
@@ -122,13 +121,6 @@ public class KeyController extends BaseController {
 		return b == 0 ? Result.fail():Result.success();
 	}
 
-
-	@GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap modelMap){
-		modelMap.put("key", keyService.selectByPk(id));
-        return prefix + "/edit";
-    }
-	
 
     @PostMapping("/edit")
     @ResponseBody

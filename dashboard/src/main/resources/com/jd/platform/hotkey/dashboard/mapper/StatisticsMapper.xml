@@ -74,8 +74,9 @@
 
 
 
-  <select id="clear">
+  <delete id="clearExpireData">
     delete from hk_statistics
-    where biz_type = #{type}
-  </select>
+    where app = #{app}
+     <![CDATA[ and create_time < #{expireDate}]]>
+  </delete>
 </mapper>

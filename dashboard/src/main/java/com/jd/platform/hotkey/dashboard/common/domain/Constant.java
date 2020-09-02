@@ -35,6 +35,9 @@ public class Constant {
 
     public static final String WORKER_VIEW = "节点信息";
 
+    public static final String CLEAR_VIEW = "数据清理";
+
+
     public static final int MAX_DAY_RANGE = 3;
 
     public static final int VERSION = 1;
@@ -53,6 +56,9 @@ public class Constant {
 
 
     public static final String INFO = "info";
+
+
+    public static final String THIRTY_DAY = "30";
 
 
     public static final List<String> HEAD = new ArrayList<>();

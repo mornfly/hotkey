@@ -52,13 +52,18 @@
 							</a>
 							<a class="tooltip-tip" href="/key/view"
 							   target="mainFrame">
-								<i class="fa fa-flash"></i>
+								<i class="fa fa-snowflake-o"></i>
 								<span>热点记录</span>
 							</a>
 							<a class="tooltip-tip" href="/changeLog/view"
 							   target="mainFrame">
 								<i class="fa fa-retweet"></i>
 								<span>变更记录</span>
+							</a>
+							<a class="tooltip-tip" href="/clear/view"
+							   target="mainFrame">
+								<i class="fa fa-cubes"></i>
+								<span>数据清理配置</span>
 							</a>
 							<a class="tooltip-tip" href="/user/view" th:if="${role eq 'ADMIN'|| role eq 'APPADMIN' }"
 							   target="mainFrame">

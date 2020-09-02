@@ -7,9 +7,13 @@ import java.util.List;
 public class Page<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    /**
+     * 当前第几页
+     */
     private  Integer page;
-
+    /**
+     * 总共多少条
+     */
     private int total;
 
     private List<T> rows;
@@ -19,6 +23,7 @@ public class Page<T> implements Serializable {
         this.total = total;
         this.rows = rows;
     }
+
 
     public Integer getPage() {
         return page;
@@ -42,5 +47,14 @@ public class Page<T> implements Serializable {
 
     public void setRows(List<T> rows) {
         this.rows = rows;
+    }
+
+    @Override
+    public String toString() {
+        return "Page{" +
+                "page=" + page +
+                ", total=" + total +
+                ", rows=" + rows +
+                '}';
     }
 }
