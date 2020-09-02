@@ -21,6 +21,8 @@ public class DashboardHolder {
     public static Channel channel = null;
 
     public static void flushToDashboard(String message) {
-        channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_HOT_KEY, message)));
+        HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_HOT_KEY);
+        hotKeyMsg.setBody(message);
+        channel.writeAndFlush(MsgBuilder.buildByteBuf(hotKeyMsg));
     }
 }

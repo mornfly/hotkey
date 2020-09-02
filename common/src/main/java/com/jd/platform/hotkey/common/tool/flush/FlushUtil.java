@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.common.tool.flush;
 
-import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -17,36 +16,20 @@ public class FlushUtil {
      * 往channel里输出消息
      */
     public static void flush(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) {
-//        if (channelHandlerContext.channel().isWritable()) {
-//            channelHandlerContext.channel().writeAndFlush(byteBuf).addListener(future -> {
-//                if (!future.isSuccess()) {
-//                    logger.warn("flush error " + future.cause().getMessage());
-//                }
-//            });
-//        } else {
-        try {
-            //同步发送
-            channelHandlerContext.channel().writeAndFlush(byteBuf).sync();
-        } catch (InterruptedException e) {
-            logger.error("flush error " + e.getMessage());
+        if (channelHandlerContext.channel().isWritable()) {
+            channelHandlerContext.channel().writeAndFlush(byteBuf).addListener(future -> {
+                if (!future.isSuccess()) {
+                    logger.warn("flush error " + future.cause().getMessage());
+                }
+            });
+        } else {
+            try {
+                //同步发送
+                channelHandlerContext.channel().writeAndFlush(byteBuf).sync();
+            } catch (InterruptedException e) {
+                logger.error("flush error " + e.getMessage());
+            }
         }
-//        }
     }
 
-    public static void flush(ChannelHandlerContext channelHandlerContext, HotKeyMsg hotKeyMsg) {
-//        if (channelHandlerContext.channel().isWritable()) {
-//            channelHandlerContext.channel().writeAndFlush(hotKeyMsg).addListener(future -> {
-//                if (!future.isSuccess()) {
-//                    logger.warn("flush error " + future.cause().getMessage());
-//                }
-//            });
-//        } else {
-        try {
-            //同步发送
-            channelHandlerContext.channel().writeAndFlush(hotKeyMsg).sync();
-        } catch (InterruptedException e) {
-            logger.error("flush error " + e.getMessage());
-        }
-//        }
-    }
 }
