@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.dashboard.mapper;
 
-import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;

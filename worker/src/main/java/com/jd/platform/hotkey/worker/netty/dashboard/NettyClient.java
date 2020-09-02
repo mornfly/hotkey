@@ -69,7 +69,7 @@ public class NettyClient {
         } catch (Exception e) {
             DashboardHolder.hasConnected = false;
             DashboardHolder.channel = null;
-                    e.printStackTrace();
+            e.printStackTrace();
         }
 
         //这一步就阻塞了

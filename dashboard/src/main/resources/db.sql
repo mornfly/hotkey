@@ -31,6 +31,11 @@ CREATE TABLE `hk_user`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 
+-- pwd: 123456
+INSERT INTO `hk_user` VALUES (2, 'admin', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '1888888', 'ADMIN', '', '2020-07-28 14:01:03', 1);
+
+
+
 DROP TABLE IF EXISTS `hk_key_record`;
 CREATE TABLE `hk_key_record`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -44,8 +49,7 @@ CREATE TABLE `hk_key_record`  (
   `uuid` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT '防重ID',
   `rule` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '''' COMMENT '规则',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引',
-  INDEX `idx_app_ct`(`app_name`, `create_time`) USING BTREE COMMENT '查询索引'
+  UNIQUE INDEX `uniq_key`(`uuid`) USING BTREE COMMENT '唯一索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 
@@ -77,7 +81,6 @@ CREATE TABLE `hk_statistics`  (
   `create_time` datetime(0) NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uniq_uuid`(`uuid`) USING BTREE COMMENT '防重唯一索引'
-  INDEX `idx_app_ct`(`app`, `create_time`) USING BTREE COMMENT '查询索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = Compact;
 
 
