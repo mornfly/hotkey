@@ -8,7 +8,6 @@ import com.jd.platform.hotkey.common.model.KeyCountModel;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.counter.KeyCountItem;
-import com.jd.platform.hotkey.worker.mq.IMqMessageReceiver;
 import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ import static com.jd.platform.hotkey.worker.counter.CounterConfig.COUNTER_QUEUE;
  */
 @Component
 @Order(4)
-public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
+public class KeyCounterFilter implements INettyMsgFilter {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     /**
@@ -52,10 +51,6 @@ public class KeyCounterFilter implements INettyMsgFilter, IMqMessageReceiver {
         return true;
     }
 
-    @Override
-    public void receive(String msg) {
-//        publishMsg("", msg, null);
-    }
 
     private void publishMsg(String appName, HotKeyMsg message, ChannelHandlerContext ctx) {
         //老版的用的单个HotKeyModel，新版用的数组

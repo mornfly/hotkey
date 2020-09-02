@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.worker.starters;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
@@ -13,6 +14,7 @@ import com.jd.platform.hotkey.common.tool.IpUtils;
 import com.jd.platform.hotkey.worker.cache.CaffeineCacheHolder;
 import com.jd.platform.hotkey.worker.model.AppInfo;
 import com.jd.platform.hotkey.worker.model.TotalCount;
+import com.jd.platform.hotkey.worker.netty.dashboard.NettyClient;
 import com.jd.platform.hotkey.worker.netty.filter.HotKeyFilter;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
@@ -214,6 +216,29 @@ public class EtcdStarter {
 //            configCenter.putAndGrant(ConfigConstant.bufferPoolPath + ip, MemoryTool.getBufferPool() + "", 10);
         } catch (Exception ex) {
             logger.error(ETCD_DOWN);
+        }
+    }
+
+    /**
+     * 每隔30秒去获取一下dashboard的地址
+     */
+    @Scheduled(fixedRate = 30000)
+    public void fetchDashboardIp() {
+        try {
+            //获取DashboardIp
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.dashboardPath);
+
+            //是空，给个警告
+            if (CollectionUtil.isEmpty(keyValues)) {
+                logger.warn("very important warn !!! Dashboard ip is null!!!");
+                return;
+            }
+
+            String dashboardIp = keyValues.get(0).getValue().toStringUtf8();
+            NettyClient.getInstance().connect(dashboardIp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
