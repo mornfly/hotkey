@@ -8,17 +8,10 @@
     <link th:href="@{/static/admin/assets/js/bootstrap/css/bootstrap-table/bootstrap-table.min.css}" rel="stylesheet"/>
 
     <style type="text/css">
+
         .select-list ul li{
             list-style-type: none;
             float: left;
-        }
-        .timeBut{
-            float: left;
-            padding-top: 15px
-        }
-        .timeBut2{
-            float: left;
-            padding-top: 10px
         }
     </style>
 
@@ -43,30 +36,12 @@
                         <div class="body-nest" id="search_div"  style="display: block">
                             <div class="form_left">
                                 <form role="form" class="form-inline">
-                                    <div class="form-group" style="width: 23%" >
-                                        <label class="control-label timeBut" >选择日期：</label>
-                                        <div class='input-group date datetimepicker' id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
-                                            <input type='text' class="form-control" name="startTime" id="startTime"/>
-                                            <span class="input-group-addon">
-                                                    <span class="glyphicon glyphicon-calendar"></span>
-                                                </span>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="width: 18%" >
-                                        <label class="control-label timeBut">~</label>
-                                        <div class='input-group date datetimepicker' id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
-                                            <input type='text' class="form-control"  name="endTime"id="endTime"/>
-                                            <span class="input-group-addon">
-                                                    <span class="glyphicon glyphicon-calendar"></span>
-                                                </span>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="width: 20%;margin-left: 40px" >
-                                        <label class="control-label timeBut2" >所属APP：</label>
-                                        <select name="app" id="apps" class="form-control" style="width: 62%">
+                                    <div class="form-group" style="width: 16%">
+                                        <label class="control-label timeBut2" style="float: left;padding-top: 10px">所属APP：</label>
+                                        <select name="app" id="apps"  class="form-control" style="width: 66%">
                                         </select>
                                     </div>
-                                    <button onclick="$.table.search(this)" class="btn btn-success" style="margin-left: 10%" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
+                                    <button onclick="$.table.search(this)" class="btn btn-success" style="margin-left: 2%;" id="recordSearch" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
                                 </form>
                             </div>
                         </div>
@@ -91,7 +66,6 @@
                         <div class="body-nest" id="Blank_Page_Content">
                             <table id="dataTable" class="table-striped footable-res footable metro-blue" data-page-size="6">
                             </table>
-
                         </div>
                     </div>
                 </div>
@@ -117,44 +91,27 @@
 <script th:src="@{/static/admin/assets/js/blockUI/jquery.blockUI.js}" type="text/javascript"></script>
 
 <script type="text/javascript">
+    var dataUrl="/clear/list";
+    var updateUrl="/clear/edit/";
     var options = {
-        dataUrl: "/rule/listHitCount",
-        sortName: "key",
-        modalName: "规则",
+        dataUrl: dataUrl,
+        updateUrl: updateUrl,
+        sortName: "app",
+        modalName: "数据清理",
         search: false,
         dataColumns: [
-            { field: 'rule', title: '规则',align:"center"},
-            { field: 'app', title: '所属APP',align:"center"},
-            { field: 'hitCount', title: '命中数'},
-            { field: 'totalCount', title: '总数'},
-            { field: 'ratio', title: '命中率'},
-            { field: 'seconds', title: '时间',
-                formatter:function (val) {
-                    return timestampToTime(val*1000);
+            { field: 'app', title: 'app',width:200,align:"center"},
+            { field: 'ttl', title: '超时删除时长（天）',align:"center"},
+            { field: 'version', title: '版本',align:"center"},
+            {
+                title: '操作',
+                formatter: function (value, row) {
+                    let actions = [];
+                    actions.push('<a class="btn btn-success btn-xs"  href="#" onclick="editClearCfg(\'' + (row.app) + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                    return actions.join('');
                 }
             }]
     };
-
-
-
-    $('.datetimepicker').datetimepicker({
-        language: 'zh-CN',
-        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
-        weekStart: 1,
-        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
-        autoclose: 1,           //选完时间自动关闭
-        todayHighlight: 1,      //当天时间高亮
-        startView: 2,           //从月视图开始，选天
-        minView: 0,             //提供选择分钟的视图
-        forceParse: 0,
-        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
-    });
-    let now = new Date();
-    $("#datetimepicker2").datetimepicker("setDate", now);
-    let pre5hours = now.setHours(now.getHours() - 5);
-    $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
-
-
     $(function(){
         $.ajax({
             cache : true,
@@ -185,11 +142,13 @@
                 }
             }
         });
-
-        let oTab=$.table.oTableInit(options);
+        var oTab=$.table.oTableInit(options);
         oTab.Init();
     })
 
+    function editClearCfg(app){
+        $.modal.open("编辑清理配置", updateUrl+app);
+    }
 
 </script>
 

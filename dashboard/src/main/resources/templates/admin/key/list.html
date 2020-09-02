@@ -163,7 +163,7 @@ var options = {
             { field: 'key', title: 'key'},
             { field: 'ruleDesc', title: '类型'},
             { field: 'appName', title: '所属APP'},
-            { field: 'duration', title: '缓存时间'},
+            { field: 'duration', title: '剩余缓存时间'},
             { field: 'source', title: '来源'},
             { field: 'type', title: '操作类型',
                 formatter:function (val) {
@@ -174,8 +174,27 @@ var options = {
             { field: 'createTime', title: '创建时间'
             }]
   };
-$(function(){
 
+
+    $('.datetimepicker').datetimepicker({
+        language: 'zh-CN',
+        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
+        weekStart: 1,
+        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
+        autoclose: 1,           //选完时间自动关闭
+        todayHighlight: 1,      //当天时间高亮
+        startView: 2,           //从月视图开始，选天
+        minView: 0,             //提供选择分钟的视图
+        forceParse: 0,
+        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
+    });
+    let now = new Date();
+    $("#datetimepicker2").datetimepicker("setDate", now);
+    let pre5hours = now.setHours(now.getHours() - 5);
+    $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
+
+
+$(function(){
     $.ajax({
         cache : true,
         type : "POST",
@@ -206,23 +225,8 @@ $(function(){
         }
     });
 
-
 	var oTab=$.table.oTableInit(options);
 	oTab.Init();
-
-    $('.datetimepicker').datetimepicker({
-        language: 'zh-CN',
-        CustomFormat: 'yyyy-mm-dd HH:ii:ss',
-        weekStart: 1,
-        todayBtn: 1,            //显示当天按钮，点击则选择当天当天时间
-        autoclose: 1,           //选完时间自动关闭
-        todayHighlight: 1,      //当天时间高亮
-        startView: 2,           //从月视图开始，选天
-        minView: 0,             //提供选择分钟的视图
-        forceParse: 0,
-        minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
-});
-
 
 })
 

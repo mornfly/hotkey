@@ -1,12 +1,6 @@
 package com.jd.platform.hotkey.dashboard;
 
 
-import com.alibaba.fastjson.JSON;
-import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
-import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
-import com.jd.platform.hotkey.common.tool.IpUtils;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
-import com.jd.platform.hotkey.dashboard.mapper.RulesMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,21 +9,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
-
 
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
 public class DashboardApplication implements CommandLineRunner {
 
-
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Resource
-    private KeyTimelyMapper timelyMapper;
 
     public static void main(String[] args) {
         try {
@@ -37,13 +24,11 @@ public class DashboardApplication implements CommandLineRunner {
         }catch (Exception e){
             e.printStackTrace();
         }
-
     }
 
+
     @Override
-    public void run(String... args) {
-        int row = timelyMapper.clear();
-        logger.info("clear db timely hotKey, effect row : {}",row);
+    public void run(String... args)  {
     }
 
 }

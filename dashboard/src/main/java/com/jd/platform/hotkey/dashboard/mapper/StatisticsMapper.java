@@ -4,6 +4,7 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,7 +43,6 @@ public interface StatisticsMapper {
 
     /**
      * 清理
-     * @param type type
      */
-    void clear(int type);
+    int clearExpireData(String app, Date expireDate);
 }

@@ -199,4 +199,10 @@
   </select>
 
 
+  <delete id="clearExpireData">
+    delete from hk_key_record
+    where app_name = #{app}
+     <![CDATA[ and create_time < #{expireDate}]]>
+  </delete>
+
 </mapper>

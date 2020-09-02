@@ -33,7 +33,7 @@ public class RuleUtil {
     }
 
     /**
-     * 根据APP的key，获取该key对应的rule
+     * 根据APP的key，获取该key对应的rule.如 cartpc-pu__
      */
     public static String rule(String key) {
         try {
@@ -62,7 +62,7 @@ public class RuleUtil {
         return "";
     }
 
-    private static KeyRule findByKey(String appNameKey) {
+    public static KeyRule findByKey(String appNameKey) {
         synchronized (RULE_MAP) {
             if (StrUtil.isEmpty(appNameKey)) {
                 return null;

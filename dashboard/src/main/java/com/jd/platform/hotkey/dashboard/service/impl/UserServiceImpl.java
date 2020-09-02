@@ -34,7 +34,7 @@ import java.util.Set;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Value("${erp.defaultPwd}")
+    @Value("${erp.defaultPwd:123}")
     private String defaultPwd;
     @Resource
     private UserMapper userMapper;
