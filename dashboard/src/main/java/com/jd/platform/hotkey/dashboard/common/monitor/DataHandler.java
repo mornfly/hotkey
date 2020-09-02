@@ -1,25 +1,22 @@
 package com.jd.platform.hotkey.dashboard.common.monitor;
 
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
-import com.ibm.etcd.api.Event;
+import com.google.common.collect.Queues;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
-import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
+import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
 import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
 import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
-import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
-import com.jd.platform.hotkey.dashboard.util.TwoTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,11 +24,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DataHandler {
@@ -41,8 +40,6 @@ public class DataHandler {
     @Resource
     private KeyRecordMapper keyRecordMapper;
     @Resource
-    private KeyTimelyMapper keyTimelyMapper;
-    @Resource
     private StatisticsMapper statisticsMapper;
 
     @Resource
@@ -51,18 +48,17 @@ public class DataHandler {
     @Resource
     private IConfigCenter configCenter;
 
-
     /**
      * 队列
      */
-    private BlockingQueue<EventWrapper> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<IRecord> queue = new LinkedBlockingQueue<>();
 
     /**
      * 入队
      */
-    public void offer(EventWrapper eventWrapper) {
+    public void offer(IRecord record) {
         try {
-            queue.put(eventWrapper);
+            queue.put(record);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -70,84 +66,46 @@ public class DataHandler {
 
     public void insertRecords() {
         while (true) {
-            EventWrapper eventWrapper;
             try {
-                eventWrapper = queue.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                continue;
-            }
-            try {
-                TwoTuple<KeyTimely, KeyRecord> twoTuple = handHotKey(eventWrapper);
-                if (twoTuple == null) {
+                List<IRecord> records = new ArrayList<>();
+                Queues.drain(queue, records, 1000, 1, TimeUnit.SECONDS);
+                if (CollectionUtil.isEmpty(records)) {
                     continue;
                 }
-                KeyRecord keyRecord = twoTuple.getSecond();
-                KeyTimely keyTimely = twoTuple.getFirst();
-
-                if (keyTimely.getUuid() == null) {
-                    keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
-                } else {
-                    try {
-                        keyTimelyMapper.saveOrUpdate(keyTimely);
-                    } catch (Exception e) {
-                        log.info("insert timely error",e);
+                List<KeyRecord> keyRecordList = new ArrayList<>();
+                for (IRecord iRecord : records) {
+                    KeyRecord keyRecord = handHotKey(iRecord);
+                    if (keyRecord != null) {
+                        keyRecordList.add(keyRecord);
                     }
                 }
 
-                if (keyRecord != null) {
-                    //插入记录
-                    keyRecordMapper.insertSelective(keyRecord);
-                }
-            } catch (Exception e) {
-                log.error("eventWrapper:" + eventWrapper);
+                keyRecordMapper.batchInsert(keyRecordList);
+
+            } catch (InterruptedException e) {
                 e.printStackTrace();
-                log.error("handHotKey error ," + e.getCause());
             }
-
-
         }
 
-    }
-
-    /**
-     * 插入记录表
-     * @param type 0是新增，1是删除
-     */
-    public void insertRecord(String appKey, int type) {
-        String source = Constant.SYSTEM;
-        String rule = RuleUtil.rule(appKey);
-        KeyRule keyRule = RuleUtil.findByKey(appKey);
-        //appName+"/"+"key"
-        String[] arr = appKey.split("/");
-        String appName = arr[0];
-        String key = arr[1];
-        String uuid = UUID.randomUUID().toString();
-        KeyRecord keyRecord = new KeyRecord(key, rule, appName, (long)keyRule.getDuration(), source, type, uuid, new Date());
-        keyRecord.setRule(rule);
-        keyRecordMapper.insertSelective(keyRecord);
     }
 
 
     /**
      * 处理热点key和记录
      */
-    private TwoTuple<KeyTimely, KeyRecord> handHotKey(EventWrapper eventWrapper) {
-        Date date = eventWrapper.getDate();
-        long ttl = eventWrapper.getTtl();
-        Event.EventType eventType = eventWrapper.getEventType();
-        String appKey = eventWrapper.getKey();
-        String value = eventWrapper.getValue();
+    private KeyRecord handHotKey(IRecord record) {
+        Date date = record.createTime();
+        String appKey = record.appNameKey();
+        String value = record.value();
         //appName+"/"+"key"
         String[] arr = appKey.split("/");
         String appName = arr[0];
         String key = arr[1];
         String uuid = UUID.randomUUID().toString();
-        int type = eventType.getNumber();
+        int type = record.type();
 
         //组建成对象，供累计后批量插入、删除
-        TwoTuple<KeyTimely, KeyRecord> timelyKeyRecordTwoTuple = new TwoTuple<>();
-        if (eventType.equals(Event.EventType.PUT)) {
+        if (type == 0) {
             //如果是客户端删除时发出的put指令
             if (com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE.equals(value)) {
                 log.info("client remove key event : " + appKey);
@@ -155,17 +113,14 @@ public class DataHandler {
             }
             //手工添加的是时间戳13位，worker传过来的是uuid
             String source = value.length() == 13 ? Constant.HAND : Constant.SYSTEM;
-            timelyKeyRecordTwoTuple.setFirst(KeyTimely.aKeyTimely().key(key).val(value).appName(appName).duration(ttl).uuid(appKey).createTime(date).build());
             String rule = RuleUtil.rule(appKey);
-            KeyRecord keyRecord = new KeyRecord(key, rule, appName, ttl, source, type, uuid, date);
+            KeyRecord keyRecord = new KeyRecord(key, rule, appName, 1, source, type, uuid, date);
             keyRecord.setRule(rule);
-            timelyKeyRecordTwoTuple.setSecond(keyRecord);
-            return timelyKeyRecordTwoTuple;
-        } else if (eventType.equals(Event.EventType.DELETE)) {
-            timelyKeyRecordTwoTuple.setFirst(KeyTimely.aKeyTimely().key(key).appName(appName).build());
-            return timelyKeyRecordTwoTuple;
+            return keyRecord;
+        } else {
+            //是删除
+            return null;
         }
-        return timelyKeyRecordTwoTuple;
     }
 
 
@@ -249,7 +204,6 @@ public class DataHandler {
     }
 
 
-
     /**
      * 每天根据app的配置清理过期数据
      */
@@ -261,13 +215,13 @@ public class DataHandler {
             for (KeyValue kv : keyValues) {
                 String key = kv.getKey().toStringUtf8();
                 String ttl = kv.getValue().toStringUtf8();
-                String app = key.replace(ConfigConstant.clearCfgPath,"");
+                String app = key.replace(ConfigConstant.clearCfgPath, "");
                 Date expireDate = DateUtil.ldtToDate(now.minusDays(Integer.parseInt(ttl)));
                 summaryMapper.clearExpireData(app, expireDate);
                 keyRecordMapper.clearExpireData(app, expireDate);
                 statisticsMapper.clearExpireData(app, expireDate);
             }
-          } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

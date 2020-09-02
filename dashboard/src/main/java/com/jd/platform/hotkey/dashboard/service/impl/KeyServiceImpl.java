@@ -171,6 +171,7 @@ public class KeyServiceImpl implements KeyService {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
 
+        //写入本地缓存，实时热key信息
         HotKeyModel hotKeyModel = new HotKeyModel();
         hotKeyModel.setCreateTime(System.currentTimeMillis());
         hotKeyModel.setAppName(key.getAppName());
@@ -203,7 +204,7 @@ public class KeyServiceImpl implements KeyService {
         }
         configCenter.delete(etcdKey);
 
-        KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
+        KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
         recordMapper.insertSelective(keyRecord);
         return logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(), "", keyTimely.getUpdater(), SystemClock.now() + ""));

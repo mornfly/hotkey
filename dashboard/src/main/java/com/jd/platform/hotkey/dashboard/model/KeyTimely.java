@@ -22,7 +22,6 @@ public class KeyTimely implements Serializable {
 
     private Date createTime;
 
-    private String uuid;
     /**
      * 该rule的描述
      */
@@ -44,7 +43,6 @@ public class KeyTimely implements Serializable {
     public KeyTimely(String key, String val, String appName, Long duration, String uuid, Date createTime) {
         this.key = key;
         this.val = val;
-        this.uuid = uuid;
         this.appName = appName;
         this.duration = duration;
         this.createTime = createTime;
@@ -59,7 +57,6 @@ public class KeyTimely implements Serializable {
                 ", val='" + val + '\'' +
                 ", duration=" + duration +
                 ", createTime=" + createTime +
-                ", uuid='" + uuid + '\'' +
                 ", ruleDesc='" + ruleDesc + '\'' +
                 ", updater='" + updater + '\'' +
                 '}';
@@ -119,14 +116,6 @@ public class KeyTimely implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getUpdater() {
@@ -201,7 +190,6 @@ public class KeyTimely implements Serializable {
             keyTimely.setVal(val);
             keyTimely.setDuration(duration);
             keyTimely.setCreateTime(createTime);
-            keyTimely.setUuid(uuid);
             keyTimely.setRuleDesc(ruleDesc);
             keyTimely.setUpdater(updater);
             return keyTimely;
