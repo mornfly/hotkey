@@ -142,6 +142,11 @@ var options = {
                     }
                 }
 			},
+            { field: 'createTime', title: '创建时间',
+                formatter:function (val,row,index) {
+                    return changeDateFormat(val);
+                }
+            },
             {
                 field: 'from',
                 title: '初始值',
