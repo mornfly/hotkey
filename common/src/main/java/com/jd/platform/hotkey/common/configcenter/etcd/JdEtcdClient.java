@@ -3,7 +3,6 @@ package com.jd.platform.hotkey.common.configcenter.etcd;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.KeyValue;
-import com.ibm.etcd.api.Kv;
 import com.ibm.etcd.api.LeaseGrantResponse;
 import com.ibm.etcd.api.RangeResponse;
 import com.ibm.etcd.client.KvStoreClient;
