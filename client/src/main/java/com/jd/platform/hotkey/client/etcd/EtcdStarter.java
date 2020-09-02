@@ -241,7 +241,7 @@ public class EtcdStarter {
             JdLogger.info(getClass(), "trying to connect to etcd and fetch rule info");
             boolean success = fetchRuleFromEtcd();
             if (success) {
-                //拉取已经存在的热key
+                //拉取已存在的热key
                 fetchExistHotKey();
 
                 scheduledExecutorService.shutdown();

@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.client;
 
-import com.jd.platform.hotkey.client.cache.LocalCache;
 import com.jd.platform.hotkey.client.callback.ReceiveNewKeySubscribe;
 import com.jd.platform.hotkey.client.core.eventbus.EventBusCenter;
 import com.jd.platform.hotkey.client.core.key.PushSchedulerStarter;
@@ -40,9 +39,8 @@ public class ClientStarter {
     public static class Builder {
         private String appName;
         private String etcdServer;
-        private LocalCache localCache;
         private Long pushPeriod;
-        private int caffeineSize = 50000;
+        private int caffeineSize = 200000;
 
         public Builder() {
         }
@@ -62,11 +60,6 @@ public class ClientStarter {
 
         public Builder setEtcdServer(String etcdServer) {
             this.etcdServer = etcdServer;
-            return this;
-        }
-
-        public Builder setLocalCache(LocalCache localCache) {
-            this.localCache = localCache;
             return this;
         }
 
