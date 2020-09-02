@@ -12,5 +12,5 @@ public class Context {
      */
     public static boolean NEED_RECONNECT = true;
 
-    public static int CAFFEINE_SIZE = 50000;
+    public static int CAFFEINE_SIZE;
 }
