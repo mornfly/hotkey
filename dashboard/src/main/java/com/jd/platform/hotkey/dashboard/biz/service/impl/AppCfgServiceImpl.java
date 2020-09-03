@@ -9,11 +9,9 @@ import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.biz.service.AppCfgService;
-import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.common.monitor.PushHandler;
 import com.jd.platform.hotkey.dashboard.common.monitor.SlidingWindow;
 import com.jd.platform.hotkey.dashboard.util.PageUtil;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 

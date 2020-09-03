@@ -105,6 +105,12 @@
             { field: 'warnPeriod', title: '警报周期(秒)',align:"center"},
             { field: 'warnThreshold', title: '警报阈值',align:"center"},
             { field: 'modifier', title: '修改人',align:"center"},
+            { field: 'warn', title: '是否开启警报',
+                formatter: function (value) {
+                    if(value === 1){ return "开启";}
+                    else{ return "关闭";}
+                }
+            },
             { field: 'version', title: '版本',align:"center"},
             {
                 title: '操作',

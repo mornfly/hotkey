@@ -6,7 +6,6 @@ import com.ibm.etcd.api.KeyValue;
 import com.ibm.etcd.client.kv.KvClient;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
-import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
@@ -121,8 +120,6 @@ public class EtcdMonitor {
 
         //观察热key访问次数和总访问次数，并做统计
         watchHitCount();
-
-        pushWarn();
     }
 
     /**
@@ -151,37 +148,10 @@ public class EtcdMonitor {
         threadPoolExecutor.submit(() -> {
             dataHandler.dealHotKey();
         });
-
         threadPoolExecutor.submit(() -> {
-            dataHandler.dealKeyRecord();
-                    dataHandler.offer(new IRecord() {
-                        @Override
-                        public String appNameKey() {
-                            return model.getAppName() + "/" + model.getKey();
-                        }
-
-                        @Override
-                        public String value() {
-                            return UUID.randomUUID().toString();
-                        }
-
-                        @Override
-                        public int type() {
-                            return 0;
-                        }
-
-                        @Override
-                        public Date createTime() {
-                            return new Date();
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
+            pushHandler.pushWarnMsg();
         });
+
     }
 
     /**
@@ -197,7 +167,7 @@ public class EtcdMonitor {
                 Event event = event(watchIterator);
 
                 try {
-                    log.info("---------watch rule change---------");
+                    log.info("---------watch rule change---------"+event.getType().toString());
                     //全量拉取rule信息
                     fetchRuleFromEtcd();
                 } catch (Exception e) {
@@ -299,9 +269,4 @@ public class EtcdMonitor {
         return watchIterator.next().getEvents().get(0);
     }
 
-
-
-    private void pushWarn() {
-        threadPoolExecutor.submit(() ->pushHandler.pushWarnMsg());
-    }
 }

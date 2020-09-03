@@ -8,6 +8,7 @@ import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.common.domain.PushMsgWrapper;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -19,10 +20,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * @ProjectName: hotkey
  * @ClassName: PushHandler
- * @Description: TODO(一句话描述该类的功能)
+ * @Description: 处理推送
  * @Author: liyunfeng31
  * @Date: 2020/9/3 10:47
  */
+
+@Component
 public class PushHandler {
 
     /**
@@ -52,15 +55,19 @@ public class PushHandler {
 
 
     /**
-     * 入队
+     * 监控和入队
      */
-    public void offer(PushMsgWrapper msgWrapper) {
-        try {
-            MSG_QUEUE.put(msgWrapper);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public void monitorAndPush(String app) throws InterruptedException {
+        AppCfgVo cfg = PushHandler.appCfgMap.get(app);
+        if(cfg.getWarn().equals(1)){
+            SlidingWindow wd = cfg.getWindow();
+            int count = wd.addCount(1);
+            if(count > 0){
+                MSG_QUEUE.put(new PushMsgWrapper(app));
+            }
         }
     }
+
 
     /**
      * 启动线程处理警报消息队列
@@ -126,7 +133,6 @@ public class PushHandler {
                 appCfgMap.put(cfg.getApp(),cfg);
             }
         }
-
     }
 
 }

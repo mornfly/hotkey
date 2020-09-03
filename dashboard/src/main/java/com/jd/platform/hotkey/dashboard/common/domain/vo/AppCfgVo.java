@@ -1,7 +1,9 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jd.platform.hotkey.dashboard.common.monitor.SlidingWindow;
 
+import java.beans.Transient;
 import java.io.Serializable;
 
 /**
@@ -30,6 +32,11 @@ public class AppCfgVo implements Serializable {
     private Integer warnThreshold;
 
     /**
+     * 警报开关 1开启 0关闭
+     */
+    private Integer warn;
+
+    /**
      * 版本
      */
     private Long version;
@@ -39,6 +46,7 @@ public class AppCfgVo implements Serializable {
      */
     private String modifier;
 
+    @JsonIgnore
     private SlidingWindow window;
 
     public String getApp() {
@@ -71,6 +79,14 @@ public class AppCfgVo implements Serializable {
 
     public void setWarnThreshold(Integer warnThreshold) {
         this.warnThreshold = warnThreshold;
+    }
+
+    public Integer getWarn() {
+        return warn;
+    }
+
+    public void setWarn(Integer warn) {
+        this.warn = warn;
     }
 
     public Long getVersion() {
@@ -106,6 +122,7 @@ public class AppCfgVo implements Serializable {
         this.warnPeriod = 10*60;
         this.warnThreshold = 1000;
         this.version = 0L;
+        this.warn = 1;
         this.modifier = "SYSTEM";
         this.window = new SlidingWindow(warnPeriod/60,warnThreshold);
     }
