@@ -34,9 +34,6 @@ public class AppCfgServiceImpl implements AppCfgService {
     @Resource
     private IConfigCenter configCenter;
 
-    @Resource
-    private UserService userService;
-
 
     @Override
     public Page<AppCfgVo> pageAppCfgVo(PageReq page, String app) {
@@ -75,6 +72,9 @@ public class AppCfgServiceImpl implements AppCfgService {
         return cfg;
     }
 
+    /**
+     * todo 多节点问题 待完善
+     */
     @Override
     public void saveAppCfgVo(AppCfgVo cfg) {
         cfg.setWindow(new SlidingWindow(cfg.getWarnPeriod()/60,cfg.getWarnThreshold()));

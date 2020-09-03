@@ -25,12 +25,24 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class PushHandler {
 
+    /**
+     * 拦截重复报警间隔 10分钟
+     */
     private static final long interval = 10*60*1000L;
 
+    /**
+     * app-config map
+     */
     public static Map<String, AppCfgVo> appCfgMap = new ConcurrentHashMap<>();
 
+    /**
+     * app-time 用于app存储报警时间 做拦截
+     */
     private static Map<String,Long> appIntervalMap = new ConcurrentHashMap<>();
 
+    /**
+     * 超过阈值的热点记录次数 放到队列里
+     */
     private static final BlockingQueue<PushMsgWrapper> MSG_QUEUE = new LinkedBlockingQueue<>();
 
     @Resource
@@ -50,8 +62,11 @@ public class PushHandler {
         }
     }
 
-
+    /**
+     * 启动线程处理警报消息队列
+     */
     public void pushWarnMsg() {
+        //  初始化MAP到内存
         initAppCfgMap();
         while (true){
             try {
@@ -67,7 +82,13 @@ public class PushHandler {
     }
 
 
-    private static synchronized boolean check(String warnApp, Long msgTime){
+    /**
+     * 防止重复发送警报
+     * @param warnApp app
+     * @param msgTime time
+     * @return result
+     */
+    private synchronized boolean check(String warnApp, Long msgTime){
         Long maxTime = appIntervalMap.get(warnApp);
         if(maxTime == null){
             appIntervalMap.put(warnApp,msgTime+interval);
@@ -81,10 +102,14 @@ public class PushHandler {
         return false;
     }
 
+    // todo 执行报警
     private static void doPush() {
     }
 
 
+    /**
+     * 初始化cfgMap和滑动窗口
+     */
     private void initAppCfgMap() {
         List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
         if(CollectionUtils.isEmpty(keyValues)){
@@ -94,7 +119,14 @@ public class PushHandler {
                 appCfgMap.put(ap,cfg);
                 configCenter.put(ConfigConstant.appCfgPath + ap, JSON.toJSONString(cfg));
             }
+        }else{
+            for (KeyValue keyValue : keyValues) {
+                String val = keyValue.getValue().toStringUtf8();
+                AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
+                appCfgMap.put(cfg.getApp(),cfg);
+            }
         }
+
     }
 
 }

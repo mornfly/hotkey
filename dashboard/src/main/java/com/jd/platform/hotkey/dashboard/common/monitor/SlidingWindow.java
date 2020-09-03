@@ -8,7 +8,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 滑动窗口。该窗口同样的key都是单线程计算。
+ * 滑动窗口
  */
 public class SlidingWindow {
     /**
