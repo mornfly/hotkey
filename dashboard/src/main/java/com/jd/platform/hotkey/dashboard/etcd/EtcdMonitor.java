@@ -10,7 +10,7 @@ import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
+import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
 import com.jd.platform.hotkey.dashboard.common.monitor.DataHandler;
 import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.common.monitor.PushHandler;
@@ -27,10 +27,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,7 +59,7 @@ public class EtcdMonitor {
     private PushHandler pushHandler;
 
 
-    public static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(256);
+    public static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(16);
 
     /**
      * 监听新来的热key，该key的产生是来自于手工在控制台添加
@@ -72,28 +69,34 @@ public class EtcdMonitor {
             KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.hotKeyPath);
             while (watchIterator.hasNext()) {
                 Event event = event(watchIterator);
-                EventWrapper eventWrapper = build(event);
+                KeyValue kv = event.getKv();
+                String v = kv.getValue().toStringUtf8();
+                Event.EventType eventType = event.getType();
 
                 String appKey = event.getKv().getKey().toStringUtf8().replace(ConfigConstant.hotKeyPath, "");
-                eventWrapper.setKey(appKey);
-                dataHandler.offer(eventWrapper);
+                dataHandler.offer(new IRecord() {
+                    @Override
+                    public String appNameKey() {
+                        return appKey;
+                    }
+
+                    @Override
+                    public String value() {
+                        return v;
+                    }
+
+                    @Override
+                    public int type() {
+                        return eventType.getNumber();
+                    }
+
+                    @Override
+                    public Date createTime() {
+                        return new Date();
+                    }
+                });
             }
         });
-    }
-
-
-    private EventWrapper build(Event event) {
-        KeyValue kv = event.getKv();
-        long ttl = configCenter.timeToLive(kv.getLease());
-        String v = kv.getValue().toStringUtf8();
-        Event.EventType eventType = event.getType();
-        EventWrapper eventWrapper = new EventWrapper();
-        eventWrapper.setValue(v);
-        eventWrapper.setDate(new Date());
-        eventWrapper.setTtl(ttl);
-        eventWrapper.setVersion(kv.getVersion());
-        eventWrapper.setEventType(eventType);
-        return eventWrapper;
     }
 
 
@@ -126,7 +129,7 @@ public class EtcdMonitor {
      * 每秒去清理一次caffeine
      */
     @Scheduled(fixedRate = 1000)
-    public void fetchDashboardIp() {
+    public void cleanCaffeine() {
         try {
             HotKeyReceiver.cleanUpCaffeine();
         } catch (Exception e) {
@@ -151,6 +154,33 @@ public class EtcdMonitor {
 
         threadPoolExecutor.submit(() -> {
             dataHandler.dealKeyRecord();
+                    dataHandler.offer(new IRecord() {
+                        @Override
+                        public String appNameKey() {
+                            return model.getAppName() + "/" + model.getKey();
+                        }
+
+                        @Override
+                        public String value() {
+                            return UUID.randomUUID().toString();
+                        }
+
+                        @Override
+                        public int type() {
+                            return 0;
+                        }
+
+                        @Override
+                        public Date createTime() {
+                            return new Date();
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         });
     }
 

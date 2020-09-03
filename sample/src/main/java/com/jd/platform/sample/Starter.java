@@ -58,7 +58,19 @@ public class Starter {
             builder1.append(UUID.randomUUID());
         }
 
-        a();
+        String s = "prefix";
+        System.out.println(System.currentTimeMillis());
+
+        for (int i = 0; i < 10000; i++) {
+            if (JdHotKeyStore.getValue(s + i) != null) {
+                System.out.println("ishot");
+            } else {
+                int j = i;
+            }
+        }
+        System.out.println(System.currentTimeMillis());
+
+//        a();
 //        logger.info("begin : " + System.currentTimeMillis());
 //        iConfigCenter.putAndGrant( "/abc/" + builder1.toString(), UUID.randomUUID().toString(), 60);
 //        for (int i = 0; i < 200000; i++) {

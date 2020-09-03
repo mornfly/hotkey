@@ -171,6 +171,7 @@ public class KeyServiceImpl implements KeyService {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
 
+        //写入本地缓存，实时热key信息
         HotKeyModel hotKeyModel = new HotKeyModel();
         hotKeyModel.setCreateTime(System.currentTimeMillis());
         hotKeyModel.setAppName(key.getAppName());

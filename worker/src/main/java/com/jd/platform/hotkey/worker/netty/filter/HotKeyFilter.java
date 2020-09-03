@@ -7,7 +7,6 @@ import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.keydispatcher.KeyProducer;
-import com.jd.platform.hotkey.worker.mq.IMqMessageReceiver;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Component
 @Order(3)
-public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
+public class HotKeyFilter implements INettyMsgFilter {
     @Resource
     private KeyProducer keyProducer;
 
@@ -46,11 +45,6 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
         }
 
         return true;
-    }
-
-    @Override
-    public void receive(String msg) {
-        publishMsg(msg, null);
     }
 
     private void publishMsg(String message, ChannelHandlerContext ctx) {

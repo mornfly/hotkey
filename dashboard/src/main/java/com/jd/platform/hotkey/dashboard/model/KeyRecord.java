@@ -16,7 +16,7 @@ public class KeyRecord implements Serializable {
     /**
      * 缓存时间
      */
-    private Long duration;
+    private int duration;
 
     /**
      * 来源： SYSTEM 系统探测；USERNAME创建人
@@ -43,12 +43,12 @@ public class KeyRecord implements Serializable {
     public KeyRecord() {
     }
 
-    public KeyRecord(String key,String val, String appName, Integer duration,
+    public KeyRecord(String key,String val, String appName, int duration,
                      String source, Integer type,String uuid, Date createTime) {
         this.key = key;
         this.val = val;
         this.appName = appName;
-        this.duration = duration.longValue();
+        this.duration = duration;
         this.source = source;
         this.type = type;
         this.uuid = uuid;
@@ -103,11 +103,11 @@ public class KeyRecord implements Serializable {
         this.val = val;
     }
 
-    public Long getDuration() {
+    public int getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 
