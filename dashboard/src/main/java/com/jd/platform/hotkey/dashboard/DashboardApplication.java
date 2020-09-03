@@ -1,7 +1,7 @@
 package com.jd.platform.hotkey.dashboard;
 
 
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.KeyTimelyMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

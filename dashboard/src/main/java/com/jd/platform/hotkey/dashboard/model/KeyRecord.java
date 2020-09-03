@@ -43,12 +43,12 @@ public class KeyRecord implements Serializable {
     public KeyRecord() {
     }
 
-    public KeyRecord(String key,String val, String appName, Long duration,
+    public KeyRecord(String key,String val, String appName, Integer duration,
                      String source, Integer type,String uuid, Date createTime) {
         this.key = key;
         this.val = val;
         this.appName = appName;
-        this.duration = duration;
+        this.duration = duration.longValue();
         this.source = source;
         this.type = type;
         this.uuid = uuid;

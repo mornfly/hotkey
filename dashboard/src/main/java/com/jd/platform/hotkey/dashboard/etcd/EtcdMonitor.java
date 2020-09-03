@@ -12,10 +12,11 @@ import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
 import com.jd.platform.hotkey.dashboard.common.monitor.DataHandler;
-import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
+import com.jd.platform.hotkey.dashboard.common.monitor.PushHandler;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
-import com.jd.platform.hotkey.dashboard.service.WorkerService;
+import com.jd.platform.hotkey.dashboard.biz.service.WorkerService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import io.grpc.StatusRuntimeException;
@@ -56,6 +57,9 @@ public class EtcdMonitor {
 
     @Resource
     private DataHandler dataHandler;
+
+    @Resource
+    private PushHandler pushHandler;
 
 
     public static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(256);
@@ -102,7 +106,7 @@ public class EtcdMonitor {
         insertRecords();
 
         //开始入库
-        dealHotkey();
+        dealHotKey();
 
         //监听手工创建的key
         watchHandOperationHotKey();
@@ -114,6 +118,8 @@ public class EtcdMonitor {
 
         //观察热key访问次数和总访问次数，并做统计
         watchHitCount();
+
+        pushWarn();
     }
 
     /**
@@ -138,23 +144,13 @@ public class EtcdMonitor {
     /**
      * 开始消费各worker发来的热key
      */
-    private void dealHotkey() {
+    private void dealHotKey() {
         threadPoolExecutor.submit(() -> {
-            while (true) {
-                try {
-                    //获取发来的这个热key，存入本地caffeine，设置过期时间
-                    HotKeyModel model = HotKeyReceiver.take();
+            dataHandler.dealHotKey();
+        });
 
-                    //将该key放入实时热key本地缓存中
-                    HotKeyReceiver.put(model);
-
-                    //入库record表，TODO 需要改成batch入库
-                    dataHandler.insertRecord(model.getAppName() + "/" + model.getKey(), 0);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
+        threadPoolExecutor.submit(() -> {
+            dataHandler.dealKeyRecord();
         });
     }
 
@@ -274,4 +270,8 @@ public class EtcdMonitor {
     }
 
 
+
+    private void pushWarn() {
+        threadPoolExecutor.submit(() ->pushHandler.pushWarnMsg());
+    }
 }
