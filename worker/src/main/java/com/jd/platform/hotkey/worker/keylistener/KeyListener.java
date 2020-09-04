@@ -75,7 +75,7 @@ public class KeyListener implements IKeyListener {
 
             //开启推送
             hotKeyModel.setCreateTime(SystemClock.now());
-            logger.info(NEW_KEY_EVENT + hotKeyModel.getKey());
+//            logger.info(NEW_KEY_EVENT + hotKeyModel.getKey());
             //分别推送到各client和etcd
             for (IPusher pusher : iPushers) {
                 pusher.push(hotKeyModel);

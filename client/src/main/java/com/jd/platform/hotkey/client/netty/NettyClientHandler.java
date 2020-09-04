@@ -16,11 +16,14 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import java.util.concurrent.atomic.LongAdder;
+
 /**
  * @author wuweifeng wrote on 2019-11-05.
  */
 @ChannelHandler.Sharable
 public class NettyClientHandler extends SimpleChannelInboundHandler<HotKeyMsg> {
+    private static LongAdder longAdder = new LongAdder();
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -61,12 +64,16 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HotKeyMsg> {
             return;
         }
         if (MessageType.RESPONSE_NEW_KEY == msg.getMessageType()) {
-            JdLogger.info(getClass(), "receive new key : " + msg);
             if (CollectionUtil.isEmpty(msg.getHotKeyModels())) {
                 return;
             }
             HotKeyModel model = msg.getHotKeyModels().get(0);
             EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
+            longAdder.increment();
+            //收到1万个时，就打印一下
+            if (longAdder.longValue() % 10000 == 0) {
+                JdLogger.info(getClass(), "hot key count : " + longAdder.longValue());
+            }
         }
 
     }
