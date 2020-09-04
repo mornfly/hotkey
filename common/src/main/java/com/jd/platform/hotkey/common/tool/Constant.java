@@ -8,10 +8,6 @@ public class Constant {
     public static String PING = "ping";
     public static String PONG = "pong";
 
-    /**
-     * 该值在ProducerFactory有修改
-     */
-    public static int Default_Threads = 4;
 
     public static int MAGIC_NUMBER = 0x12fcf76;
     /**
