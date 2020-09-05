@@ -4,19 +4,17 @@ package com.jd.platform.hotkey.dashboard.common.monitor;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Queues;
-import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
-import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
-import com.jd.platform.hotkey.dashboard.common.domain.PushMsgWrapper;
-import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.biz.mapper.KeyRecordMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.StatisticsMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
+import com.jd.platform.hotkey.dashboard.common.domain.Constant;
+import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
+import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
@@ -58,7 +56,7 @@ public class DataHandler {
     private PushHandler pushHandler;
 
 
-    private static final Integer CACHE_SIZE = 100;
+    private static final Integer CACHE_SIZE = 10000;
 
 
     /**
@@ -82,7 +80,7 @@ public class DataHandler {
         while (true) {
             try {
                 List<IRecord> records = new ArrayList<>();
-                Queues.drain(RECORD_QUEUE, records, CACHE_SIZE * 3 >> 2, 1, TimeUnit.SECONDS);
+                Queues.drain(RECORD_QUEUE, records, CACHE_SIZE, 1, TimeUnit.SECONDS);
                 if (CollectionUtil.isEmpty(records)) {
                     continue;
                 }
