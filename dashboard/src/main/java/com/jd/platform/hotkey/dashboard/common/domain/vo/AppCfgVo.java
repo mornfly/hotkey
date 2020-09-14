@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jd.platform.hotkey.dashboard.common.monitor.SlidingWindow;
 
@@ -46,7 +47,7 @@ public class AppCfgVo implements Serializable {
      */
     private String modifier;
 
-    @JsonIgnore
+
     private SlidingWindow window;
 
     public String getApp() {
