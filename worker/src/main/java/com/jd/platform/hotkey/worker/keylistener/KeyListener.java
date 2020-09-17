@@ -9,6 +9,7 @@ import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.worker.cache.CaffeineCacheHolder;
 import com.jd.platform.hotkey.worker.netty.pusher.IPusher;
 import com.jd.platform.hotkey.worker.rule.KeyRuleHolder;
+import com.jd.platform.hotkey.worker.starters.EtcdStarter;
 import com.jd.platform.hotkey.worker.tool.SlidingWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,12 @@ public class KeyListener implements IKeyListener {
 
             //开启推送
             hotKeyModel.setCreateTime(SystemClock.now());
-            logger.info(NEW_KEY_EVENT + hotKeyModel.getKey());
+
+            //当开关打开时，打印日志。大促时关闭日志，就不打印了
+            if (EtcdStarter.LOGGER_ON) {
+                logger.info(NEW_KEY_EVENT + hotKeyModel.getKey());
+            }
+
             //分别推送到各client和etcd
             for (IPusher pusher : iPushers) {
                 pusher.push(hotKeyModel);
