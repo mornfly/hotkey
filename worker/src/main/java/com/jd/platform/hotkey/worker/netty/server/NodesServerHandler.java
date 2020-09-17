@@ -40,7 +40,6 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<HotKeyMsg> {
                 return;
             }
         }
-
     }
 
     @Override

@@ -53,7 +53,6 @@ public class KeyCounterFilter implements INettyMsgFilter {
 
 
     private void publishMsg(String appName, HotKeyMsg message, ChannelHandlerContext ctx) {
-        //老版的用的单个HotKeyModel，新版用的数组
         List<KeyCountModel> models = message.getKeyCountModels();
         if (CollectionUtil.isEmpty(models)) {
             return;
