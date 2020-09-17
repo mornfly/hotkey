@@ -1,5 +1,7 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
+import java.io.Serializable;
+
 /**
  * @ProjectName: hotkey
  * @ClassName: ClearCfgVo
@@ -7,7 +9,7 @@ package com.jd.platform.hotkey.dashboard.common.domain.vo;
  * @Author: liyunfeng31
  * @Date: 2020/8/3 9:54
  */
-public class ClearCfgVo {
+public class ClearCfgVo implements Serializable {
 
     private String app;
 

@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -7,7 +8,7 @@ import java.util.Set;
 /**
  * @author liyunfeng31
  */
-public class HotKeyLineChartVo {
+public class HotKeyLineChartVo implements Serializable {
 
     private List<String> xAxis;
 

@@ -4,14 +4,12 @@ package com.jd.platform.hotkey.dashboard.interceptor;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
 import com.jd.platform.hotkey.dashboard.common.ex.BizException;
-import com.jd.platform.hotkey.dashboard.service.UserService;
 import com.jd.platform.hotkey.dashboard.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

@@ -7,14 +7,17 @@ import com.google.common.collect.Queues;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.common.model.HotKeyModel;
+import com.jd.platform.hotkey.dashboard.biz.mapper.KeyRecordMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.StatisticsMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
-import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
+import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import org.slf4j.Logger;
@@ -39,6 +42,7 @@ public class DataHandler {
 
     @Resource
     private KeyRecordMapper keyRecordMapper;
+
     @Resource
     private StatisticsMapper statisticsMapper;
 
@@ -48,17 +52,25 @@ public class DataHandler {
     @Resource
     private IConfigCenter configCenter;
 
+    @Resource
+    private PushHandler pushHandler;
+
+
+    private static final Integer CACHE_SIZE = 10000;
+
+
     /**
      * 队列
      */
-    private BlockingQueue<IRecord> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<IRecord> RECORD_QUEUE = new LinkedBlockingQueue<>();
+
 
     /**
      * 入队
      */
     public void offer(IRecord record) {
         try {
-            queue.put(record);
+            RECORD_QUEUE.put(record);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -68,7 +80,7 @@ public class DataHandler {
         while (true) {
             try {
                 List<IRecord> records = new ArrayList<>();
-                Queues.drain(queue, records, 1000, 1, TimeUnit.SECONDS);
+                Queues.drain(RECORD_QUEUE, records, CACHE_SIZE, 1, TimeUnit.SECONDS);
                 if (CollectionUtil.isEmpty(records)) {
                     continue;
                 }
@@ -204,6 +216,7 @@ public class DataHandler {
     }
 
 
+
     /**
      * 每天根据app的配置清理过期数据
      */
@@ -211,12 +224,12 @@ public class DataHandler {
     public void clearExpireData() {
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.clearCfgPath);
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
             for (KeyValue kv : keyValues) {
-                String key = kv.getKey().toStringUtf8();
-                String ttl = kv.getValue().toStringUtf8();
-                String app = key.replace(ConfigConstant.clearCfgPath, "");
-                Date expireDate = DateUtil.ldtToDate(now.minusDays(Integer.parseInt(ttl)));
+                String val = kv.getValue().toStringUtf8();
+                AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
+                String app = cfg.getApp();
+                Date expireDate = DateUtil.ldtToDate(now.minusDays(cfg.getDataTtl()));
                 summaryMapper.clearExpireData(app, expireDate);
                 keyRecordMapper.clearExpireData(app, expireDate);
                 statisticsMapper.clearExpireData(app, expireDate);
@@ -227,5 +240,37 @@ public class DataHandler {
 
     }
 
+
+    public void dealHotKey() {
+        while (true) {
+            try {
+                //获取发来的这个热key，存入本地caffeine，设置过期时间
+                HotKeyModel model = HotKeyReceiver.take();
+                //将该key放入实时热key本地缓存中
+                if(model != null){
+                    HotKeyReceiver.put(model);
+                    putRecord(model.getAppName(), model.getKey());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public void putRecord(String app, String key) throws InterruptedException {
+        this.offer(new IRecord() {
+            @Override
+            public String appNameKey() { return app + "/" + key; }
+            @Override
+            public String value() { return UUID.randomUUID().toString(); }
+            @Override
+            public int type() { return 0; }
+            @Override
+            public Date createTime() { return new Date(); }
+        });
+        // 监控和推送
+        pushHandler.monitorAndPush(app);
+    }
 
 }

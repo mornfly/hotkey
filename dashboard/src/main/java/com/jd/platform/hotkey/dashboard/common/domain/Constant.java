@@ -37,6 +37,7 @@ public class Constant {
 
     public static final String CLEAR_VIEW = "数据清理";
 
+    public static final String APP_CFG_VIEW = "应用配置";
 
     public static final int MAX_DAY_RANGE = 3;
 

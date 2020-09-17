@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.jd.platform.hotkey.dashboard.mapper.SummaryMapper" >
+<mapper namespace="com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper" >
   <resultMap id="BaseResultMap" type="com.jd.platform.hotkey.dashboard.model.Summary" >
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="index_name" property="indexName" jdbcType="VARCHAR" />
@@ -38,7 +38,7 @@
   <select id="listRuleHitCount" resultType="com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo"
           parameterType="com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq" >
     select rule, app, index_val1 as totalCount, index_val2 as hitCount,
-           convert(index_val2/index_val1,decimal(8,2)) as ratio, seconds
+    convert(index_val2/index_val1,decimal(8,2)) as ratio, seconds
     from hk_summary
     where 1=1
     <if test="app !=null and app !=''">

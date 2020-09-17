@@ -1,9 +1,11 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
+import java.io.Serializable;
+
 /**
  * @author liyunfeng31
  */
-public class RuleLineChartVo {
+public class RuleLineChartVo implements Serializable {
 
     private String rule;
 

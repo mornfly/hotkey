@@ -3,7 +3,7 @@ package com.jd.platform.hotkey.dashboard.erp;
 import com.jd.common.springmvc.interceptor.SpringSSOInterceptor;
 import com.jd.common.web.LoginContext;
 import com.jd.platform.hotkey.dashboard.model.User;
-import com.jd.platform.hotkey.dashboard.service.UserService;
+import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.Cookie;

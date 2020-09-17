@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper">
+<mapper namespace="com.jd.platform.hotkey.dashboard.biz.mapper.KeyRecordMapper">
   <resultMap id="BaseResultMap" type="com.jd.platform.hotkey.dashboard.model.KeyRecord">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="key_name" jdbcType="VARCHAR" property="key" />
