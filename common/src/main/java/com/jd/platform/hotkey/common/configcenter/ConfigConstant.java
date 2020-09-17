@@ -68,6 +68,12 @@ public interface ConfigConstant {
      * time unit : day
      */
     String clearCfgPath = "/jd/clearCfg/";
+
+    /**
+     * app配置
+     */
+    String appCfgPath = "/jd/appCfg/";
+
     /**
      * 控制台启动的netty端口
      */
