@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.worker.netty.filter;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.SystemClock;
 import cn.hutool.core.util.StrUtil;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
@@ -51,9 +52,12 @@ public class KeyCounterFilter implements INettyMsgFilter {
         return true;
     }
 
+
     private void publishMsg(String appName, String message, ChannelHandlerContext ctx) {
-        //老版的用的单个HotKeyModel，新版用的数组
         List<KeyCountModel> models = FastJsonUtils.toList(message, KeyCountModel.class);
+        if (CollectionUtil.isEmpty(models)) {
+            return;
+        }
         long timeOut = SystemClock.now() - models.get(0).getCreateTime();
         //超时5秒以上的就不处理了，因为client是每10秒发送一次，所以最迟15秒以后的就不处理了
         if (timeOut > InitConstant.timeOut + 10000) {
