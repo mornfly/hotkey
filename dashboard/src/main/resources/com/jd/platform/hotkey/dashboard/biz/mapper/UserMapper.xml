@@ -16,7 +16,7 @@
     id, nick_name, user_name, pwd, phone, role, app_name, create_time, state
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
+    select
     <include refid="Base_Column_List" />
     from hk_user
     where id = #{id,jdbcType=INTEGER}

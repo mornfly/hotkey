@@ -34,7 +34,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/key")
 public class KeyController extends BaseController {
-	
+
 	private String prefix = "admin/key";
 
 	@Resource

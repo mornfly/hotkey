@@ -16,7 +16,7 @@
     id, biz_id, biz_type, from_str, to_str, app_name,update_user, create_time,uuid
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
+    select
     <include refid="Base_Column_List" />
     from hk_change_log
     where id = #{id,jdbcType=INTEGER}
