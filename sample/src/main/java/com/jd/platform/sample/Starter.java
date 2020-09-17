@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author wuweifeng wrote on 2020-01-14
@@ -22,6 +25,11 @@ public class Starter {
         ClientStarter.Builder builder = new ClientStarter.Builder();
         ClientStarter starter = builder.setAppName(appName).setEtcdServer(etcd).build();
         starter.startPipeline();
+    }
+
+    public static void main(String[] args) {
+        Map<String, HashSet<String>> totalSkuSet = new HashMap<>();
+        System.out.println(totalSkuSet.get("a"));
     }
 
 }
