@@ -57,10 +57,11 @@ public class WorkerInfoHolder {
     }
 
     public static Channel chooseChannel(String key) {
-        if (StrUtil.isEmpty(key) || WORKER_HOLDER.size() == 0) {
+        int size = WORKER_HOLDER.size();
+        if (StrUtil.isEmpty(key) || size == 0) {
             return null;
         }
-        int index = Math.abs(key.hashCode() % WORKER_HOLDER.size());
+        int index = Math.abs(key.hashCode() % size);
 
         return WORKER_HOLDER.get(index).channel;
     }
