@@ -85,7 +85,7 @@ public class CommonUtil {
      * @return map
      */
     private static Map<String, List<Statistics>> listGroup(List<Statistics> list) {
-        // return list.stream().collect(Collectors.groupingBy(Statistics::getRule));
+       // return list.stream().collect(Collectors.groupingBy(Statistics::getRule));
         return list.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
     }
 

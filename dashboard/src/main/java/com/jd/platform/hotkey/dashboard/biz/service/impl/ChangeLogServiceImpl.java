@@ -2,11 +2,11 @@ package com.jd.platform.hotkey.dashboard.biz.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.jd.platform.hotkey.dashboard.biz.service.ChangeLogService;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.model.ChangeLog;
+import com.jd.platform.hotkey.dashboard.biz.service.ChangeLogService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

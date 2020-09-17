@@ -234,7 +234,7 @@ public class DataHandler {
                 keyRecordMapper.clearExpireData(app, expireDate);
                 statisticsMapper.clearExpireData(app, expireDate);
             }
-        } catch (Exception e) {
+          } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -7,14 +7,14 @@ import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.dashboard.biz.service.WorkerService;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
-import com.jd.platform.hotkey.dashboard.mapper.WorkerMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.ChangeLogMapper;
+import com.jd.platform.hotkey.dashboard.biz.mapper.WorkerMapper;
 import com.jd.platform.hotkey.dashboard.model.ChangeLog;
 import com.jd.platform.hotkey.dashboard.model.Worker;
+import com.jd.platform.hotkey.dashboard.biz.service.WorkerService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 

@@ -1,17 +1,15 @@
 package com.jd.platform.hotkey.dashboard.biz.controller;
 
-import java.util.*;
-
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
+import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
-import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
+import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
 import com.jd.platform.hotkey.dashboard.model.User;
-import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
@@ -23,6 +21,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Controller
@@ -100,10 +100,10 @@ public class UserController extends BaseController {
 
 
 	@GetMapping("/view")
-	public String view(ModelMap modelMap){
+    public String view(ModelMap modelMap){
 		modelMap.put("title", Constant.USER_MANAGE_VIEW);
-		return "admin/user/list";
-	}
+        return "admin/user/list";
+    }
 
 
 	@PostMapping("/list")
@@ -114,10 +114,10 @@ public class UserController extends BaseController {
 	}
 
 
-	@GetMapping("/add")
-	public String add(){
-		return "admin/user/add";
-	}
+    @GetMapping("/add")
+    public String add(){
+        return "admin/user/add";
+    }
 
 	@PostMapping("/add")
 	@ResponseBody
@@ -135,31 +135,31 @@ public class UserController extends BaseController {
 
 
 	@GetMapping("/edit/{id}")
-	public String edit(@PathVariable("id") Integer id, ModelMap modelMap){
+    public String edit(@PathVariable("id") Integer id, ModelMap modelMap){
 		modelMap.put("user", userService.selectByPrimaryKey(id));
-		return "admin/user/edit";
-	}
+        return "admin/user/edit";
+    }
 
 
-	@PostMapping("/edit")
-	@ResponseBody
-	public Result editSave(User user) {
-		return Result.success(userService.updateUser(user));
-	}
+    @PostMapping("/edit")
+    @ResponseBody
+    public Result editSave(User user) {
+        return Result.success(userService.updateUser(user));
+    }
 
 
 
 	@GetMapping("/editPwd/{id}")
-	public String editPwd(@PathVariable("id") Integer id, ModelMap modelMap){
+    public String editPwd(@PathVariable("id") Integer id, ModelMap modelMap){
 		modelMap.put("user", userService.selectByPrimaryKey(id));
-		return "admin/user/editPwd";
-	}
+        return "admin/user/editPwd";
+    }
 
-	@PostMapping("/editPwd")
-	@ResponseBody
-	public Result editPwdSave(User user){
-		return Result.success(userService.updateUser(user));
-	}
+    @PostMapping("/editPwd")
+    @ResponseBody
+    public Result editPwdSave(User user){
+        return Result.success(userService.updateUser(user));
+    }
 
 
 	@GetMapping("Out404")

@@ -38,7 +38,7 @@
   <select id="listRuleHitCount" resultType="com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo"
           parameterType="com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq" >
     select rule, app, index_val1 as totalCount, index_val2 as hitCount,
-    convert(index_val2/index_val1,decimal(8,2)) as ratio, seconds
+           convert(index_val2/index_val1,decimal(8,2)) as ratio, seconds
     from hk_summary
     where 1=1
     <if test="app !=null and app !=''">

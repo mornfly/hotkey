@@ -19,39 +19,39 @@ import javax.annotation.Resource;
 public class AppCfgController extends BaseController {
 
 
-    private String prefix = "admin/appcfg";
+	private String prefix = "admin/appcfg";
 
 
-    @Resource
-    private AppCfgService appCfgService;
+	@Resource
+	private AppCfgService appCfgService;
 
-    @GetMapping("/view")
-    public String view(ModelMap modelMap){
-        modelMap.put("title", Constant.APP_CFG_VIEW);
-        return prefix + "/list";
-    }
-
-
-    @PostMapping("/list")
-    @ResponseBody
-    public Page<AppCfgVo> list(PageReq page, String app){
-        return appCfgService.pageAppCfgVo(page, app);
-    }
+	@GetMapping("/view")
+	public String view(ModelMap modelMap){
+		modelMap.put("title", Constant.APP_CFG_VIEW);
+		return prefix + "/list";
+	}
 
 
-    @GetMapping("/edit/{app}")
-    public String edit(@PathVariable("app") String app, ModelMap modelMap){
-        modelMap.put("appCfg", appCfgService.selectAppCfgVo(app));
-        return prefix + "/edit";
-    }
+	@PostMapping("/list")
+	@ResponseBody
+	public Page<AppCfgVo> list(PageReq page, String app){
+		return appCfgService.pageAppCfgVo(page, app);
+	}
 
-    @PostMapping("/save")
-    @ResponseBody
-    public Result save(AppCfgVo cfg){
-        cfg.setModifier(userName());
-        appCfgService.saveAppCfgVo(cfg);
-        return Result.success();
-    }
+
+	@GetMapping("/edit/{app}")
+	public String edit(@PathVariable("app") String app, ModelMap modelMap){
+		modelMap.put("appCfg", appCfgService.selectAppCfgVo(app));
+		return prefix + "/edit";
+	}
+
+	@PostMapping("/save")
+	@ResponseBody
+	public Result save(AppCfgVo cfg){
+		cfg.setModifier(userName());
+		appCfgService.saveAppCfgVo(cfg);
+		return Result.success();
+	}
 
 
 }

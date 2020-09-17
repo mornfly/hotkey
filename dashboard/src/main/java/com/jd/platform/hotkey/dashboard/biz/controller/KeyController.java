@@ -99,9 +99,9 @@ public class KeyController extends BaseController {
 
 
 	@GetMapping("/add")
-	public String add(){
-		return prefix + "/add";
-	}
+    public String add(){
+        return prefix + "/add";
+    }
 
 	@PostMapping("/add")
 	@ResponseBody
@@ -129,12 +129,12 @@ public class KeyController extends BaseController {
     }*/
 
 
-	@PostMapping("/edit")
-	@ResponseBody
-	public Result editSave(KeyTimely key) {
+    @PostMapping("/edit")
+    @ResponseBody
+    public Result editSave(KeyTimely key) {
 		checkApp(key.getAppName());
 		return Result.success(keyService.updateKeyByUser(key));
-	}
+    }
 
 
 
