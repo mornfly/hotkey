@@ -58,6 +58,10 @@ public interface ConfigConstant {
      * 存放客户端hotKey访问次数和总访问次数的path
      */
     String keyHitCountPath = "/jd/keyHitCount/";
+    /**
+     * 是否开启日志
+     */
+    String logToggle = "/jd/logOn";
 
     /**
      * 清理历史数据的配置的path

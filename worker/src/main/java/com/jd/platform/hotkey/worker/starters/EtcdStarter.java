@@ -46,6 +46,11 @@ import static com.jd.platform.hotkey.worker.tool.InitConstant.*;
  */
 @Component
 public class EtcdStarter {
+    /**
+     * 是否开启日志
+     */
+    public static boolean LOGGER_ON = true;
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Resource
@@ -98,6 +103,31 @@ public class EtcdStarter {
      */
     private boolean isForSingle() {
         return !DEFAULT_PATH.equals(workerPath);
+    }
+
+    @PostConstruct
+    public void watchLog() {
+        AsyncPool.asyncDo(() -> {
+            try {
+                String loggerOn = configCenter.get(ConfigConstant.logToggle);
+                LOGGER_ON = "true".equals(loggerOn) || "1".equals(loggerOn);
+            } catch (StatusRuntimeException ex) {
+                logger.error(ETCD_DOWN);
+            }
+
+            KvClient.WatchIterator watchIterator = configCenter.watch(ConfigConstant.logToggle);
+            while (watchIterator.hasNext()) {
+                WatchUpdate watchUpdate = watchIterator.next();
+                List<Event> eventList = watchUpdate.getEvents();
+
+                KeyValue keyValue = eventList.get(0).getKv();
+                logger.info("log toggle changed : " + keyValue);
+
+                String value = keyValue.getValue().toStringUtf8();
+                LOGGER_ON = "true".equals(value) || "1".equals(value);
+            }
+        });
+
     }
 
     /**
