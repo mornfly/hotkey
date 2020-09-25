@@ -188,9 +188,9 @@ var options = {
         forceParse: 0,
         minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
     });
-    let now = new Date();
+var now = new Date();
     $("#datetimepicker2").datetimepicker("setDate", now);
-    let pre5hours = now.setHours(now.getHours() - 5);
+var pre5hours = now.setHours(now.getHours() - 5);
     $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
 
 
@@ -208,14 +208,14 @@ $(function(){
         },
         success : function(data) {
             console.log(data)
-            let role = data.role;
+            var role = data.role;
             if(role === "ADMIN"){
                 $("#apps").append("<option></option>");
             }
-            let apps = data.appNames;
-            let appName = data.appName;
-            for (let i = 0; i < apps.length; i++) {
-                let app = apps[i];
+            var apps = data.appNames;
+            var appName = data.appName;
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
                 if(app === appName){
                     $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
                 }else{

@@ -146,7 +146,7 @@
                 var apps = data.appNames;
                 var appName = data.appName;
                 for (var i = 0; i < apps.length; i++) {
-                    let app = apps[i];
+                    var app = apps[i];
                     if(app === appName){
                         $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
                     }else{

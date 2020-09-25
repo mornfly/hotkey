@@ -45,7 +45,7 @@
 			                console.info("加载成功");
 				        },
 				        onLoadError: function(status){  //加载失败时执行
-                            let token = getCookie("token");
+                            var token = getCookie("token");
                             if(status === 1000 && ( token == "undefined" || token =="")){
                                 top.location.href = '/user/login';
                             }
@@ -59,15 +59,15 @@
 				 var search = {};
 				 search.pageSize= params.pageSize;
 				 search.pageNum=params.pageNumber;
-				 let app = $("#apps").val();
+                var app = $("#apps").val();
                 if(app!==undefined && app != null && app!==""){
                     search.app = app;
                 }
-                let time1 = $("#startTime").val();
+                var time1 = $("#startTime").val();
                 if(time1!==undefined && time1 != null && time1!==""){
                     search.startTime = time1;
                 }
-                let time2 = $("#endTime").val();
+                var time2 = $("#endTime").val();
                 if(time2!==undefined && time2 != null && time2!==""){
                     search.endTime = time2;
                 }

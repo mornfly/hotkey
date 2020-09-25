@@ -106,7 +106,7 @@
             {
                 title: '操作',
                 formatter: function (value, row) {
-                    let actions = [];
+                    var actions = [];
                     actions.push('<a class="btn btn-success btn-xs"  href="#" onclick="editClearCfg(\'' + (row.app) + '\')"><i class="fa fa-edit"></i>编辑</a> ');
                     return actions.join('');
                 }
@@ -126,14 +126,14 @@
             },
             success : function(data) {
                 console.log(data)
-                let role = data.role;
+                var role = data.role;
                 if(role === "ADMIN"){
                     $("#apps").append("<option></option>");
                 }
-                let apps = data.appNames;
-                let appName = data.appName;
-                for (let i = 0; i < apps.length; i++) {
-                    let app = apps[i];
+                var apps = data.appNames;
+                var appName = data.appName;
+                for (var i = 0; i < apps.length; i++) {
+                    var app = apps[i];
                     if(app === appName){
                         $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
                     }else{
