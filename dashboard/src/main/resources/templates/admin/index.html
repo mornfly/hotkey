@@ -64,9 +64,9 @@ height: calc(100vh - 139px);overflow-x: hidden;
         $.ajax({
             type : "POST",
             url: "/user/getUserName",
-            /*headers: {
+            headers: {
                 "Authorization":getCookie("token")
-            },*/
+            },
             async : false,
             error : function(request) {
                 $.modal.alertError("系统错误");
