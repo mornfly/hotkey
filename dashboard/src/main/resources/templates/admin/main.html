@@ -165,7 +165,7 @@
                     option.legend.data = result.legend;
                     //初始化option.series[0]中的data
                     option.series = [];
-                    let i = 0;
+                    var i = 0;
                     if(result.legend.length === 0){
                         myChart.clear();
                     }else{
@@ -178,8 +178,8 @@
                 }
             },
             error: function(result){  //加载失败时执行
-                let token = getCookie("token");
-                if(result.status == 500 && ( token == "undefined" || token =="")){
+                var token = getCookie("token");
+                if(result.status == 1000 && ( token == "undefined" || token =="")){
                     top.location.href = '/user/login';
                 }
                 console.info("加载数据失败");
@@ -205,11 +205,11 @@
 
 
     function ruleSearch(){
-        let st = $("#lineSt").val();
-        let et = $("#lineEt").val();
-        let type = $("#type").val();
-        let app = $("#apps").val();
-        let param = {"startTime":st,"endTime":et,"type":type,"app":app};
+        var st = $("#lineSt").val();
+        var et = $("#lineEt").val();
+        var type = $("#type").val();
+        var app = $("#apps").val();
+        var param = {"startTime":st,"endTime":et,"type":type,"app":app};
         loadData(option,"",param);
         myChart.setOption(option);
     }

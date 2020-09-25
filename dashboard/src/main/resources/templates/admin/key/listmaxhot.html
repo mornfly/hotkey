@@ -144,9 +144,9 @@ $(function(){
         minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
     });
 
-    let now = new Date();
+    var now = new Date();
     $("#datetimepicker2").datetimepicker("setDate", now);
-    let pre5hours = now.setHours(now.getHours() - 5);
+    var pre5hours = now.setHours(now.getHours() - 5);
     $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
 })
 

@@ -1,3 +1,8 @@
+--  !!! 注意设置sql model 否则可能sql报错 ！！！
+--  查询你的sql_model参数：select @@global.sql_mode;  发现ONLY_FULL_GROUP_BY 则会导致报错
+--  解决方式：set @@global.sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+--  详情查阅：https://www.cnblogs.com/hjhsblogs/p/11079356.html
+
 DROP TABLE IF EXISTS `hk_change_log`;
 CREATE TABLE `hk_change_log`  (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
