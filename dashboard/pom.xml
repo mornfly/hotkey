@@ -86,6 +86,16 @@
             <artifactId>sso-uim-spring</artifactId>
             <version>1.2.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.jd.dd</groupId>
+            <artifactId>dd-open-gw-api</artifactId>
+            <version>4.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+            <version>2.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

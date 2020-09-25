@@ -34,3 +34,4 @@ public interface RuleService {
 
     PageInfo<HitCountVo> pageRuleHitCount(PageReq pageReq, SearchReq req, String ownApp);
 }
+

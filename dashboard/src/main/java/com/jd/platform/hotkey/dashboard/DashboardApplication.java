@@ -1,18 +1,26 @@
 package com.jd.platform.hotkey.dashboard;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jd.platform.hotkey.dashboard.common.monitor.PushHandler;
+import com.jd.platform.hotkey.dashboard.warn.dongdong.DongDongApiManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
-public class DashboardApplication{
+public class DashboardApplication implements CommandLineRunner {
+
+    @Autowired
+    private DongDongApiManager apiManager;
 
     public static void main(String[] args) {
         try {
@@ -22,4 +30,20 @@ public class DashboardApplication{
         }
     }
 
+    @Resource
+    PushHandler pushHandler;
+
+
+    @Override
+    public void run(String... args) throws Exception {
+        Thread.sleep(5000);
+       // pushHandler.monitorAndPush("test");
+        apiManager.refreshAccessSignature();
+        Thread.sleep(1000);
+        List<String> list = new ArrayList<>();
+        list.add("liyunfeng31");
+        list.add("wuweifeng10");
+      //  String title, String content, List<String> erps, String extendStr) {
+        apiManager.push("title","this is content",list,"this is extend");
+    }
 }

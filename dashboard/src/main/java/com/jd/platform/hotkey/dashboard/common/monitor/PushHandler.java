@@ -8,9 +8,13 @@ import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.common.domain.PushMsgWrapper;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -75,6 +79,7 @@ public class PushHandler {
     public void pushWarnMsg() {
         //  初始化MAP到内存
         initAppCfgMap();
+        System.out.println("initAppCfgMap-result-> "+JSON.toJSONString(appCfgMap));
         while (true){
             try {
                 PushMsgWrapper msgWrapper = MSG_QUEUE.take();
@@ -113,26 +118,32 @@ public class PushHandler {
     private static void doPush() {
     }
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 初始化cfgMap和滑动窗口
      */
     private void initAppCfgMap() {
         List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
-        if(CollectionUtils.isEmpty(keyValues)){
+        if(CollectionUtils.isEmpty(keyValues) || keyValues.size()==1){
             List<String> apps = userService.listApp();
             for (String ap : apps) {
                 AppCfgVo cfg = new AppCfgVo(ap);
                 appCfgMap.put(ap,cfg);
                 configCenter.put(ConfigConstant.appCfgPath + ap, JSON.toJSONString(cfg));
             }
-        }else{
-            for (KeyValue keyValue : keyValues) {
-                String val = keyValue.getValue().toStringUtf8();
+            return;
+        }
+
+        for (KeyValue keyValue : keyValues) {
+            String val = keyValue.getValue().toStringUtf8();
+            if(StringUtils.isNotEmpty(val)){
                 AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
                 appCfgMap.put(cfg.getApp(),cfg);
             }
         }
+
+
     }
 
 }
