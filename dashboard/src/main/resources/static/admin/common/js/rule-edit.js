@@ -16,9 +16,11 @@ function edit() {
 			"Authorization":getCookie("token")
 		},
 		async : false,
-		error : function(response,status,xhr) {
-
-			$.modal.alertError("系统错误");
+		error : function(XMLHttpRequest) {
+			var token = getCookie("token");
+			if(XMLHttpRequest.status == 1000 && ( token == "undefined" || token =="")){
+				top.location.href = '/user/login';
+			}
 		},
 		success : function(data) {
 			$.operate.saveSuccess(data);
