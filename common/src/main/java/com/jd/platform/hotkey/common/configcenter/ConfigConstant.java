@@ -18,10 +18,6 @@ public interface ConfigConstant {
      */
     String dashboardPath = "/jd/dashboard/";
     /**
-     * 该app所有的workers地址的path。需要手工分配，默认每个app都用所有的worker
-     */
-    String appWorkerPath = null;
-    /**
      * 所有的客户端规则（譬如哪个app的哪些前缀的才参与计算）
      */
     String rulePath = "/jd/rules/";
@@ -49,10 +45,6 @@ public interface ConfigConstant {
      * totalReceiveKeyCount该worker接收到的key总量，每10秒上报一次
      */
     String totalReceiveKeyCount = "/jd/totalKeyCount/";
-    /**
-     * bufferPool直接内存
-     */
-    String bufferPoolPath = "/jd/bufferPool/";
 
     /**
      * 存放客户端hotKey访问次数和总访问次数的path

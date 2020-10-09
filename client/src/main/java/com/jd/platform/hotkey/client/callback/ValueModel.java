@@ -40,10 +40,6 @@ public class ValueModel {
         return createTime;
     }
 
-    public void setCreateTime(long createTime) {
-        this.createTime = createTime;
-    }
-
     public int getDuration() {
         return duration;
     }

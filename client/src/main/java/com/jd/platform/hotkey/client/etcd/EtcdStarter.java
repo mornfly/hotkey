@@ -47,7 +47,7 @@ public class EtcdStarter {
     }
 
     /**
-     * 启动后先拉取已存在的热key
+     * 启动后先拉取已存在的热key（来自于手工添加的目录）
      */
     private void fetchExistHotKey() {
         JdLogger.info(getClass(), "--- begin fetch exist hotKey from etcd ----");
@@ -55,17 +55,9 @@ public class EtcdStarter {
         try {
             //获取所有热key
             List<KeyValue> handKeyValues = configCenter.getPrefix(ConfigConstant.hotKeyPath + Context.APP_NAME);
-            List<KeyValue> workerKeyValues = configCenter.getPrefix(ConfigConstant.hotKeyRecordPath + Context.APP_NAME);
 
             for (KeyValue keyValue : handKeyValues) {
                 String key = keyValue.getKey().toStringUtf8().replace(ConfigConstant.hotKeyPath + Context.APP_NAME + "/", "");
-                HotKeyModel model = new HotKeyModel();
-                model.setRemove(false);
-                model.setKey(key);
-                EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
-            }
-            for (KeyValue keyValue : workerKeyValues) {
-                String key = keyValue.getKey().toStringUtf8().replace(ConfigConstant.hotKeyRecordPath + Context.APP_NAME + "/", "");
                 HotKeyModel model = new HotKeyModel();
                 model.setRemove(false);
                 model.setKey(key);

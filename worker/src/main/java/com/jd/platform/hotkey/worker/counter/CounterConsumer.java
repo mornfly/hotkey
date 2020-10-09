@@ -51,7 +51,7 @@ public class CounterConsumer {
                             map.put(mapKey, hotCount + "-" + totalCount);
                         }
                     }
-                    //500是什么意思呢？300就代表了300秒的数据了，已经不少了
+                    //300是什么意思呢？300就代表了300秒的数据了，已经不少了
                     if (map.size() >= 300) {
                         configCenter.putAndGrant(ConfigConstant.keyHitCountPath + appName + "/" + IpUtils.getIp()
                                 + "-" + System.currentTimeMillis(),
