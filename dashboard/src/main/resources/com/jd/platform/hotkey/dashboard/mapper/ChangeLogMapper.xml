@@ -3,7 +3,7 @@
 <mapper namespace="com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper">
   <resultMap id="BaseResultMap" type="com.jd.platform.hotkey.dashboard.model.ChangeLog">
     <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="biz_key" jdbcType="INTEGER" property="key" />
+    <result column="biz_id" jdbcType="VARCHAR" property="key" />
     <result column="biz_type" jdbcType="INTEGER" property="bizType" />
     <result column="from_str" jdbcType="VARCHAR" property="from" />
     <result column="to_str" jdbcType="VARCHAR" property="to" />
@@ -13,7 +13,7 @@
     <result column="uuid" jdbcType="VARCHAR" property="uuid" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, biz_key, biz_type, from_str, to_str, app_name,update_user, create_time,uuid
+    id, biz_id, biz_type, from_str, to_str, app_name,update_user, create_time,uuid
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -25,11 +25,8 @@
   <insert id="insertSelective" parameterType="com.jd.platform.hotkey.dashboard.model.ChangeLog">
     insert ignore into hk_change_log
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
       <if test="key != null">
-        biz_key,
+        biz_id,
       </if>
       <if test="bizType != null">
         biz_type,
@@ -54,9 +51,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=INTEGER},
-      </if>
       <if test="key != null">
         #{key,jdbcType=VARCHAR},
       </if>
@@ -92,11 +86,9 @@
     <if test="startTime != null">
       <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
     </if>
-    <if test="bizType != null">
-      and biz_type = #{bizType}
-    </if >
-    <if test="appName !=null and appName !=''">
-      and app_name = #{appName}
+
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
     </if >
     order by id desc
   </select>

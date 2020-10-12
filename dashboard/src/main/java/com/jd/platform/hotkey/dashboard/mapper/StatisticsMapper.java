@@ -1,10 +1,10 @@
 package com.jd.platform.hotkey.dashboard.mapper;
 
-import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,7 +18,14 @@ public interface StatisticsMapper {
      * 查看
      * @return list
      */
-    List<Statistics> listStatistics(ChartReq chartReq);
+    List<Statistics> listStatistics(SearchReq req);
+
+
+    /**
+     * 查看
+     * @return list
+     */
+    List<Statistics> listOrderByTime(SearchReq req);
 
     /**
      * records
@@ -33,4 +40,9 @@ public interface StatisticsMapper {
      * @return list
      */
     List<Statistics> sumStatistics(SearchReq req);
+
+    /**
+     * 清理
+     */
+    int clearExpireData(String app, Date expireDate);
 }

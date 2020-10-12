@@ -88,7 +88,7 @@
 				if (options.unique) {
 					var skipTag = $(this).tagExist(value);
 					if(skipTag == true) {
-					    //Marks fake input as not_valid to let styling it
+					    //Marks fake input as not_valid to var styling it
     				    $('#'+id+'_tag').addClass('not_valid');
     				}
 				} else {

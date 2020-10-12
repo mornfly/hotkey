@@ -11,11 +11,14 @@ import com.jd.platform.hotkey.dashboard.common.ex.BizException;
 import com.jd.platform.hotkey.dashboard.mapper.UserMapper;
 import com.jd.platform.hotkey.dashboard.model.User;
 import com.jd.platform.hotkey.dashboard.service.UserService;
+import com.jd.platform.hotkey.dashboard.util.JwtTokenUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.Set;
 @Service
 public class UserServiceImpl implements UserService {
 
+    @Value("${erp.defaultPwd:123}")
+    private String defaultPwd;
     @Resource
     private UserMapper userMapper;
     @Resource
@@ -64,6 +69,47 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public int insertUserByErp(User user) {
+        User userParam = new User();
+        userParam.setUserName(user.getUserName());
+        List<User> users = userMapper.selectHkUserList(userParam);
+        if(users.size() == 0){
+            user.setCreateTime(new Date());
+            user.setPwd(DigestUtils.md5DigestAsHex(defaultPwd.getBytes()));
+            int ret = userMapper.insertSelective(user);
+            System.out.println(user.getId());
+            return ret;
+        }
+        return 0;
+    }
+
+    @Override
+    public Cookie loginErpUser(User user){
+        User userParam = new User();
+        userParam.setUserName(user.getUserName());
+        List<User> users = userMapper.selectHkUserList(userParam);
+        if(users.size() == 0){
+            user.setCreateTime(new Date());
+            user.setPwd(DigestUtils.md5DigestAsHex(defaultPwd.getBytes()));
+            userMapper.insertSelective(user);
+            String token = JwtTokenUtil.createJWT(user.getId(), user.getUserName(), "", user.getAppName(), user.getNickName());
+            Cookie cookie = new Cookie("token", JwtTokenUtil.TOKEN_PREFIX + token);
+            cookie.setMaxAge(3600*24*7);
+            //cookie.setDomain("localhost");
+            cookie.setPath("/");
+            return cookie;
+        }else{
+            user =users.get(0);
+            String token = JwtTokenUtil.createJWT(user.getId(), user.getUserName(), "", user.getAppName(), user.getNickName());
+            Cookie cookie = new Cookie("token", JwtTokenUtil.TOKEN_PREFIX + token);
+            cookie.setMaxAge(3600*24*7);
+            //cookie.setDomain("localhost");
+            cookie.setPath("/");
+            return cookie;
+        }
+    }
+
+    @Override
     public int deleteByPrimaryKey(int id) {
         return userMapper.deleteByPrimaryKey(id);
     }
@@ -71,6 +117,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User selectByPrimaryKey(int id) {
         return userMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public User selectByUserName(String userName) {
+        return userMapper.selectByUserName(userName);
     }
 
     @Override

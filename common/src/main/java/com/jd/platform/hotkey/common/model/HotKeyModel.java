@@ -23,11 +23,7 @@ public class HotKeyModel extends BaseModel {
 
     @Override
     public String toString() {
-        return "HotKeyModel{" +
-                "appName='" + appName + '\'' +
-                ", keyType=" + keyType +
-                ", remove=" + remove +
-                '}';
+        return "appName:" + appName + "-key=" + getKey();
     }
 
     public boolean isRemove() {
@@ -53,4 +49,5 @@ public class HotKeyModel extends BaseModel {
     public void setKeyType(KeyType keyType) {
         this.keyType = keyType;
     }
+
 }

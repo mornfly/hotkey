@@ -24,7 +24,6 @@
 	
 	
 	            <div id="logo-mobile" class="visible-xs">
-	               <h1>用户管理<span>v2</span></h1>
 	            </div>
 	
 	        </div>
@@ -34,33 +33,33 @@
 	        <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
 	            <ul class="nav navbar-nav">
 		<!-- 消息通知栏 -->
-	                <li class="dropdown">
-                <!-- <a data-toggle="dropdown" class="dropdown-toggle" href="#"><i style="font-size:20px;" class="icon-conversation"></i><div class="noft-red">23</div></a>-->
+	              <!--  <li class="dropdown">
+                &lt;!&ndash; <a data-toggle="dropdown" class="dropdown-toggle" href="#"><i style="font-size:20px;" class="icon-conversation"></i><div class="noft-red">23</div></a>&ndash;&gt;
 	                    <ul style="margin: 11px 0 0 9px;" role="menu" class="dropdown-menu dropdown-wrap">
 	                    </ul>
-	                </li>
+	                </li>-->
 	                <!-- END消息通知栏 -->
 	                <!-- 右边警告图标通知栏 -->
-	                <li>
-	
-	                    <a data-toggle="dropdown" class="dropdown-toggle" href="#"><i style="font-size:19px;"
-																					  class="icon-warning tooltitle"></i>
+	            <!--    <li>
+
+						&lt;!&ndash; <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                     <i style="font-size:19px;"   class="icon-warning tooltitle"></i>&ndash;&gt;
 							<div class="noft-green" >5</div></a>
 	                    <ul style="margin: 12px 0 0 0;" role="menu" class="dropdown-menu dropdown-wrap">
 								<li>
-									<!-- <a th:href="@{/SysNoticeController/viewinfo/}+${notice.id}"  target="mainFrame"> -->
+									&lt;!&ndash; <a th:href="@{/SysNoticeController/viewinfo/}+${notice.id}"  target="mainFrame"> &ndash;&gt;
 		                            <a href="#"  target="mainFrame">
 		                                <span style="background:#DF2135" class="noft-icon fontawesome-comments-alt"></span>
-										<!--<i th:text="${notice.title}">From Station</i> -->
+										&lt;!&ndash;<i th:text="${notice.title}">From Station</i> &ndash;&gt;
 										<b>查看</b>
 		                            </a>
 	                        	</li>
 	                        	<li class="divider"></li>
 	                        <li>
-	                        <!--   <a th:href="@{/SysNoticeController/viewUser}" target="mainFrame"> <div>查看所有公告</div></a>-->
+	                        &lt;!&ndash;   <a th:href="@{/SysNoticeController/viewUser}" target="mainFrame"> <div>查看所有公告</div></a>&ndash;&gt;
 	                        </li>
 	                    </ul>
-	                </li>
+	                </li>-->
 	                <!--END 右边警告图标通知栏 -->
 	                
 	                <!-- 右边帮助图标通知栏  -->
@@ -89,24 +88,24 @@
 	                <!--end 时间DIV -->
 	                <!-- 天气预报div -->
 	                <ul id="nt-title">
-	                    <li><i class="wi-day-lightning"></i>&#160;&#160;Berlin&#160;
-	                        <b>85</b><i class="wi-fahrenheit"></i>&#160;; 15km/h
+	                    <li>&#160;&#160;使命&#160;
+	                        <b></b>&#160;- &#160;科技引领生活
 	                    </li>
-	                    <li><i class="wi-day-lightning"></i>&#160;&#160;Yogyakarta&#160;
-	                        <b>85</b><i class="wi-fahrenheit"></i>&#160;; Tonight- 72 °F (22.2 °C)
-	                    </li>
-	
-	                    <li><i class="wi-day-lightning"></i>&#160;&#160;Sttugart&#160;
-	                        <b>85</b><i class="wi-fahrenheit"></i>&#160;; 15km/h
+	                    <li>&#160;&#160;愿景&#160;
+	                        <b></b>&#160;- &#160;成为全球最值得信赖的企业
 	                    </li>
 	
-	                    <li><i class="wi-day-lightning"></i>&#160;&#160;Muchen&#160;
+	                    <li>&#160;&#160;核心价值观&#160;
+	                        <b></b>&#160;- &#160; 客户为先 诚信 协作 感恩 拼搏 担当
+	                    </li>
+	
+	                    <!--<li><i class="wi-day-lightning"></i>&#160;&#160;Muchen&#160;
 	                        <b>85</b><i class="wi-fahrenheit"></i>&#160;; 15km/h
 	                    </li>
 	
 	                    <li><i class="wi-day-lightning"></i>&#160;&#160;Frankurt&#160;
 	                        <b>85</b><i class="wi-fahrenheit"></i>&#160;; 15km/h
-	                    </li>
+	                    </li>-->
 	
 	                </ul>
 	                <!--end 天气预报div -->
@@ -120,10 +119,10 @@
 	                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
 	                        <img alt="" class="admin-pic img-circle" th:src="@{/static/admin/images/10.jpg}">
 							<!--<span th:text="${'Hi,'+session.sessionUserName}"></span><b class="caret"></b>-->
-							<span th:text="${name}"></span><b class="caret"></b>
+							<span id="userName" th:text="${name}"></span>
 	                    </a>
 	                    <ul style="margin-top:14px;" role="menu" class="dropdown-setting dropdown-menu">
-	                        <li>
+	                        <!--<li>
 									<a href="#">
 	                                <span class="entypo-user"></span>&#160;&#160;My Profile</a>
 	                        </li>
@@ -134,12 +133,12 @@
 	                        <li>
 	                            <a href="#">
 	                                <span class="entypo-lifebuoy"></span>&#160;&#160;Help</a>
-	                        </li>
-	                        <li class="divider"></li>
+	                        </li>-->
+	                        <!--<li class="divider"></li>
 	                        <li>
-	                 				<a th:href="@{/admin/Loginout}">
+	                 				<a th:href="@{/user/LoginOut}">
 	                                <span class="entypo-basket"></span>&#160;&#160; 退出</a>
-	                        </li>
+	                        </li>-->
 	                    </ul>
 	                </li>
 	                <!-- END头像设置 -->

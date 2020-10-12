@@ -28,8 +28,8 @@ public class ChartReq implements Serializable {
     }
 
     public ChartReq(LocalDateTime st, LocalDateTime et, Integer limit) {
-        this.startTime = DateUtil.localDateTimeToDate(st);
-        this.endTime = DateUtil.localDateTimeToDate(et);
+        this.startTime = DateUtil.ldtToDate(st);
+        this.endTime = DateUtil.ldtToDate(et);
         this.limit = limit;
     }
 

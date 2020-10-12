@@ -1,33 +1,40 @@
 package com.jd.platform.hotkey.dashboard.service.impl;
 
 
+import cn.hutool.core.date.SystemClock;
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ibm.etcd.api.Event;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
+import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
-import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
-import com.jd.platform.hotkey.dashboard.common.ex.BizException;
+import com.jd.platform.hotkey.dashboard.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
-import com.jd.platform.hotkey.dashboard.mapper.ReceiveCountMapper;
 import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
+import com.jd.platform.hotkey.dashboard.model.ChangeLog;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
-import com.jd.platform.hotkey.dashboard.model.ReceiveCount;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
+import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
 import com.jd.platform.hotkey.dashboard.service.KeyService;
+import com.jd.platform.hotkey.dashboard.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.PageUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,100 +55,67 @@ public class KeyServiceImpl implements KeyService {
     @Resource
     private KeyRecordMapper recordMapper;
     @Resource
-    private KeyTimelyMapper keyTimelyMapper;
-    @Resource
-    private ReceiveCountMapper countMapper;
-    @Resource
     private StatisticsMapper statisticsMapper;
+    @Resource
+    private RuleService ruleService;
+    @Resource
+    private ChangeLogMapper logMapper;
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public HotKeyLineChartVo ruleLineChart2(SearchReq req) {
+    /**
+     * 折线图
+     *
+     * @param req req
+     * @return vo
+     */
+    @Override
+    public HotKeyLineChartVo ruleLineChart(SearchReq req, String app) {
         int type = req.getType();
-        if(req.getEndTime() == null){
-            req.setEndTime(new Date());
+        String appReq = req.getApp();
+        // admin 全查
+        if (StrUtil.isNotEmpty(appReq)) {
+            app = appReq;
         }
-        switch (type){
-            case 1:
-                req.setStartTime(DateUtil.preMinus(30));
-                List<Statistics> list = statisticsList();
-                System.out.println("30 min");
-                break;
-            case 2:
-                req.setStartTime(DateUtil.preDays(1));
-                System.out.println("24 hours");
-                break;
-            case 3:
-                req.setStartTime(DateUtil.preDays(7));
-                System.out.println("7 days");
-                break;
-            default:
-                System.out.println("=============");
+        req.setApp(null);
+        LocalDateTime now = LocalDateTime.now();
+        req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
+        List<String> rules = ruleService.listRules(null);
+        if (type == 4) {
+            LocalDateTime st = req.getStartTime() == null ? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
+            req.setStartTime(DateUtil.ldtToDate(st));
+            LocalDateTime et = DateUtil.dateToLdt(req.getEndTime());
+            boolean longTime = Duration.between(st, et).toHours() > 2;
+            req.setType(longTime ? 6 : 5);
+            List<Statistics> list = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(st, et, list, !longTime, rules, app);
         }
-        return null;
+
+        if (type == 5) {
+            LocalDateTime startTime = now.minusMinutes(31);
+            req.setStartTime(DateUtil.ldtToDate(startTime));
+            List<Statistics> list = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(startTime, now, list, true, rules, app);
+        } else if (type == 6) {
+            LocalDateTime startTime2 = now.minusHours(25);
+            req.setStartTime(DateUtil.ldtToDate(startTime2));
+            List<Statistics> list2 = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(startTime2, now, list2, false, rules, app);
+        } else {
+            LocalDateTime startTime3 = now.minusDays(7).minusHours(1);
+            req.setStartTime(DateUtil.ldtToDate(startTime3));
+            req.setType(6);
+            List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
+            return CommonUtil.processData(startTime3, now, list3, false, rules, app);
+        }
     }
 
 
     @Override
-    public HotKeyLineChartVo ruleLineChart(SearchReq req) {
-        int type = req.getType();
-        if(req.getEndTime() == null){
-            req.setEndTime(new Date());
-        }
-        switch (type){
-            case 1:
-                req.setStartTime(DateUtil.preMinus(30));
-                List<Statistics> list = statisticsList();
-                Map<String, int[]> map = new HashMap<>(10);
-                Map<String, List<Statistics>> listMap = list.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
-                for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
-                    int start = 1;
-                    map.put(m.getKey(),new int[30]);
-                    int[] data = map.get(m.getKey());
-                    int tmp = 0;
-                    for (int i = 0; i < 30; i++) {
-                        Statistics st;
-                        try {
-                            st = m.getValue().get(tmp);
-                            if(String.valueOf(start).endsWith("24")){ start = start + 77; }
-                            if(start != st.getHours()){
-                                data[i] = 0;
-                            }else{
-                                tmp ++;
-                                data[i] = st.getCount();
-                            }
-                            start++;
-                        }catch (Exception e){
-                            data[i] = 0;
-                        }
-                    }
-                }
+    public Page<KeyTimely> pageKeyTimely(PageReq page, SearchReq param) {
+        List<KeyTimely> keyTimelies = HotKeyReceiver.list(param);
+        return PageUtil.pagination(keyTimelies, page.getPageSize(), page.getPageNum()-1);
 
-                System.out.println("30 min");
-                break;
-            case 2:
-                req.setStartTime(DateUtil.preDays(1));
-                System.out.println("24 hours");
-                break;
-            case 3:
-                req.setStartTime(DateUtil.preDays(7));
-                System.out.println("7 days");
-                break;
-            default:
-                System.out.println("=============");
-        }
-        return null;
-    }
-
-
-    @Override
-    public PageInfo<KeyTimely> pageKeyTimely(PageReq page, SearchReq param) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
-        List<KeyTimely> listKey = keyTimelyMapper.listKeyTimely(param);
-        for (KeyTimely timely : listKey) {
-            timely.setKey(CommonUtil.keyName(timely.getKey()));
-            timely.setRuleDesc(RuleUtil.ruleDesc(timely.getAppName() + "/" + timely.getKey()));
-        }
-        return new PageInfo<>(listKey);
     }
 
     @Override
@@ -163,57 +137,20 @@ public class KeyServiceImpl implements KeyService {
     public HotKeyLineChartVo getLineChart(ChartReq chartReq) {
         int hours = 6;
         // 默认查询6小时内的数据
-        if(chartReq.getStartTime() == null || chartReq.getEndTime() == null){
-            chartReq.setStartTime(DateUtil.preTime(hours));
-            chartReq.setEndTime(new Date());
-        }
-
-        List<Statistics> statistics = statisticsMapper.listStatistics(chartReq);
+        SearchReq req = new SearchReq();
+        req.setStartTime(DateUtil.preTime(hours));
+        req.setEndTime(new Date());
+        List<Statistics> statistics = statisticsMapper.listStatistics(req);
         // 获取data Y轴
         Map<String, int[]> keyDateMap = keyDateMap(statistics, hours);
         // 获取时间x轴
         List<String> list = new ArrayList<>();
-        for (int i = hours; i >0 ; i--) {
-            LocalDateTime time = LocalDateTime.now().minusHours(i-1);
+        for (int i = hours; i > 0; i--) {
+            LocalDateTime time = LocalDateTime.now().minusHours(i - 1);
             int hour = time.getHour();
-            list.add(hour+"时");
+            list.add(hour + "时");
         }
-        return new HotKeyLineChartVo(list,keyDateMap);
-    }
-
-
-    @Override
-    public HotKeyLineChartVo getQpsLineChart(ChartReq chartReq) {
-        if(chartReq.getStartTime() == null || chartReq.getEndTime() == null){
-         /*   chartReq.setStartTime(DateUtil.preTime());
-            chartReq.setEndTime(new Date());*/
-        }
-        List<ReceiveCount> countList = countMapper.list(chartReq);
-        Map<String, int []> map = new HashMap<>(10);
-        Set<String> minutes = new HashSet<>();
-        List<List<ReceiveCount>> workerList = new ArrayList<>();
-        countList.stream().collect(Collectors.groupingBy(ReceiveCount::getWorkerName,Collectors.toList()))
-                .forEach((name,data)-> workerList.add(data));
-        for (List<ReceiveCount> cts : workerList) {
-            int size = cts.size();
-            for (int i = 0; i < size; i++) {
-                ReceiveCount dto = cts.get(i);
-                String k = dto.getWorkerName();
-                Long v = dto.getReceiveCount();
-                Integer ms = dto.getMinutes();
-                minutes.add(ms.toString());
-                if(map.get(k) == null){
-                    int [] data = new int[size];
-                    data[i] = v.intValue();
-                    map.put(k, data);
-                }else{
-                    int [] data = map.get(k);
-                    data[i] = v.intValue();
-                    map.put(k, data);
-                }
-            }
-        }
-        return new HotKeyLineChartVo(new ArrayList<>(minutes),map);
+        return new HotKeyLineChartVo(list, keyDateMap);
     }
 
 
@@ -233,7 +170,15 @@ public class KeyServiceImpl implements KeyService {
     public int insertKeyByUser(KeyTimely key) {
         configCenter.putAndGrant(ConfigConstant.hotKeyPath + key.getAppName() + "/" + key.getKey(),
                 System.currentTimeMillis() + "", key.getDuration());
-        return 1;
+
+        //写入本地缓存，实时热key信息
+        HotKeyModel hotKeyModel = new HotKeyModel();
+        hotKeyModel.setCreateTime(System.currentTimeMillis());
+        hotKeyModel.setAppName(key.getAppName());
+        hotKeyModel.setKey(key.getKey());
+        HotKeyReceiver.put(hotKeyModel);
+        return logMapper.insertSelective(new ChangeLog(key.getAppName(), Constant.HOTKEY_CHANGE, "",
+                key.getKey(), key.getUpdater(), SystemClock.now() + ""));
     }
 
     @Override
@@ -248,54 +193,47 @@ public class KeyServiceImpl implements KeyService {
         //app + "_" + key
         String[] arr = keyTimely.getKey().split("/");
         //删除client监听目录的key
-        String ectdKey = ConfigConstant.hotKeyPath + arr[0] + "/" + arr[1];
-        configCenter.delete(ectdKey);
-        //也删除Record目录下的该key，因为不确定要删的key到底在哪
-        String recordKey = ConfigConstant.hotKeyRecordPath + arr[0] + "/" + arr[1];
-        configCenter.delete(recordKey);
+        String etcdKey = ConfigConstant.hotKeyPath + arr[0] + "/" + arr[1];
 
-        KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0L, Constant.HAND,
+        //删除caffeine里的实时key
+        HotKeyReceiver.delete(arr[0] + "/" + arr[1]);
+
+        if (configCenter.get(etcdKey) == null) {
+            //如果手工目录也就是client监听的目录里没有该key，那么就往里面放一个，然后再删掉它，这样client才能监听到删除事件
+            configCenter.putAndGrant(etcdKey, com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE, 1);
+        }
+        configCenter.delete(etcdKey);
+
+        KeyRecord keyRecord = new KeyRecord(arr[1], "", arr[0], 0, Constant.HAND,
                 Event.EventType.DELETE_VALUE, UUID.randomUUID().toString(), new Date());
-
         recordMapper.insertSelective(keyRecord);
-
-        return 1;
-    }
-
-    @Override
-    public KeyTimely selectByKey(String key) {
-        return keyTimelyMapper.selectByKey(key);
-    }
-
-    @Override
-    public KeyTimely selectByPk(Long id) {
-        return keyTimelyMapper.selectByPrimaryKey(id);
+        return logMapper.insertSelective(new ChangeLog(keyTimely.getKey(), Constant.HOTKEY_CHANGE, keyTimely.getKey(), "", keyTimely.getUpdater(), SystemClock.now() + ""));
     }
 
 
-
-
-    private Map<String, int[]> keyDateMap(List<Statistics> statistics, int hours){
+    private Map<String, int[]> keyDateMap(List<Statistics> statistics, int hours) {
         Map<String, int[]> map = new HashMap<>(10);
         Map<String, List<Statistics>> listMap = statistics.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
         for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
-            int start = DateUtil.preHours(LocalDateTime.now(),5);
-            map.put(m.getKey(),new int[hours]);
+            int start = DateUtil.preHoursInt(5);
+            map.put(m.getKey(), new int[hours]);
             int[] data = map.get(m.getKey());
             int tmp = 0;
             for (int i = 0; i < hours; i++) {
                 Statistics st;
                 try {
                     st = m.getValue().get(tmp);
-                    if(String.valueOf(start).endsWith("24")){ start = start + 77; }
-                    if(start != st.getHours()){
+                    if (String.valueOf(start).endsWith("24")) {
+                        start = start + 77;
+                    }
+                    if (start != st.getHours()) {
                         data[i] = 0;
-                    }else{
-                        tmp ++;
+                    } else {
+                        tmp++;
                         data[i] = st.getCount();
                     }
                     start++;
-                }catch (Exception e){
+                } catch (Exception e) {
                     data[i] = 0;
                 }
             }
@@ -304,9 +242,8 @@ public class KeyServiceImpl implements KeyService {
     }
 
 
-
     private void checkParam(SearchReq req) {
-        if(req.getStartTime() == null || req.getEndTime() == null){
+        if (req.getStartTime() == null || req.getEndTime() == null) {
             req.setStartTime(DateUtil.preTime(5));
             req.setEndTime(new Date());
         }
@@ -315,51 +252,6 @@ public class KeyServiceImpl implements KeyService {
             throw new BizException(ResultEnum.TIME_RANGE_LARGE);
         }*/
     }
-
-
-    private List<Statistics> statisticsList(){
-        Random rd = new Random();
-        List<Statistics> list = new ArrayList<>();
-        for (int i = 0; i < 30 ; i++) {
-            Statistics st = new Statistics();
-            st.setApp("rule1");
-            st.setKeyName("key1");
-            st.setCount(rd.nextInt(100));
-            st.setBizType(1);
-            st.setMinutes(2006052140+i);
-            if(String.valueOf(st.getMinutes()).endsWith("60")){
-                st.setMinutes(st.getMinutes()+1);
-            }
-            list.add(st);
-        }
-        List<Statistics> list2 = new ArrayList<>();
-        for (int i = 0; i < 30 ; i++) {
-            Statistics st2 = new Statistics();
-            st2.setApp("rule2");
-            st2.setKeyName("key2");
-            st2.setCount(rd.nextInt(100));
-            st2.setBizType(1);
-            st2.setMinutes(2006052140+i);
-            list2.add(st2);
-        }
-        list.addAll(list2);
-        return list;
-    }
-
-    private List<Statistics> statisticsList1(){
-        Random rd = new Random();
-        List<Statistics> list = new ArrayList<>();
-        for (int i = 0; i < 24 ; i++) {
-            Statistics st = new Statistics();
-            st.setApp("rule1");
-            st.setKeyName("key1");
-            st.setCount(rd.nextInt(100));
-            st.setBizType(1);
-            st.setHours(20060500+i);
-        }
-        return list;
-    }
-
 
 }
 

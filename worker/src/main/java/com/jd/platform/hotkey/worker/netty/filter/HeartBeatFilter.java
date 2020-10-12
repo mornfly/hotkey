@@ -4,7 +4,7 @@ import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.worker.netty.flush.FlushUtil;
+import com.jd.platform.hotkey.common.tool.flush.FlushUtil;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

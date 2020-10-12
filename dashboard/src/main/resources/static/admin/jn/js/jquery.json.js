@@ -31,7 +31,7 @@ var JSONFormat = (function(){
                 html_fragment = _format_array(object, indent_count);
                 break;
             case 'Object' :
-                console.log(object);
+                //console.log(object);
                 if(object instanceof BigNumber){
                   html_fragment = _format_number(object.toFixed());
                 }else{
@@ -124,7 +124,7 @@ var JSONFormat = (function(){
     var _JSONFormat = function(origin_data){
         // this.data = origin_data ? origin_data :
         //     JSON && JSON.parse ? JSON.parse(origin_data) : eval('(' + origin_data + ')');
-        let stringedJSON = origin_data.replace(/([^\\]\"):\s*(\[)?([-+Ee0-9.]+)/g, '$1: $2"jsondotcnprefix$3"');
+        var stringedJSON = origin_data.replace(/([^\\]\"):\s*(\[)?([-+Ee0-9.]+)/g, '$1: $2"jsondotcnprefix$3"');
         try {
           var temp = JSON.parse(stringedJSON, (key, value) => {
             // only changing strings

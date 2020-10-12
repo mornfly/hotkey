@@ -1,9 +1,9 @@
 package com.jd.platform.hotkey.worker.model;
 
 import io.netty.channel.ChannelHandlerContext;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
 /**
  * @author wuweifeng wrote on 2019-12-05
@@ -15,31 +15,33 @@ public class AppInfo {
      */
     private String appName;
     /**
-     * 客户端ip 和 channel的映射关系
+     * 某app的全部channel
      */
-    private Map<String, ChannelHandlerContext> map = new ConcurrentHashMap<>();
+    private ChannelGroup channelGroup;
 
-    @Override
-    public String toString() {
-        return "AppInfo{" +
-                "appName='" + appName + '\'' +
-                ", map=" + map +
-                '}';
+    public AppInfo(String appName) {
+        this.appName = appName;
+        channelGroup  = new DefaultChannelGroup(appName, GlobalEventExecutor.INSTANCE);
+    }
+
+    public void groupPush(Object object) {
+        channelGroup.writeAndFlush(object);
+    }
+
+    public void add(ChannelHandlerContext ctx) {
+        channelGroup.add(ctx.channel());
+    }
+
+    public void remove(ChannelHandlerContext ctx) {
+        channelGroup.remove(ctx.channel());
     }
 
     public String getAppName() {
         return appName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public int size() {
+        return channelGroup.size();
     }
 
-    public Map<String, ChannelHandlerContext> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<String, ChannelHandlerContext> map) {
-        this.map = map;
-    }
 }

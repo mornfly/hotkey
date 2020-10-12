@@ -11,15 +11,22 @@ public class CpuNum {
      * netty worker线程数量. cpu密集型
      */
     public static int workerCount() {
+        //取cpu核数，新版jdk在docker里取的就是真实分配的，老版jdk取的是宿主机的，可能特别大，如32核
+        int count = Runtime.getRuntime().availableProcessors();
         if (isNewerVersion()) {
-            return Runtime.getRuntime().availableProcessors();
+            return count;
         } else {
-            return 4;
+            count = count / 2;
+            if (count == 0) {
+                count = 1;
+            }
         }
+        return count;
     }
 
     public static void main(String[] args) {
-        System.out.println(isNewerVersion());
+//        System.out.println(isNewerVersion());
+        System.out.println(Runtime.getRuntime().availableProcessors());
     }
 
 
@@ -27,7 +34,7 @@ public class CpuNum {
         try {
             //如1.8.0_20, 1.8.0_181,1.8.0_191-b12
             String javaVersion = System.getProperty("java.version");
-            //1.8.0_131之前的java版本，在docker内获取availableProcessors的数量都不对，会取到宿主机的cpu数量，譬如宿主机32核，
+            //1.8.0_191之前的java版本，在docker内获取availableProcessors的数量都不对，会取到宿主机的cpu数量，譬如宿主机32核，
             //该docker只分配了4核，那么老版会取到32，新版会取到4。
             //线上事故警告！！！！！！老版jdk取到数值过大，线程数太多，导致cpu瞬间100%，大量的线程切换等待
             //先取前三位进行比较
@@ -45,7 +52,7 @@ public class CpuNum {
                     smallVersion = smallVersion.substring(0, smallVersion.indexOf("-"));
                 }
 
-                return Integer.valueOf(smallVersion) >= 131;
+                return Integer.valueOf(smallVersion) >= 191;
             }
         } catch (Exception e) {
             return false;

@@ -3,8 +3,10 @@ package com.jd.platform.hotkey.dashboard.service;
 import com.github.pagehelper.PageInfo;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.model.KeyRule;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
 import com.jd.platform.hotkey.dashboard.model.Rules;
+
+import java.util.List;
 
 /**
  * @ProjectName: hotkey
@@ -24,7 +26,11 @@ public interface RuleService {
 
     int delRule(String key, String updater);
 
-    PageInfo<Rules> pageKeyRule(PageReq page, SearchReq param);
+    PageInfo<Rules> pageKeyRule(PageReq page, String appName);
 
     int save(Rules rules);
+
+    List<String> listRules(String app);
+
+    PageInfo<HitCountVo> pageRuleHitCount(PageReq pageReq, SearchReq req, String ownApp);
 }

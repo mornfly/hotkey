@@ -24,16 +24,18 @@ public enum ResultEnum {
 
     CONFLICT_ERROR(1007, "用户名/手机号已存在"),
 
-    TIME_RANGE_LARGE(1008, "查询时间过大");
+    ILLEGAL_JSON_ARR(1008, "非法的json数组"),
+
+    TIME_RANGE_LARGE(1022, "查询时间过大");
 
 
     private int code;
 
-    private String message;
+    private String msg;
 
-    ResultEnum(int code, String message) {
+    ResultEnum(int code, String msg) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
 
     public int getCode() {
@@ -44,11 +46,11 @@ public enum ResultEnum {
         this.code = code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMsg() {
+        return msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }

@@ -30,7 +30,7 @@ public class Result<T> implements Serializable {
 
     public Result(ResultEnum resultEnum) {
         this.code = resultEnum.getCode();
-        this.msg = resultEnum.getMessage();
+        this.msg = resultEnum.getMsg();
     }
 
     public static Result success(){
@@ -43,6 +43,10 @@ public class Result<T> implements Serializable {
 
     public static Result fail(){
         return new Result<>(ResultEnum.NO_CHANGE);
+    }
+
+    public static Result error(int code, String msg){
+        return new Result<>(code,msg);
     }
 
     public static Result error(){

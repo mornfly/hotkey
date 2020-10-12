@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.dashboard.util;
 
-import com.jd.platform.hotkey.dashboard.model.User;
 import io.jsonwebtoken.*;
 import org.apache.logging.log4j.util.Base64Util;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -8,9 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -47,7 +47,7 @@ public class JwtTokenUtil {
      * @param role
      * @return
      */
-    public static String createJWT(Integer userId, String username, String role, String appName) {
+    public static String createJWT(Integer userId, String username, String role, String appName, String nickName) {
         try {
             // 使用HS256加密算法
             SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -62,7 +62,7 @@ public class JwtTokenUtil {
             JwtBuilder builder = Jwts.builder().setHeaderParam("type", "JWT")
                     .claim("userId", encryId)
                     .claim("role", role)
-                    .claim("appName", appName)
+                    .claim("nickName", nickName)
                     .setSubject(username)           // 代表这个JWT的主体，即它的所有人
                  //   .setIssuer(audience.getClientId())              // 代表这个JWT的签发主体；
                     .setIssuedAt(new Date())        // 是一个时间戳，代表这个JWT的签发时间；
@@ -73,9 +73,6 @@ public class JwtTokenUtil {
             if (TTLMillis >= 0) {
                 long expMillis = nowMillis + TTLMillis;
                 Date exp = new Date(expMillis);
-                System.out.println("当前时间： "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-
-                System.out.println("过期时间： "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(exp));
                 builder.setExpiration(exp); // 是一个时间戳，代表这个JWT的过期时间；
                       //  .setNotBefore(now); // 是一个时间戳，代表这个JWT生效的开始时间，意味着在这个时间之前验证JWT是会失败的
             }
@@ -88,16 +85,6 @@ public class JwtTokenUtil {
         }
     }
 
-
-    /**
-     * 从token中获取appName
-     * @param token
-     * @return
-     */
-    public static String getAppName(String token){
-        Claims re = parseJWT(token);
-        return re.get("appName", String.class);
-    }
 
 
     /**
@@ -131,11 +118,8 @@ public class JwtTokenUtil {
     }
 
 
-    public static User userPower(String token){
-        Claims claims = parseJWT(token);
-        String role = claims.get("role",String.class);
-        String appName = claims.get("appName",String.class);
-        return new User(role,appName);
+    public static Claims claims(String token){
+        return parseJWT(token);
     }
 
     /**
@@ -147,6 +131,14 @@ public class JwtTokenUtil {
         return parseJWT(token).getExpiration().before(new Date());
     }
 
-
+    public static String getAuthHeader(HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+        for(Cookie cookie : cookies){
+            if("token".equals(cookie.getName())){
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
 
 }

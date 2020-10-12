@@ -23,10 +23,6 @@
 <!-- 右边内容 -->
 <div class="wrap-fluid">
     <div class="container-fluid paper-wrap bevel tlbr">
-        <!--标题 通用-->
-        <div th:replace="admin/common/html/title :: title(${title},${parenttitle},${isMsg},${msgHTML})">
-        </div>
-        <!-- 结束标题 通用-->
         <div class="content-wrap">
             <!-- 结束内容 -->
             <div class="row">
@@ -153,9 +149,16 @@ var options = {
             {
                 field: 'phone',
                 title: '手机号'
+            },
+            {
+                field: 'createTime',
+                title: '创建时间',
+                formatter:function (val) {
+                    return changeDateFormat(val);
+                }
             },{
 			    title: '操作',
-			    formatter: function (value, row, index) {
+			    formatter: function (value, row) {
 			        var id = row.id;
 			        var actions = [];
 			        actions.push('<a class="btn btn-success btn-xs"  href="#" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
@@ -173,7 +176,7 @@ $(function(){
 
 <script type="text/javascript">
 
-	let editPwdUrl="/user/editPwd/{id}";
+    var editPwdUrl="/user/editPwd/{id}";
 	function updatePwd(){
 		 var rows = $.common.isEmpty($.table._option.id) ? $.table.selectFirstColumns() : $.table.selectColumns($.table._option.id);
          if (rows.length == 0) {

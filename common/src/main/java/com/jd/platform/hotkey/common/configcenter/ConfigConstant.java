@@ -14,6 +14,10 @@ public interface ConfigConstant {
      */
     String workersPath = "/jd/workers/";
     /**
+     * dashboard的ip存这里
+     */
+    String dashboardPath = "/jd/dashboard/";
+    /**
      * 该app所有的workers地址的path。需要手工分配，默认每个app都用所有的worker
      */
     String appWorkerPath = null;
@@ -49,4 +53,25 @@ public interface ConfigConstant {
      * bufferPool直接内存
      */
     String bufferPoolPath = "/jd/bufferPool/";
+
+    /**
+     * 存放客户端hotKey访问次数和总访问次数的path
+     */
+    String keyHitCountPath = "/jd/keyHitCount/";
+
+    /**
+     * 清理历史数据的配置的path
+     * time unit : day
+     */
+    String clearCfgPath = "/jd/clearCfg/";
+
+    /**
+     * app配置
+     */
+    String appCfgPath = "/jd/appCfg/";
+
+    /**
+     * 控制台启动的netty端口
+     */
+    int dashboardPort = 11112;
 }

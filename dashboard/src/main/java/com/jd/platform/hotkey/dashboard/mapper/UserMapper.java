@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserMapper {
     int deleteByPrimaryKey(Integer id);
 
-    int insertSelective(User record);
+    int insertSelective(User user);
 
     User selectByPrimaryKey(Integer id);
 
@@ -22,4 +22,7 @@ public interface UserMapper {
 
     List<String> listApp();
 
+    List<User> selectHkUserList(User user);
+
+    User selectByUserName(String userName);
 }

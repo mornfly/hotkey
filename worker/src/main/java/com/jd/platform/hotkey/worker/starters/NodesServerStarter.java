@@ -1,9 +1,9 @@
 package com.jd.platform.hotkey.worker.starters;
 
-import com.jd.platform.hotkey.common.coder.Codec;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
 import com.jd.platform.hotkey.worker.netty.server.NodesServer;
+import com.jd.platform.hotkey.worker.tool.AsyncPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author wuweifeng wrote on 2019-12-11
@@ -29,18 +28,15 @@ public class NodesServerStarter {
     private IClientChangeListener iClientChangeListener;
     @Resource
     private List<INettyMsgFilter> messageFilters;
-    @Resource
-    private Codec codec;
 
     @PostConstruct
     public void start() {
-        CompletableFuture.runAsync(() -> {
+        AsyncPool.asyncDo(() -> {
             logger.info("netty server is starting");
 
             NodesServer nodesServer = new NodesServer();
             nodesServer.setClientChangeListener(iClientChangeListener);
             nodesServer.setMessageFilters(messageFilters);
-            nodesServer.setCodec(codec);
             try {
                 nodesServer.startNettyServer(port);
             } catch (Exception e) {

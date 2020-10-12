@@ -1,11 +1,11 @@
 package com.jd.platform.hotkey.dashboard.mapper;
 
-import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,4 +25,6 @@ public interface KeyRecordMapper {
     List<Statistics> maxHotKey(SearchReq req);
 
     List<Statistics> statisticsByRule(SearchReq req);
+
+    int clearExpireData(String app, Date expireDate);
 }

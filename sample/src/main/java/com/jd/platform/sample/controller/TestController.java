@@ -1,6 +1,10 @@
 package com.jd.platform.sample.controller;
 
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.jd.platform.sample.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,6 +22,8 @@ public class TestController {
 
     @Resource
     private Cache cache;
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
 
     /**
      * 往redis里添加20个key
@@ -67,6 +73,24 @@ public class TestController {
     @RequestMapping("hot")
     public Object hot(Integer count) {
         cache.get("key" + count);
+
+        return 1;
+    }
+
+    @RequestMapping("")
+    public Object a(String s) {
+        if (JdHotKeyStore.isHotKey("ecitemcenter_itemV2_" + s)) {
+            logger.error("isHot");
+        } else {
+            logger.error("noHot");
+        }
+
+        return 1;
+    }
+
+    @DeleteMapping("")
+    public Object aDelete() {
+        JdHotKeyStore.remove("a");
 
         return 1;
     }

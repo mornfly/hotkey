@@ -59,7 +59,7 @@
                             <div class="body-nest" id="search_div"  style="display: block">
                                 <div class="form_left">
                                     <form role="form" class="form-inline" id="keyForm">
-                                        <div class="form-group" style="width: 17%" >
+                                        <div class="form-group" style="width: 23%" >
                                           <label class="control-label timeBut" >选择日期：</label>
                                             <div class='input-group date datetimepicker' id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
                                                 <input type='text' class="form-control" name="startTime" id="st"/>
@@ -68,7 +68,7 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="form-group" style="width: 14%" >
+                                        <div class="form-group" style="width: 18%" >
                                             <label class="control-label timeBut">~</label>
                                             <div class='input-group date datetimepicker' id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
                                                 <input type='text' class="form-control"  name="endTime" id="et"/>
@@ -77,16 +77,16 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="form-group" style="margin-left: 60px">
+                                        <div class="form-group" style="margin-left: 30px">
                                             <label class="control-label timeBut2">热点Key：</label>
-                                            <input type="text" name="key" placeholder="key"class="form-control" id="key">
+                                            <input type="text" name="key" placeholder="key"class="form-control" id="key" style="width: 50%;">
                                         </div>
-                                        <div class="form-group" style="width: 15%;margin-left: 60px" >
+                                        <div class="form-group" style="width: 18%;margin-left: -23px" >
                                             <label class="control-label timeBut2" >所属APP：</label>
-                                            <select name="appName" id="apps" class="form-control" style="width: 72%">
+                                            <select name="app" id="apps" class="form-control" style="width: 64%">
                                             </select>
                                         </div>
-                                        <button onclick="$.table.search(this)" class="btn btn-success"  style="margin-left: 20%" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
+                                        <button onclick="$.table.search(this)" class="btn btn-success"  style="margin-left:4%" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
                                         <button onclick="exportHot()" class="btn btn-success"  style="margin-left: 1%"  type="button"><i class="fa fa-arrow-circle-o-down"></i>&nbsp;导出</button>
                                     </form>
                                 </div>
@@ -163,7 +163,7 @@ var options = {
             { field: 'key', title: 'key'},
             { field: 'ruleDesc', title: '类型'},
             { field: 'appName', title: '所属APP'},
-            { field: 'duration', title: '缓存时间'},
+            { field: 'duration', title: '剩余缓存时间'},
             { field: 'source', title: '来源'},
             { field: 'type', title: '操作类型',
                 formatter:function (val) {
@@ -174,31 +174,7 @@ var options = {
             { field: 'createTime', title: '创建时间'
             }]
   };
-$(function(){
 
-    $.ajax({
-        cache : true,
-        type : "POST",
-        url : "/user/info",
-        headers: {
-            "Authorization":getCookie("token")
-        },
-        async : false,
-        error : function(request) {
-            $.modal.alertError("系统错误");
-        },
-        success : function(data) {
-            console.log(data)
-            let apps = data.appNames;
-            for (var i = 0; i < apps.length; i++) {
-                $("#apps").append("<option>" + apps[i] + "</option>");
-            }
-        }
-    });
-
-
-	var oTab=$.table.oTableInit(options);
-	oTab.Init();
 
     $('.datetimepicker').datetimepicker({
         language: 'zh-CN',
@@ -211,8 +187,46 @@ $(function(){
         minView: 0,             //提供选择分钟的视图
         forceParse: 0,
         minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
-});
+    });
+var now = new Date();
+    $("#datetimepicker2").datetimepicker("setDate", now);
+var pre5hours = now.setHours(now.getHours() - 5);
+    $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
 
+
+$(function(){
+    $.ajax({
+        cache : true,
+        type : "POST",
+        url : "/user/info",
+        headers: {
+            "Authorization":getCookie("token")
+        },
+        async : false,
+        error : function(XMLHttpRequest){
+            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
+        },
+        success : function(data) {
+            console.log(data)
+            var role = data.role;
+            if(role === "ADMIN"){
+                $("#apps").append("<option></option>");
+            }
+            var apps = data.appNames;
+            var appName = data.appName;
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
+                if(app === appName){
+                    $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
+                }else{
+                    $("#apps").append("<option>" + apps[i] + "</option>");
+                }
+            }
+        }
+    });
+
+	var oTab=$.table.oTableInit(options);
+	oTab.Init();
 
 })
 

@@ -21,11 +21,38 @@
     from hk_user
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectHkUserList" parameterType="com.jd.platform.hotkey.dashboard.model.User" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from hk_user
+    <where>
+      <if test="id != null and id != ''"> and id = #{id}</if>
+      <if test="nickName != null and nickName != ''"> and nick_name = #{nickName}</if>
+      <if test="userName != null and userName != ''"> and user_name = #{userName}</if>
+      <if test="pwd != null and pwd != ''"> and pwd = #{pwd}</if>
+      <if test="phone != null and phone != ''"> and phone = #{phone}</if>
+      <if test="role != null and role != ''"> and role = #{role}</if>
+      <if test="appName != null and appName != ''"> and app_name = #{appName}</if>
+      <if test="createTime != null and createTime != ''"> and create_time = #{createTime}</if>
+      <if test="state != null and state != ''"> and state = #{state}</if>
+    </where>
+  </select>
+
+
+  <select id="selectByUserName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from hk_user where user_name = #{userName}
+  </select>
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from hk_user
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insertSelective" parameterType="com.jd.platform.hotkey.dashboard.model.User">
+  <insert id="insertSelective" parameterType="com.jd.platform.hotkey.dashboard.model.User" useGeneratedKeys="true" keyProperty="id">
     insert into hk_user
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -123,8 +150,8 @@
     <include refid="Base_Column_List" />
     from hk_user
     where 1=1
-    <if test="appName !=null and appName !=''">
-      and app_name = #{appName}
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
     </if >
     order by id desc
   </select>

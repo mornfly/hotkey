@@ -1,12 +1,20 @@
 package com.jd.platform.hotkey.dashboard.controller;
 
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONTokener;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
-import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
-import com.jd.platform.hotkey.dashboard.model.KeyRule;
+import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
+import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
+import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
+import com.jd.platform.hotkey.dashboard.common.ex.BizException;
+import com.jd.platform.hotkey.dashboard.model.Rule;
 import com.jd.platform.hotkey.dashboard.model.Rules;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import org.springframework.stereotype.Controller;
@@ -14,8 +22,12 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
+/**
+ * @author liyunfeng31
+ */
 @Controller
 @RequestMapping("/rule")
 public class RuleController extends BaseController {
@@ -26,16 +38,10 @@ public class RuleController extends BaseController {
 
 
 
-	@GetMapping("/view2")
-	public String view2(ModelMap modelMap){
-		modelMap.put("title", Constant.RULE_CONFIG_VIEW);
-		return "admin/rule/view";
-	}
-
 	@GetMapping("/viewDetail")
-	public String view3(ModelMap modelMap){
+	public String viewDetail(ModelMap modelMap){
 		modelMap.put("title", Constant.RULE_CONFIG_VIEW);
-		return "admin/rule/jn";
+		return "admin/rule/json";
 	}
 
 	@PostMapping("/getRule")
@@ -45,35 +51,23 @@ public class RuleController extends BaseController {
 	}
 
 
-	@PostMapping("/add")
-	@ResponseBody
-	public Result add(Rules rule){
-		rule.setUpdateUser(userName());
-		int b = ruleService.add(rule);
-		return b == 0 ? Result.fail():Result.success();
-	}
-
-
-	@PostMapping("/update")
-	@ResponseBody
-	public Result update(Rules rules){
-		rules.setUpdateUser(userName());
-		int b = ruleService.updateRule(rules);
-		return b == 0 ? Result.fail():Result.success();
-	}
 
 	@PostMapping("/save")
 	@ResponseBody
 	public Result save(Rules rules){
+		checkApp(rules.getApp());
+		checkRule(rules.getRules());
 		rules.setUpdateUser(userName());
 		int b = ruleService.save(rules);
 		return b == 0 ? Result.fail():Result.success();
 	}
 
 
+
 	@PostMapping("/remove")
 	@ResponseBody
 	public Result remove(String key){
+		checkApp(key);
 		int b = ruleService.delRule(key, userName());
 		return b == 0 ? Result.fail():Result.success();
 	}
@@ -87,9 +81,9 @@ public class RuleController extends BaseController {
 
 	@PostMapping("/list")
 	@ResponseBody
-	public Page<Rules> list2(PageReq page, String searchText){
+	public Page<Rules> list(PageReq page, String app){
 		page.setPageSize(30);
-		PageInfo<Rules> info = ruleService.pageKeyRule(page, param(searchText));
+		PageInfo<Rules> info = ruleService.pageKeyRule(page, app);
 		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
 	}
 
@@ -106,6 +100,48 @@ public class RuleController extends BaseController {
 		modelMap.put("title", Constant.RULE_CONFIG_VIEW);
 		return "admin/rule/view";
 	}
+
+
+	@PostMapping("/listRules")
+	@ResponseBody
+	public List<String> rules(){
+		return ruleService.listRules(null);
+	}
+
+
+	@GetMapping("/viewHitCount")
+	public String viewHitCount(ModelMap modelMap){
+		modelMap.put("title", Constant.MONITOR_VIEW);
+		return "admin/rule/listhitcount";
+	}
+
+	@PostMapping("/listHitCount")
+	@ResponseBody
+	public Page<HitCountVo> pageRuleHitCount(PageReq page, SearchReq req){
+		PageInfo<HitCountVo> info = ruleService.pageRuleHitCount(page, req, ownApp());
+		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
+	}
+
+
+	/**
+	 * 校验是否合法
+	 * @param rules rules
+	 * @return boolean
+	 */
+	private void checkRule(String rules) {
+		try {
+			Object json = new JSONTokener(rules).nextValue();
+			if (json instanceof JSONObject) {
+				// JSONObject jsonObject = (JSONObject) json;
+				throw new BizException(ResultEnum.ILLEGAL_JSON_ARR);
+			} else if (json instanceof JSONArray) {
+				// JSONArray jsonArray = (JSONArray) json;
+			}
+		}catch(Exception e){
+			throw new BizException(ResultEnum.ILLEGAL_JSON_ARR);
+		}
+	}
+
 
 }
 

@@ -38,8 +38,13 @@ public class User {
         this.appNames = appNames;
     }
 
-    public User(Integer id, String userName, String role, String appName) {
-        this.id = id;
+    public User(String role, List<String> appNames, String app) {
+        this.role = role;
+        this.appNames = appNames;
+        this.appName = app;
+    }
+
+    public User(String userName, String role, String appName) {
         this.userName = userName;
         this.role = role;
         this.appName = appName;

@@ -4,7 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.ExcelData;
+import com.jd.platform.hotkey.dashboard.common.domain.dto.ExcelDataDto;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
 import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -46,7 +44,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/ruleLineChart")
 	@ResponseBody
 	public HotKeyLineChartVo ruleLineChart(SearchReq req){
-		return keyService.ruleLineChart(req);
+		return keyService.ruleLineChart(req,ownApp());
 	}
 
 
@@ -55,15 +53,6 @@ public class KeyController extends BaseController {
 	public HotKeyLineChartVo lineChart(ChartReq chartReq){
 		return keyService.getLineChart(chartReq);
 	}
-
-
-	//@PostMapping("/qps")
-	@GetMapping("/qps")
-	@ResponseBody
-	public HotKeyLineChartVo qpsLineChart(ChartReq ChartReq) {
-		return keyService.getQpsLineChart(ChartReq);
-	}
-
 
 
 	@GetMapping("/view")
@@ -76,7 +65,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/list")
 	@ResponseBody
 	public Page<KeyRecord> list(PageReq page, SearchReq searchReq){
-		PageInfo<KeyRecord> info = keyService.pageKeyRecord(page, param2(searchReq));
+		PageInfo<KeyRecord> info = keyService.pageKeyRecord(page, searchReq);
 		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
 	}
 
@@ -90,8 +79,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/listTimely")
 	@ResponseBody
 	public Page<KeyTimely> listTimely(PageReq page, SearchReq searchReq){
-		PageInfo<KeyTimely> info = keyService.pageKeyTimely(page, param2(searchReq));
-		return new Page<>(info.getPageNum(),(int)info.getTotal(),info.getList());
+		return keyService.pageKeyTimely(page, searchReq);
 	}
 
 
@@ -118,8 +106,8 @@ public class KeyController extends BaseController {
 	@PostMapping("/add")
 	@ResponseBody
 	public Result add(KeyTimely key){
-		key.setType(0);
-		key.setSource(userName());
+		checkApp(key.getAppName());
+		key.setUpdater(userName());
 		int b = keyService.insertKeyByUser(key);
 		return b == 0 ? Result.fail():Result.success();
 	}
@@ -127,29 +115,25 @@ public class KeyController extends BaseController {
 	@PostMapping("/remove")
 	@ResponseBody
 	public Result remove(String key){
+		String[] arr = key.split("/");
+		checkApp(arr[0]);
 		int b = keyService.delKeyByUser(new KeyTimely(key,userName()));
 		return b == 0 ? Result.fail():Result.success();
 	}
 
 
-	@GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap modelMap){
-		modelMap.put("key", keyService.selectByPk(id));
-        return prefix + "/edit";
-    }
-	
-
     @PostMapping("/edit")
     @ResponseBody
-    public Result editSave(KeyTimely keyTimely) {
-		return Result.success(keyService.updateKeyByUser(keyTimely));
+    public Result editSave(KeyTimely key) {
+		checkApp(key.getAppName());
+		return Result.success(keyService.updateKeyByUser(key));
     }
 
 
 
 	@RequestMapping(value = "/export", method = RequestMethod.GET)
 	@ResponseBody
-	public void export(HttpServletResponse resp,String startTime,String endTime,String appName,String key){
+	public void export(HttpServletResponse resp,String startTime,String endTime,String app,String key){
 		SearchReq req = new SearchReq();
 		if(StringUtil.isNotEmpty(startTime)){
 			req.setStartTime(DateUtil.strToDate(startTime));
@@ -157,11 +141,11 @@ public class KeyController extends BaseController {
 		if(StringUtil.isNotEmpty(endTime)){
 			req.setEndTime(DateUtil.strToDate(endTime));
 		}
-		req.setAppName(appName);
+		req.setApp(app);
 		req.setKey(key);
 		List<Statistics> records = keyService.listMaxHot(req);
 		List<List<String>> rows = transform(records);
-		ExcelData data = new ExcelData("hotKey.xlsx", Constant.HEAD,rows);
+		ExcelDataDto data = new ExcelDataDto("hotKey.xlsx", Constant.HEAD,rows);
 		ExcelUtil.exportExcel(resp,data);
 	}
 

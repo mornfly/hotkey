@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.worker.starters;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
@@ -13,25 +14,24 @@ import com.jd.platform.hotkey.common.tool.IpUtils;
 import com.jd.platform.hotkey.worker.cache.CaffeineCacheHolder;
 import com.jd.platform.hotkey.worker.model.AppInfo;
 import com.jd.platform.hotkey.worker.model.TotalCount;
+import com.jd.platform.hotkey.worker.netty.dashboard.NettyClient;
 import com.jd.platform.hotkey.worker.netty.filter.HotKeyFilter;
 import com.jd.platform.hotkey.worker.netty.holder.ClientInfoHolder;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
 import com.jd.platform.hotkey.worker.rule.KeyRuleHolder;
+import com.jd.platform.hotkey.worker.tool.AsyncPool;
+import com.jd.platform.hotkey.worker.tool.InitConstant;
 import io.grpc.StatusRuntimeException;
-import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -60,9 +60,30 @@ public class EtcdStarter {
     @Value("${etcd.workerPath}")
     private String workerPath;
 
+    @Value("${local.address}")
+    private String localAddress;
+
+    @Value("${open.monitor}")
+    private boolean openMonitor;
+
+    private static final String DEFAULT_PATH = "default";
+
     private static final String MAO = ":";
     private static final String ETCD_DOWN = "etcd is unConnected . please do something";
     private static final String EMPTY_RULE = "very important warn !!! rule info is null!!!";
+
+    /**
+     * 用来存储临时收到的key总量，来判断是否很久都没收到key了
+     */
+    private long tempTotalReceiveKeyCount;
+    /**
+     * 每次10秒没收到key发过来，就将这个加1，加到3时，就停止自己注册etcd 30秒
+     */
+    private int mayBeErrorTimes = 0;
+    /**
+     * 是否可以继续上报自己的ip
+     */
+    private volatile boolean canUpload = true;
 
     //Grant：分配一个租约。
     //Revoke：释放一个租约。
@@ -73,12 +94,24 @@ public class EtcdStarter {
     //Close：貌似是关闭当前客户端建立的所有租约。
 
     /**
+     * 该worker是否只服务于一个应用
+     */
+    private boolean isForSingle() {
+        return !DEFAULT_PATH.equals(workerPath);
+    }
+
+    /**
      * 启动回调监听器，监听rule变化
      */
     @PostConstruct
     public void watch() {
-        CompletableFuture.runAsync(() -> {
-            KvClient.WatchIterator watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+        AsyncPool.asyncDo(() -> {
+            KvClient.WatchIterator watchIterator;
+            if (isForSingle()) {
+                watchIterator = configCenter.watch(ConfigConstant.rulePath + workerPath);
+            } else {
+                watchIterator = configCenter.watchPrefix(ConfigConstant.rulePath);
+            }
             while (watchIterator.hasNext()) {
                 WatchUpdate watchUpdate = watchIterator.next();
                 List<Event> eventList = watchUpdate.getEvents();
@@ -86,7 +119,11 @@ public class EtcdStarter {
                 KeyValue keyValue = eventList.get(0).getKv();
                 logger.info("rule changed : " + keyValue);
 
-                ruleChange(keyValue);
+                try {
+                    ruleChange(keyValue);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -97,7 +134,7 @@ public class EtcdStarter {
      */
     @PostConstruct
     public void watchWhiteList() {
-        CompletableFuture.runAsync(() -> {
+        AsyncPool.asyncDo(() -> {
             //获取所有白名单
             fetchWhite();
 
@@ -106,7 +143,11 @@ public class EtcdStarter {
                 WatchUpdate watchUpdate = watchIterator.next();
                 logger.info("whiteList changed ");
 
-                fetchWhite();
+                try {
+                    fetchWhite();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -127,20 +168,23 @@ public class EtcdStarter {
      */
     @Scheduled(fixedRate = 60000)
     public void pullRules() {
-        List<KeyValue> keyValues;
         try {
-            keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
+            if (isForSingle()) {
+                String value = configCenter.get(ConfigConstant.rulePath + workerPath);
+                if (!StrUtil.isEmpty(value)) {
+                    List<KeyRule> keyRules = FastJsonUtils.toList(value, KeyRule.class);
+                    KeyRuleHolder.put(workerPath, keyRules);
+                }
+            } else {
+                List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
+                for (KeyValue keyValue : keyValues) {
+                    ruleChange(keyValue);
+                }
+            }
         } catch (StatusRuntimeException ex) {
             logger.error(ETCD_DOWN);
-            return;
         }
-        if (CollectionUtils.isEmpty(keyValues)) {
-            logger.warn(EMPTY_RULE);
-            return;
-        }
-        for (KeyValue keyValue : keyValues) {
-            ruleChange(keyValue);
-        }
+
     }
 
     /**
@@ -152,8 +196,7 @@ public class EtcdStarter {
             String ip = IpUtils.getIp();
             for (AppInfo appInfo : ClientInfoHolder.apps) {
                 String appName = appInfo.getAppName();
-                Map<String, ChannelHandlerContext> map = appInfo.getMap();
-                int count = map.values().size();
+                int count = appInfo.size();
                 //即便是full gc也不能超过3秒
                 configCenter.putAndGrant(ConfigConstant.clientCountPath + appName + "/" + ip, count + "", 13);
             }
@@ -163,12 +206,78 @@ public class EtcdStarter {
             //上报每秒QPS（接收key数量、处理key数量）
             String totalCount = FastJsonUtils.convertObjectToJSON(new TotalCount(HotKeyFilter.totalReceiveKeyCount.get(), totalDealCount.longValue()));
             configCenter.putAndGrant(ConfigConstant.totalReceiveKeyCount + ip, totalCount, 13);
+
             logger.info(totalCount + " expireCount:" + expireTotalCount + " offerCount:" + totalOfferCount);
+
+            //如果是稳定一直有key发送的应用，建议开启该监控，以避免可能发生的网络故障
+            if (openMonitor) {
+                checkReceiveKeyCount();
+            }
 //            configCenter.putAndGrant(ConfigConstant.bufferPoolPath + ip, MemoryTool.getBufferPool() + "", 10);
         } catch (Exception ex) {
             logger.error(ETCD_DOWN);
         }
     }
+
+    /**
+     * 每隔30秒去获取一下dashboard的地址
+     */
+    @Scheduled(fixedRate = 30000)
+    public void fetchDashboardIp() {
+        try {
+            //获取DashboardIp
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.dashboardPath);
+
+            //是空，给个警告
+            if (CollectionUtil.isEmpty(keyValues)) {
+                logger.warn("very important warn !!! Dashboard ip is null!!!");
+                return;
+            }
+
+            String dashboardIp = keyValues.get(0).getValue().toStringUtf8();
+            NettyClient.getInstance().connect(dashboardIp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 校验一下receive的key数量，如果一段时间没变，考虑网络问题，就将worker注册自己到etcd的心跳给断掉30秒，让各client重连一下自己
+     */
+    private void checkReceiveKeyCount() {
+        //如果一样，说明10秒没收到新key了
+        if (tempTotalReceiveKeyCount == HotKeyFilter.totalReceiveKeyCount.get()) {
+            if (canUpload) {
+                mayBeErrorTimes++;
+            }
+        } else {
+            tempTotalReceiveKeyCount = HotKeyFilter.totalReceiveKeyCount.get();
+        }
+        if (mayBeErrorTimes >= 6) {
+            logger.error("network maybe error …… i stop the heartbeat to etcd");
+            canUpload = false;
+            new Thread(() -> {
+                try {
+                    Thread.sleep(35000);
+                    canUpload = true;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            //需要把注册ip到etcd停一段时间，让各client和自己断连，重新连接
+            mayBeErrorTimes = 0;
+            //清零各个数据
+            tempTotalReceiveKeyCount = 0;
+            HotKeyFilter.totalReceiveKeyCount.set(0);
+            InitConstant.totalDealCount.reset();
+            InitConstant.totalOfferCount.reset();
+            InitConstant.expireTotalCount.reset();
+        }
+
+
+    }
+
 
     /**
      * rule发生变化时，更新缓存的rule
@@ -188,6 +297,7 @@ public class EtcdStarter {
         try {
             String hostName = IpUtils.getHostName();
             configCenter.delete(ConfigConstant.workersPath + hostName);
+            AsyncPool.shutDown();
         } catch (Exception e) {
             logger.error("worker connect to etcd failure");
         }
@@ -203,7 +313,9 @@ public class EtcdStarter {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
 
             try {
-                uploadSelfInfo();
+                if (canUpload) {
+                    uploadSelfInfo();
+                }
             } catch (Exception e) {
                 //do nothing
             }
@@ -224,7 +336,12 @@ public class EtcdStarter {
     }
 
     private String buildValue() {
-        String ip = IpUtils.getIp();
+        String ip;
+        if (StrUtil.isNotEmpty(localAddress)) {
+            ip = localAddress;
+        } else {
+            ip = IpUtils.getIp();
+        }
         return ip + MAO + port;
     }
 

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author wuweifeng wrote on 2020-01-06
  * @version 1.0
  */
-public class TurnKeyCollector implements IKeyCollector {
+public class TurnKeyCollector implements IKeyCollector<HotKeyModel, HotKeyModel> {
     private ConcurrentHashMap<String, HotKeyModel> map0 = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, HotKeyModel> map1 = new ConcurrentHashMap<>();
 
@@ -49,21 +49,15 @@ public class TurnKeyCollector implements IKeyCollector {
             return;
         }
         if (atomicLong.get() % 2 == 0) {
-            HotKeyModel model = map0.get(key);
-            if (model == null) {
-                map0.put(key, hotKeyModel);
-            } else {
+            //不存在时返回null并将key-value放入，已有相同key时，返回该key对应的value，并且不覆盖
+            HotKeyModel model = map0.putIfAbsent(key, hotKeyModel);
+            if (model != null) {
                 model.setCount(model.getCount() + hotKeyModel.getCount());
-                map0.put(key, model);
             }
-
         } else {
-            HotKeyModel model = map1.get(key);
-            if (model == null) {
-                map1.put(key, hotKeyModel);
-            } else {
+            HotKeyModel model = map1.putIfAbsent(key, hotKeyModel);
+            if (model != null) {
                 model.setCount(model.getCount() + hotKeyModel.getCount());
-                map1.put(key, model);
             }
         }
 
@@ -73,4 +67,5 @@ public class TurnKeyCollector implements IKeyCollector {
     public void finishOnce() {
 
     }
+
 }

@@ -39,13 +39,11 @@ public class DispatcherConfig {
     public Consumer consumer() {
         int nowCount = CpuNum.workerCount();
         //将实际值赋给static变量
-        if(threadCount != 0) {
+        if (threadCount != 0) {
             nowCount = threadCount;
         } else {
             if (nowCount >= 8) {
                 nowCount = nowCount / 2;
-            } else if(nowCount > 1){
-                nowCount = nowCount - 1;
             }
         }
 

@@ -35,14 +35,14 @@
                 <div class="form-group">
                     <label class="control-label timeBut" >日期：</label>
                     <span class='input-group date datetimepicker' style="width: 43%;float: left" id='datetimepicker1' data-date-format="yyyy-mm-dd hh:ii:ss">
-                        <input type='text' class="form-control" name="startTime"/>
+                        <input type='text' class="form-control" name="startTime" id="startTime"/>
                         <span class="input-group-addon">
                            <span class="glyphicon glyphicon-calendar"></span>
                         </span>
                     </span>
                     <label class="control-label timeBut" >~</label>
                     <span class='input-group date datetimepicker'  style="width: 43%"  id='datetimepicker2' data-date-format="yyyy-mm-dd hh:ii:ss">
-                        <input type='text' class="form-control"  name="endTime"/>
+                        <input type='text' class="form-control"  name="endTime" id="endTime"/>
                         <span class="input-group-addon">
                            <span class="glyphicon glyphicon-calendar"></span>
                         </span>
@@ -50,10 +50,10 @@
                 </div>
                 <div class="form-group" >
                     <label class="control-label timeBut2">热点：</label>
-                    <input type="text" name="key" placeholder="key"class="form-control" style="width: 32%;float: left;margin-left: 1%">
+                    <input type="text" name="key" placeholder="key"class="form-control" style="width: 34%;float: left;margin-left: 1%">
 
-                    <label class="control-label timeBut2" style="margin-left: 8%">所属APP：</label>
-                    <select name="appName" id="apps" class="form-control" style="width: 32%">
+                    <label class="control-label timeBut2" style="margin-left: 9%">所属APP：</label>
+                    <select name="app" id="apps" class="form-control" style="width: 32%">
                     </select>
                 </div>
                 <button onclick="$.table.search(this)" class="btn btn-success" type="button"  style="margin-left: 64%"><i class="fa fa-search"></i>&nbsp;搜索</button>
@@ -105,18 +105,28 @@ $(function(){
             "Authorization":getCookie("token")
         },
         async : false,
-        error : function(request) {
-            $.modal.alertError("系统错误");
+        error : function(XMLHttpRequest){
+            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
         },
         success : function(data) {
             console.log(data)
-            $("#apps").append("<option></option>");
-            let apps = data.appNames;
+            var role = data.role;
+            if(role === "ADMIN"){
+                $("#apps").append("<option></option>");
+            }
+            var apps = data.appNames;
+            var appName = data.appName;
             for (var i = 0; i < apps.length; i++) {
-                $("#apps").append("<option>" + apps[i] + "</option>");
+                var app = apps[i];
+                if(app === appName){
+                    $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
+                }else{
+                    $("#apps").append("<option>" + apps[i] + "</option>");
+                }
             }
         }
     });
+
 
     var oTab=$.table.oTableInit(options);
     oTab.Init();
@@ -133,6 +143,11 @@ $(function(){
         forceParse: 0,
         minuteStep: 1           //用于构建小时视图。就是最小的视图是每1分钟可选一次。是以分钟为单位的
     });
+
+    var now = new Date();
+    $("#datetimepicker2").datetimepicker("setDate", now);
+    var pre5hours = now.setHours(now.getHours() - 5);
+    $("#datetimepicker1").datetimepicker("setDate", new Date(pre5hours));
 })
 
 function exportHot() {

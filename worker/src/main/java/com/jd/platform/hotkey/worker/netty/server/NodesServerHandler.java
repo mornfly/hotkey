@@ -2,11 +2,12 @@ package com.jd.platform.hotkey.worker.netty.server;
 
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +29,8 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
      */
     private List<INettyMsgFilter> messageFilters = new ArrayList<>();
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String message) {
         if (StringUtils.isEmpty(message)) {
@@ -43,6 +46,11 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error("some thing is error , " + cause.getMessage());
+    }
+
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
     }
@@ -50,7 +58,7 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (clientEventListener != null) {
-            clientEventListener.loseClient(NettyIpUtil.clientIp(ctx));
+            clientEventListener.loseClient(ctx);
         }
         ctx.close();
         super.channelInactive(ctx);

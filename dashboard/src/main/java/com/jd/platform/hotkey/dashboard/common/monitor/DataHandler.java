@@ -1,20 +1,22 @@
 package com.jd.platform.hotkey.dashboard.common.monitor;
 
 
-import com.ibm.etcd.api.Event;
+import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Queues;
+import com.ibm.etcd.api.KeyValue;
+import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
+import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.domain.EventWrapper;
-import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
+import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.mapper.KeyRecordMapper;
-import com.jd.platform.hotkey.dashboard.mapper.KeyTimelyMapper;
 import com.jd.platform.hotkey.dashboard.mapper.StatisticsMapper;
+import com.jd.platform.hotkey.dashboard.mapper.SummaryMapper;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
-import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
-import com.jd.platform.hotkey.dashboard.util.TwoTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,11 +24,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DataHandler {
@@ -36,63 +40,52 @@ public class DataHandler {
     @Resource
     private KeyRecordMapper keyRecordMapper;
     @Resource
-    private KeyTimelyMapper keyTimelyMapper;
-    @Resource
     private StatisticsMapper statisticsMapper;
 
-    private volatile boolean hasBegin = false;
+    @Resource
+    private SummaryMapper summaryMapper;
+
+    @Resource
+    private IConfigCenter configCenter;
 
     /**
      * 队列
      */
-    private BlockingQueue<EventWrapper> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<IRecord> queue = new LinkedBlockingQueue<>();
 
     /**
      * 入队
      */
-    public void offer(EventWrapper eventWrapper) {
+    public void offer(IRecord record) {
         try {
-            queue.put(eventWrapper);
+            queue.put(record);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void insertRecords() {
-        if (hasBegin) {
-            return;
-        }
-        hasBegin = true;
-        CompletableFuture.runAsync(() -> {
-            while (true) {
-                TwoTuple<KeyTimely, KeyRecord> twoTuple;
-                try {
-                    twoTuple = handHotKey(queue.take());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    log.error("handHotKey error ," + e.getMessage());
+        while (true) {
+            try {
+                List<IRecord> records = new ArrayList<>();
+                Queues.drain(queue, records, 1000, 1, TimeUnit.SECONDS);
+                if (CollectionUtil.isEmpty(records)) {
                     continue;
                 }
-                KeyRecord keyRecord = twoTuple.getSecond();
-                KeyTimely keyTimely = twoTuple.getFirst();
-
-                if (keyTimely.getUuid() == null) {
-                    keyTimelyMapper.deleteByKeyAndApp(keyTimely.getKey(), keyTimely.getAppName());
-                } else {
-                    try {
-                        keyTimelyMapper.insertSelective(keyTimely);
-                    } catch (Exception e) {
-                        log.info("insert timely error");
+                List<KeyRecord> keyRecordList = new ArrayList<>();
+                for (IRecord iRecord : records) {
+                    KeyRecord keyRecord = handHotKey(iRecord);
+                    if (keyRecord != null) {
+                        keyRecordList.add(keyRecord);
                     }
                 }
 
-                if (keyRecord != null) {
-                    //插入记录
-                    keyRecordMapper.insertSelective(keyRecord);
-                }
+                keyRecordMapper.batchInsert(keyRecordList);
 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
+        }
 
     }
 
@@ -100,59 +93,75 @@ public class DataHandler {
     /**
      * 处理热点key和记录
      */
-    private TwoTuple<KeyTimely, KeyRecord> handHotKey(EventWrapper eventWrapper) {
-        Date date = eventWrapper.getDate();
-        long ttl = eventWrapper.getTtl();
-        Event.EventType eventType = eventWrapper.getEventType();
-        String appKey = eventWrapper.getKey();
-        String v = eventWrapper.getValue();
+    private KeyRecord handHotKey(IRecord record) {
+        Date date = record.createTime();
+        String appKey = record.appNameKey();
+        String value = record.value();
         //appName+"/"+"key"
         String[] arr = appKey.split("/");
-        String uuid = eventWrapper.getUuid();
-        int type = eventType.getNumber();
+        String appName = arr[0];
+        String key = arr[1];
+        String uuid = UUID.randomUUID().toString();
+        int type = record.type();
 
         //组建成对象，供累计后批量插入、删除
-        TwoTuple<KeyTimely, KeyRecord> timelyKeyRecordTwoTuple = new TwoTuple<>();
-        if (eventType.equals(Event.EventType.PUT)) {
+        if (type == 0) {
+            //如果是客户端删除时发出的put指令
+            if (com.jd.platform.hotkey.common.tool.Constant.DEFAULT_DELETE_VALUE.equals(value)) {
+                log.info("client remove key event : " + appKey);
+                return null;
+            }
             //手工添加的是时间戳13位，worker传过来的是uuid
-            String source = v.length() == 13 ? Constant.HAND : Constant.SYSTEM;
-            timelyKeyRecordTwoTuple.setFirst(new KeyTimely(arr[1], v, arr[0], ttl, uuid, date));
-            KeyRecord keyRecord = new KeyRecord(arr[1], v, arr[0], ttl, source, type, uuid, date);
-            keyRecord.setRule(RuleUtil.rule(appKey));
-            timelyKeyRecordTwoTuple.setSecond(keyRecord);
-            return timelyKeyRecordTwoTuple;
-        } else if (eventType.equals(Event.EventType.DELETE)) {
-            timelyKeyRecordTwoTuple.setFirst(new KeyTimely(arr[1], null, arr[0], 0L, null, null));
-            //删除事件就不记录了
-//            timelyKeyRecordTwoTuple.setSecond(new KeyRecord(arr[1], v, arr[0], 0L, Constant.SYSTEM, type, uuid, date));
-            return timelyKeyRecordTwoTuple;
+            String source = value.length() == 13 ? Constant.HAND : Constant.SYSTEM;
+            String rule = RuleUtil.rule(appKey);
+            KeyRecord keyRecord = new KeyRecord(key, rule, appName, 1, source, type, uuid, date);
+            keyRecord.setRule(rule);
+            return keyRecord;
+        } else {
+            //是删除
+            return null;
         }
-        return timelyKeyRecordTwoTuple;
     }
 
 
+    /**
+     * 每小时 统计一次record 表 结果记录到统计表
+     */
     @Scheduled(cron = "0 0 * * * ?")
     public void offlineStatistics() {
         try {
-            // 每小时 统计一次record 表 结果记录到统计表
             LocalDateTime now = LocalDateTime.now();
-            Date nowTime = DateUtil.localDateTimeToDate(now);
+            Date nowTime = DateUtil.ldtToDate(now);
             int day = DateUtil.nowDay(now);
             int hour = DateUtil.nowHour(now);
-
-            List<Statistics> records = keyRecordMapper.maxHotKey(new SearchReq(now.minusHours(1)));
-            if (records.size() == 0) {
-                return;
+            SearchReq preHour = new SearchReq(now.minusHours(1));
+            List<Statistics> records = keyRecordMapper.maxHotKey(preHour);
+            if (records.size() != 0) {
+                records.forEach(x -> {
+                    x.setBizType(1);
+                    x.setCreateTime(nowTime);
+                    x.setDays(day);
+                    x.setHours(hour);
+                    x.setUuid(1 + "_" + x.getKeyName() + "_" + hour);
+                });
             }
-            records.forEach(x -> {
-                x.setBizType(1);
-                x.setCreateTime(nowTime);
-                x.setDays(day);
-                x.setHours(hour);
-                x.setUuid(1 + "_" + x.getKeyName() + "_" + hour);
-            });
-            int row = statisticsMapper.batchInsert(records);
-            log.info("定时统计热点记录时间：{}, 影响行数：{}", now.toString(), row);
+            log.info("每小时统计最热点,时间：{}, 行数：{}", now.toString(), records.size());
+            List<Statistics> statistics = keyRecordMapper.statisticsByRule(preHour);
+            if (statistics.size() != 0) {
+                statistics.forEach(x -> {
+                    x.setBizType(6);
+                    x.setRule(x.getRule());
+                    x.setCreateTime(nowTime);
+                    x.setDays(day);
+                    x.setHours(hour);
+                    x.setUuid(6 + "_" + x.getKeyName() + "_" + hour);
+                });
+                log.info("每小时统计规则,时间：{}, data list：{}", now.toString(), JSON.toJSONString(statistics));
+                records.addAll(statistics);
+            }
+            if (records.size() > 0) {
+                int row = statisticsMapper.batchInsert(records);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,32 +169,63 @@ public class DataHandler {
     }
 
 
-    //@Scheduled(cron = "0 0 * * * ?")
+    /**
+     * 每分钟统计一次record 表 结果记录到统计表
+     */
+    @Scheduled(cron = "0 */1 * * * ?")
     public void offlineStatisticsRule() {
         try {
-            // 每分钟小时 统计一次record 表 结果记录到统计表
             LocalDateTime now = LocalDateTime.now();
-            Date nowTime = DateUtil.localDateTimeToDate(now);
+            Date nowTime = DateUtil.ldtToDate(now);
             int day = DateUtil.nowDay(now);
             int hour = DateUtil.nowHour(now);
+            int minus = DateUtil.nowMinus(now);
 
-            List<Statistics> records = keyRecordMapper.statisticsByRule(null);
+            List<Statistics> records = keyRecordMapper.statisticsByRule(new SearchReq(now.minusMinutes(1)));
             if (records.size() == 0) {
                 return;
             }
             records.forEach(x -> {
-                x.setBizType(1);
+                x.setBizType(5);
+                x.setRule(x.getRule());
                 x.setCreateTime(nowTime);
                 x.setDays(day);
                 x.setHours(hour);
-                x.setUuid(1 + "_" + x.getKeyName() + "_" + hour);
+                x.setMinutes(minus);
+                // 骚操作 临时解决没有rule字段的问题
+                x.setUuid(5 + "_" + x.getKeyName() + "_" + minus);
             });
             int row = statisticsMapper.batchInsert(records);
-            log.info("定时统计热点记录时间：{}, 影响行数：{}", now.toString(), row);
+//            log.info("每分钟统计规则，时间：{}, 影响行数：{}, data list:{}", now.toString(), row, JSON.toJSONString(records));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+
+
+    /**
+     * 每天根据app的配置清理过期数据
+     */
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void clearExpireData() {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.clearCfgPath);
+            for (KeyValue kv : keyValues) {
+                String key = kv.getKey().toStringUtf8();
+                String ttl = kv.getValue().toStringUtf8();
+                String app = key.replace(ConfigConstant.clearCfgPath, "");
+                Date expireDate = DateUtil.ldtToDate(now.minusDays(Integer.parseInt(ttl)));
+                summaryMapper.clearExpireData(app, expireDate);
+                keyRecordMapper.clearExpireData(app, expireDate);
+                statisticsMapper.clearExpireData(app, expireDate);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 }

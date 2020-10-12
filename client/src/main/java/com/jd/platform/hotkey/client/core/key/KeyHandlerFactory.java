@@ -1,25 +1,27 @@
 package com.jd.platform.hotkey.client.core.key;
 
+import com.jd.platform.hotkey.common.model.HotKeyModel;
+import com.jd.platform.hotkey.common.model.KeyCountModel;
+
 /**
  * @author wuweifeng wrote on 2020-01-06
  * @version 1.0
  */
 public class KeyHandlerFactory {
-    private static final IKeyHandler iKeyHandler = new DefaultKeyHandler();
-
-    private static final IKeyPusher iKeyPusher = iKeyHandler.keyPusher();
-
-    private static final IKeyCollector iKeyCollector = iKeyHandler.keyCollector();
-
+    private static final DefaultKeyHandler iKeyHandler = new DefaultKeyHandler();
 
     private KeyHandlerFactory() {
     }
 
-    public synchronized static IKeyPusher getPusher() {
-        return iKeyPusher;
+    public static IKeyPusher getPusher() {
+        return iKeyHandler.keyPusher();
     }
 
-    public synchronized static IKeyCollector getCollector() {
-        return iKeyCollector;
+    public static IKeyCollector<HotKeyModel, HotKeyModel> getCollector() {
+        return iKeyHandler.keyCollector();
+    }
+
+    public static IKeyCollector<KeyHotModel, KeyCountModel> getCounter() {
+        return iKeyHandler.keyCounter();
     }
 }

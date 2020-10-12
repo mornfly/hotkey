@@ -2,9 +2,8 @@ package com.jd.platform.hotkey.worker.starters;
 
 import com.jd.platform.hotkey.worker.tool.InitConstant;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 /**
  * @author wuweifeng
@@ -17,11 +16,16 @@ public class InitStarter {
     private int timeOut;
     @Value("${disruptor.bufferSize}")
     private int bufferSize;
+    @Value("${caffeine.minutes}")
+    private int caffeineMinutes;
 
-    @PostConstruct
-    public void init() {
+    @Bean("initParam")
+    public Object init() {
         InitConstant.timeOut = timeOut;
         InitConstant.bufferSize = bufferSize;
+        InitConstant.caffeineMaxMinutes = caffeineMinutes;
+
+        return null;
     }
 
 }

@@ -15,7 +15,7 @@ public class BizException extends RuntimeException {
 
     public BizException(ResultEnum result) {
         this.code = result.getCode();
-        this.msg = result.getMessage();
+        this.msg = result.getMsg();
     }
 
     public int getCode() {

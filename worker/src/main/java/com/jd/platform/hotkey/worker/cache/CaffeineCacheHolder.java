@@ -42,7 +42,6 @@ public class CaffeineCacheHolder {
     public static void clearCacheByAppName(String appName) {
         if(CACHE_MAP.get(appName) != null) {
             CACHE_MAP.get(appName).invalidateAll();
-            CACHE_MAP.put(appName, null);
         }
     }
 
@@ -52,11 +51,12 @@ public class CaffeineCacheHolder {
     public static Map<String, Integer> getSize() {
         Map<String, Integer> map = new HashMap<>();
         for (String appName : CACHE_MAP.keySet()) {
-            Map caffMap = CACHE_MAP.get(appName).asMap();
+            Cache cache = CACHE_MAP.get(appName);
+            Map caffMap = cache.asMap();
 //            long bytes = ObjectSizeCalculator.getObjectSize(caffMap);
             map.put(appName, caffMap.size());
-
         }
         return map;
     }
+
 }

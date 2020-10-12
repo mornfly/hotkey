@@ -26,7 +26,7 @@ public class SearchReq implements Serializable {
 
     private Integer type;
 
-    private String appName;
+    private String app;
 
     private String key;
 
@@ -65,12 +65,12 @@ public class SearchReq implements Serializable {
         this.type = type;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getApp() {
+        return app;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setApp(String app) {
+        this.app = app;
     }
 
     public String getKey() {
@@ -81,9 +81,8 @@ public class SearchReq implements Serializable {
         this.key = key;
     }
 
-
     public SearchReq(LocalDateTime st) {
-        this.startTime = DateUtil.localDateTimeToDate(st);
+        this.startTime = DateUtil.ldtToDate(st);
         this.endTime = new Date();
     }
 }

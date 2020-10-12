@@ -5,6 +5,8 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="key_name" property="keyName" jdbcType="VARCHAR" />
     <result column="count" property="count" jdbcType="INTEGER" />
+    <result column="app" property="app" jdbcType="VARCHAR" />
+    <result column="rule" property="rule" jdbcType="VARCHAR" />
     <result column="days" property="days" jdbcType="INTEGER" />
     <result column="hours" property="hours" jdbcType="BIGINT" />
     <result column="minutes" property="minutes" jdbcType="BIGINT" />
@@ -13,10 +15,28 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
+  <select id="listStatistics" resultMap="BaseResultMap" parameterType="com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq">
+    select id, key_name, count, app,rule, days, hours, minutes, biz_type, uuid, create_time
+    from hk_statistics
+    where 1=1
+    <if test="startTime != null">
+      <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
+    </if>
+    order by count desc
+  </select>
 
-  <select id="listStatistics" resultMap="BaseResultMap" >
-    select id, key_name, count, app, days, hours, minutes, biz_type, uuid, create_time
-    from hk_statistics order by count desc
+
+  <select id="listOrderByTime" resultMap="BaseResultMap" parameterType="com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq">
+    select id, key_name, count, app,rule, days, hours, minutes, biz_type, uuid, create_time
+    from hk_statistics
+    where 1=1
+    <if test="type != null">
+     and biz_type = #{type}
+    </if>
+    <if test="startTime != null">
+      <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
+    </if>
+    order by id
   </select>
 
 
@@ -27,8 +47,8 @@
     <if test="key !=null and key !=''">
       and key_name LIKE CONCAT(CONCAT('%', #{key}), '%')
     </if >
-    <if test="appName !=null and appName !=''">
-      and app = #{appName}
+    <if test="app !=null and app !=''">
+      and app = #{app}
     </if >
     <if test="startTime != null">
       <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
@@ -40,12 +60,12 @@
   <insert id="batchInsert">
     INSERT ignore INTO
     hk_statistics(
-    key_name,count,app,
+    key_name,count,app,rule,
     days,hours, minutes,
     biz_type,create_time,uuid)
     VALUES
     <foreach collection="list" item="k" separator=",">
-      ( #{k.keyName},#{k.count},#{k.app},
+      (#{k.keyName},#{k.count},#{k.app},#{k.rule},
       #{k.days}, #{k.hours},#{k.minutes},
       #{k.bizType},#{k.createTime},#{k.uuid})
     </foreach>
@@ -53,4 +73,10 @@
 
 
 
+
+  <delete id="clearExpireData">
+    delete from hk_statistics
+    where app = #{app}
+     <![CDATA[ and create_time < #{expireDate}]]>
+  </delete>
 </mapper>

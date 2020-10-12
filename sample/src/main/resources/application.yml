@@ -1,9 +1,10 @@
 #etcd的地址，如有多个用逗号分隔
 etcd:
-  server: ${etcdServer:https://127.0.0.1:2379}
+  server: ${etcdServer:http://open-etcd.jd.com:2000}
+#  server: ${etcdServer:https://127.0.0.1:2379}
 spring:
   application:
-    name: sample
+    name: persona-api
   ###############################---redis---##############################
   redis:
     host: ${REDIS_HOST:127.0.0.1}

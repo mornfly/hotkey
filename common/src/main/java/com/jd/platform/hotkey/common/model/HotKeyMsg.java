@@ -10,11 +10,18 @@ import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 public class HotKeyMsg {
     private int magicNumber;
 
+    private String appName;
+
     private MessageType messageType;
 
     private String body;
 
     public HotKeyMsg(MessageType messageType, String body) {
+        this(null, messageType, body);
+    }
+
+    public HotKeyMsg(String appName, MessageType messageType, String body) {
+        this.appName = appName;
         this.messageType = messageType;
         this.body = body;
     }
@@ -29,6 +36,14 @@ public class HotKeyMsg {
                 ", messageType=" + messageType +
                 ", body='" + body + '\'' +
                 '}';
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public int getMagicNumber() {

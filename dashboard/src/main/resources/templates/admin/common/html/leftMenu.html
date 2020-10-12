@@ -2,9 +2,10 @@
 <div  th:fragment="leftMenu">
 	<!-- 左边菜单 -->
 	<div id="skin-select">
-	    <div id="logo">
-	     <h1>HotKey<span>v1</span></h1>
-	    </div>
+		<div id="logo">
+			<a href="/user/index"/>
+			<h1>HotKey<span>v1</span></h1>
+		</div>
 	    <a id="toggle">
 	        <span class="entypo-menu"></span>
 	    </a>
@@ -21,13 +22,19 @@
 	            <div class="side-bar">
 	                <ul class="topnav menu-left-nest">
 	                    <li>
-	                        <a href="#" style="border-left:0px solid!important;" class="title-menu-left">
-	                            <span>系统设置</span>
+	                        <a  href="/user/main"
+							   target="mainFrame" style="border-left:0px solid!important;" class="title-menu-left">
+	                            <span>监控大盘</span>
 	                            <i data-toggle="tooltip" class="pull-right config-wrap"></i>
 	                        </a>
 	                    </li>
 	                     
 	                    <li>
+							<a class="tooltip-tip" href="/rule/viewHitCount"
+							   target="mainFrame">
+								<i class="fa fa-eye"></i>
+								<span>秒级监控</span>
+							</a>
 							<a class="tooltip-tip" href="/worker/view"
 							   target="mainFrame">
 								<i class="fa fa-home"></i>
@@ -45,13 +52,18 @@
 							</a>
 							<a class="tooltip-tip" href="/key/view"
 							   target="mainFrame">
-								<i class="fa fa-flash"></i>
+								<i class="fa fa-snowflake-o"></i>
 								<span>热点记录</span>
 							</a>
 							<a class="tooltip-tip" href="/changeLog/view"
 							   target="mainFrame">
 								<i class="fa fa-retweet"></i>
 								<span>变更记录</span>
+							</a>
+							<a class="tooltip-tip" href="/clear/view"
+							   target="mainFrame">
+								<i class="fa fa-cubes"></i>
+								<span>数据清理配置</span>
 							</a>
 							<a class="tooltip-tip" href="/user/view" th:if="${role eq 'ADMIN'|| role eq 'APPADMIN' }"
 							   target="mainFrame">

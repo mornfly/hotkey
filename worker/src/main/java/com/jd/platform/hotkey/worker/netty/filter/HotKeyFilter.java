@@ -7,7 +7,6 @@ import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.keydispatcher.KeyProducer;
-import com.jd.platform.hotkey.worker.mq.IMqMessageReceiver;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -20,14 +19,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 热key消息，包括从netty来的和mq来的。收到消息，都发到disruptor去
+ * 热key消息，包括从netty来的和mq来的。收到消息，都发到队列去
  *
  * @author wuweifeng wrote on 2019-12-11
  * @version 1.0
  */
 @Component
 @Order(3)
-public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
+public class HotKeyFilter implements INettyMsgFilter {
     @Resource
     private KeyProducer keyProducer;
 
@@ -48,33 +47,20 @@ public class HotKeyFilter implements INettyMsgFilter, IMqMessageReceiver {
         return true;
     }
 
-    @Override
-    public void receive(String msg) {
-        publishMsg(msg, null);
-    }
-
     private void publishMsg(String message, ChannelHandlerContext ctx) {
-        //这个是给测试用的，实际走的是下面那个
-        if (message.startsWith("{")) {
-            HotKeyModel model = FastJsonUtils.toBean(message, HotKeyModel.class);
-            if (WhiteListHolder.contains(model.getKey())) {
-                return;
-            }
-            keyProducer.push(model);
-            return;
-        }
         //老版的用的单个HotKeyModel，新版用的数组
         List<HotKeyModel> models = FastJsonUtils.toList(message, HotKeyModel.class);
+        long now = SystemClock.now();
         for (HotKeyModel model : models) {
             //白名单key不处理
             if (WhiteListHolder.contains(model.getKey())) {
                 continue;
             }
-            long timeOut = SystemClock.now() - model.getCreateTime();
+            long timeOut = now - model.getCreateTime();
             if (timeOut > 1000) {
                 logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
             }
-            keyProducer.push(model);
+            keyProducer.push(model, now);
         }
 
     }

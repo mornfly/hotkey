@@ -4,16 +4,11 @@
 <head th:replace="admin/common/html/head :: head_Normal(~{::title},~{::link},~{::style})">
 
     <title th:text=${title}></title>
-    <!-- 这儿引用单独的css link -->
-    <!-- Ladda for Bootstrap 3按钮加载进度插件 -->
     <link rel="stylesheet" th:href="@{/static/admin/assets/js/button/ladda/ladda.min.css}">
-    <!-- bootstrap-table表单样式 -->
     <link th:href="@{/static/admin/assets/js/bootstrap/css/bootstrap-table/bootstrap-table.min.css}" rel="stylesheet"/>
 
     <style type="text/css">
-        /**
-        *这里写单独的css样式
-        */
+
         .select-list ul li{
             list-style-type: none;
             float: left;
@@ -33,7 +28,6 @@
             <div class="row">
                 <div class="col-sm-12">
                     <!-- 搜索条件 -->
-
                     <div class="nest" id="inlineClose">
                         <div class="title-alt">
                             <h6>搜索条件</h6>
@@ -44,10 +38,10 @@
                                 <form role="form" class="form-inline">
                                     <div class="form-group" style="width: 16%">
                                         <label class="control-label timeBut2" style="float: left;padding-top: 10px">所属APP：</label>
-                                        <select name="appName" id="apps"  class="form-control" style="width: 66%">
+                                        <select name="app" id="apps"  class="form-control" style="width: 66%">
                                         </select>
                                     </div>
-                                    <button onclick="$.table.search(this)" class="btn btn-success" id="recordSearch" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
+                                    <button onclick="$.table.search(this)" class="btn btn-success" style="margin-left: 2%;" id="recordSearch" type="button"><i class="fa fa-search"></i>&nbsp;搜索</button>
                                 </form>
                             </div>
                         </div>
@@ -140,28 +134,36 @@
                 "Authorization":getCookie("token")
             },
             async : false,
-            error : function(request) {
-                $.modal.alertError("系统错误");
+            error : function(XMLHttpRequest){
+                $.modal.alertError(XMLHttpRequest.responseJSON.msg);
             },
             success : function(data) {
                 console.log(data)
-                let apps = data.appNames;
+                var role = data.role;
+                if(role === "ADMIN"){
+                    $("#apps").append("<option></option>");
+                }
+                var apps = data.appNames;
+                var appName = data.appName;
                 for (var i = 0; i < apps.length; i++) {
-                    $("#apps").append("<option>" + apps[i] + "</option>");
+                    var app = apps[i];
+                    if(app === appName){
+                        $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
+                    }else{
+                        $("#apps").append("<option>" + apps[i] + "</option>");
+                    }
                 }
             }
         });
-
-
         var oTab=$.table.oTableInit(options);
         oTab.Init();
     })
     function addRules(){
-        $.modal.open("添加规则", createUrl, 1100, 750);
+        $.modal.open("添加规则", createUrl, 1100, 600);
     }
 
     function editRules(app){
-        $.modal.open("编辑规则", updateUrl+app, 1100, 750);
+        $.modal.open("编辑规则", updateUrl+app, 1100, 600);
     }
 
 </script>

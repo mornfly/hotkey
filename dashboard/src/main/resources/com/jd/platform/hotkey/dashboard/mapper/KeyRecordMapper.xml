@@ -49,9 +49,9 @@
       <if test="duration != null">
         duration,
       </if>
-     <!-- <if test="rule != null">
+     <if test="rule != null">
         rule,
-      </if>-->
+      </if>
       <if test="type != null">
         type,
       </if>
@@ -81,9 +81,9 @@
       <if test="duration != null">
         #{duration,jdbcType=BIGINT},
       </if>
-     <!-- <if test="rule != null">
+      <if test="rule != null">
         #{rule,jdbcType=VARCHAR},
-      </if>-->
+      </if>
       <if test="type != null">
         #{type,jdbcType=INTEGER},
       </if>
@@ -126,8 +126,8 @@
     <include refid="Base_Column_List" />
     from hk_key_record
     where 1=1
-    <if test="appName !=null and appName !=''">
-      and app_name = #{appName}
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
     </if >
     <if test="key !=null and key !=''">
       and key_name LIKE CONCAT(CONCAT('%', #{key}), '%')
@@ -164,13 +164,12 @@
   </insert>
 
 
-
   <select id="maxHotKey"  resultType="com.jd.platform.hotkey.dashboard.model.Statistics">
     select key_name as keyName, count(1) as count , app_name as app
     from hk_key_record
     where type = 0
-    <if test="appName !=null and appName !=''">
-      and app_name = #{appName}
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
     </if >
     <if test="key !=null and key !=''">
       and key_name = #{key}
@@ -178,17 +177,17 @@
     <if test="startTime != null">
       <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
     </if>
-    GROUP BY app_name, key_name ORDER BY count desc limit 1000
+    GROUP BY app_name, key_name ORDER BY count desc limit 100
   </select>
 
 
 
   <select id="statisticsByRule"  resultType="com.jd.platform.hotkey.dashboard.model.Statistics">
-    select key_name as keyName, count(1) as count, app_name as app,rule,
-    from hk_key_record
+    select  count(1) as count, app_name as app, val as keyName, rule
+    from  hk_key_record
     where type = 0
-    <if test="appName !=null and appName !=''">
-      and app_name = #{appName}
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
     </if >
     <if test="key !=null and key !=''">
       and key_name = #{key}
@@ -196,11 +195,14 @@
     <if test="startTime != null">
       <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
     </if>
-    GROUP BY app_name, rule order by null
-    <if test="limit !=null">
-      limit #{limit}
-    </if >
+    GROUP BY app_name, val order by null
   </select>
 
+
+  <delete id="clearExpireData">
+    delete from hk_key_record
+    where app_name = #{app}
+     <![CDATA[ and create_time < #{expireDate}]]>
+  </delete>
 
 </mapper>
