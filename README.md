@@ -83,8 +83,8 @@ https://mp.weixin.qq.com/s/xOzEj5HtCeh_ezHDPHw6Jw
 
 ### 界面效果
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0622/163805_0aa68d4b_303698.png "屏幕截图.png")
-### 加我微信拉入群，群里大厂大佬多
-![输入图片说明](https://images.gitee.com/uploads/images/2020/0807/170047_e37c882e_303698.jpeg "1596790826590.jpg")
+### 加微信入群讨论问题，1群已满，请加2群
+![输入图片说明](https://images.gitee.com/uploads/images/2020/1019/094556_bd1f7057_303698.png "12.png")
 
 
 #### 常见问题
