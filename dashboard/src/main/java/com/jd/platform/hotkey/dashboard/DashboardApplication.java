@@ -17,7 +17,7 @@ import java.util.List;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
-public class DashboardApplication implements CommandLineRunner {
+public class DashboardApplication{
 
     @Autowired
     private DongDongApiManager apiManager;
@@ -30,20 +30,4 @@ public class DashboardApplication implements CommandLineRunner {
         }
     }
 
-    @Resource
-    PushHandler pushHandler;
-
-
-    @Override
-    public void run(String... args) throws Exception {
-        Thread.sleep(5000);
-       // pushHandler.monitorAndPush("test");
-        apiManager.refreshAccessSignature();
-        Thread.sleep(1000);
-        List<String> list = new ArrayList<>();
-        list.add("liyunfeng31");
-        list.add("wuweifeng10");
-      //  String title, String content, List<String> erps, String extendStr) {
-        apiManager.push("title","this is content",list,"this is extend");
-    }
 }

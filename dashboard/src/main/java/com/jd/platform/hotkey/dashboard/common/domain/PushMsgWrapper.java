@@ -13,10 +13,16 @@ public class PushMsgWrapper implements Serializable {
 
     private Long date;
 
+    /**
+     * -1小于最小阈值; 1超过最大阈值
+     */
+    private Integer count;
+
     private String msg;
 
-    public PushMsgWrapper(String app) {
+    public PushMsgWrapper(String app, int count) {
         this.app = app;
+        this.count = count;
         this.date = SystemClock.now();
     }
 
@@ -26,6 +32,14 @@ public class PushMsgWrapper implements Serializable {
 
     public void setApp(String app) {
         this.app = app;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 
     public Long getDate() {

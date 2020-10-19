@@ -7,6 +7,7 @@ import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.dashboard.biz.service.UserService;
 import com.jd.platform.hotkey.dashboard.common.domain.PushMsgWrapper;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
+import com.jd.platform.hotkey.dashboard.warn.dongdong.DongDongApiManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,10 +33,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Component
 public class PushHandler {
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+
+    /**
+     * 报警标题
+     */
+    private static final String TITLE = "hotKey异常提醒";
+
     /**
      * 拦截重复报警间隔 10分钟
      */
-    private static final long interval = 10*60*1000L;
+    private static final long INTERVAL = 10*60*1000L;
 
     /**
      * app-config map
@@ -52,11 +61,15 @@ public class PushHandler {
      */
     private static final BlockingQueue<PushMsgWrapper> MSG_QUEUE = new LinkedBlockingQueue<>();
 
+
     @Resource
     private IConfigCenter configCenter;
+
     @Resource
     private UserService userService;
 
+    @Resource
+    private DongDongApiManager apiManager;
 
     /**
      * 监控和入队
@@ -66,9 +79,8 @@ public class PushHandler {
         if(cfg.getWarn().equals(1)){
             SlidingWindow wd = cfg.getWindow();
             int count = wd.addCount(1);
-            if(count > 0){
-                MSG_QUEUE.put(new PushMsgWrapper(app));
-            }
+            if(count == 0){ return; }
+            MSG_QUEUE.put(new PushMsgWrapper(app, count));
         }
     }
 
@@ -79,16 +91,21 @@ public class PushHandler {
     public void pushWarnMsg() {
         //  初始化MAP到内存
         initAppCfgMap();
-        System.out.println("initAppCfgMap-result-> "+JSON.toJSONString(appCfgMap));
+        logger.info("initAppCfgMap success AppCfgMap:{}",JSON.toJSONString(appCfgMap));
+
         while (true){
             try {
                 PushMsgWrapper msgWrapper = MSG_QUEUE.take();
                 String warnApp = msgWrapper.getApp();
                 Long msgTime = msgWrapper.getDate();
                 boolean send = check(warnApp, msgTime);
-                if(send){ doPush(); }
+                if(send){
+                    Integer ct = msgWrapper.getCount();
+                    String content = ct == -1 ? warnApp+"热点记录频率低于最小阈值，请注意！" : warnApp+"热点记录频率高于最大阈值，请注意！";
+                    apiManager.push(TITLE,content);
+                }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.info("pushWarnMsg thread error ,  msg :{}", e.getMessage());
             }
         }
     }
@@ -103,27 +120,26 @@ public class PushHandler {
     private synchronized boolean check(String warnApp, Long msgTime){
         Long maxTime = appIntervalMap.get(warnApp);
         if(maxTime == null){
-            appIntervalMap.put(warnApp,msgTime+interval);
+            appIntervalMap.put(warnApp,msgTime+INTERVAL);
             return true;
         }else{
             if(msgTime > maxTime){
-                appIntervalMap.put(warnApp,msgTime+interval);
+                appIntervalMap.put(warnApp,msgTime+INTERVAL);
                 return true;
             }
         }
         return false;
     }
 
-    // todo 执行报警
-    private static void doPush() {
-    }
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 初始化cfgMap和滑动窗口
      */
     private void initAppCfgMap() {
+        /**
+         * 为了加入最小值
+         */
+        configCenter.delete(ConfigConstant.appCfgPath);
         List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
         if(CollectionUtils.isEmpty(keyValues) || keyValues.size()==1){
             List<String> apps = userService.listApp();
@@ -142,8 +158,6 @@ public class PushHandler {
                 appCfgMap.put(cfg.getApp(),cfg);
             }
         }
-
-
     }
 
 }

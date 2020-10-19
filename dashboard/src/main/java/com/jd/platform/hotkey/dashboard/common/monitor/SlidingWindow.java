@@ -30,7 +30,12 @@ public class SlidingWindow {
     /**
      * 在一个完整窗口期内允许通过的最大阈值
      */
-    private int threshold;
+    private int max;
+
+    /**
+     * 在一个完整窗口期内最小阈值
+     */
+    private int min;
     /**
      * 该滑窗的起始创建时间，也就是第一个数据
      */
@@ -40,29 +45,12 @@ public class SlidingWindow {
      */
     private long lastAddTimestamp;
 
-    public static void main(String[] args) {
-        //1秒一个时间片，窗口共5个
-        SlidingWindow window = new SlidingWindow(10, 20);
 
-        CyclicBarrier cyclicBarrier = new CyclicBarrier(10);
-        for (int i = 0; i < 10; i++) {
-            new Thread(() -> {
-                try {
-                    cyclicBarrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    e.printStackTrace();
-                }
-                int hot = window.addCount(2);
-                System.out.println(hot);
-            }).start();
-        }
-    }
-
-
-    public SlidingWindow(int windowSize, int threshold) {
+    public SlidingWindow(int windowSize, int min, int max) {
         this.timeMillisPerSlice = 60 * 1000;
         this.windowSize = windowSize;
-        this.threshold = threshold;
+        this.max = max;
+        this.min = min;
         // 保证存储在至少两个window
         this.timeSliceSize = windowSize * 2;
         reset();
@@ -101,10 +89,13 @@ public class SlidingWindow {
             sum += timeSlices[(index - i + timeSliceSize) % timeSliceSize].get();
         }
         lastAddTimestamp = SystemClock.now();
-        if(sum >= threshold){
+        if(sum >= max){
             return sum;
+        }else if(sum < min){
+            return -1;
+        }else{
+            return 0;
         }
-        return 0;
     }
 
     private void clearFromIndex(int index) {
@@ -126,11 +117,19 @@ public class SlidingWindow {
         this.windowSize = windowSize;
     }
 
-    public int getThreshold() {
-        return threshold;
+    public int getMax() {
+        return max;
     }
 
-    public void setThreshold(int threshold) {
-        this.threshold = threshold;
+    public void setMax(int max) {
+        this.max = max;
+    }
+
+    public int getMin() {
+        return min;
+    }
+
+    public void setMin(int min) {
+        this.min = min;
     }
 }

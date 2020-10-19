@@ -28,9 +28,14 @@ public class AppCfgVo implements Serializable {
     private Integer warnPeriod;
 
     /**
-     * 警报阈值
+     * 警报阈值最小值
      */
-    private Integer warnThreshold;
+    private Integer warnMin;
+
+    /**
+     * 警报阈值最大值
+     */
+    private Integer warnMax;
 
     /**
      * 警报开关 1开启 0关闭
@@ -74,12 +79,20 @@ public class AppCfgVo implements Serializable {
         this.warnPeriod = warnPeriod;
     }
 
-    public Integer getWarnThreshold() {
-        return warnThreshold;
+    public Integer getWarnMin() {
+        return warnMin;
     }
 
-    public void setWarnThreshold(Integer warnThreshold) {
-        this.warnThreshold = warnThreshold;
+    public void setWarnMin(Integer warnMin) {
+        this.warnMin = warnMin;
+    }
+
+    public Integer getWarnMax() {
+        return warnMax;
+    }
+
+    public void setWarnMax(Integer warnMax) {
+        this.warnMax = warnMax;
     }
 
     public Integer getWarn() {
@@ -121,11 +134,12 @@ public class AppCfgVo implements Serializable {
         this.app = app;
         this.dataTtl = 30;
         this.warnPeriod = 10*60;
-        this.warnThreshold = 1000;
+        this.warnMin = -1;
+        this.warnMax = 1000;
         this.version = 0L;
         this.warn = 1;
         this.modifier = "SYSTEM";
-        this.window = new SlidingWindow(warnPeriod/60,warnThreshold);
+        this.window = new SlidingWindow(warnPeriod/60,warnMin,warnMax);
     }
 
 }
