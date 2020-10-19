@@ -13,6 +13,10 @@ public class InitConstant {
     //单位是百万
     public static int bufferSize = 2;
 
+    public static boolean openTimeOut;
+
+    public static int threadCount;
+
     public static final LongAdder expireTotalCount = new LongAdder();
 
     public static final LongAdder totalDealCount = new LongAdder();

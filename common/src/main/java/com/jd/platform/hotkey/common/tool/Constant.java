@@ -31,6 +31,6 @@ public class Constant {
     public static String DEFAULT_DELETE_VALUE = "#[DELETE]#";
 
     //单次包最大2M
-    public static int MAX_LENGTH = 2 * 1024 * 1024;
+    public static int MAX_LENGTH = 4 * 1024 * 1024;
 
 }

@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 @Controller
 @RequestMapping("/worker")
 public class WorkerController extends BaseController {
-	
+
 	private String prefix = "admin/worker";
 
 	@Resource
@@ -63,7 +63,7 @@ public class WorkerController extends BaseController {
 		modelMap.put("worker", workerService.selectByKey(key.replace("_","/")));
         return prefix + "/edit";
     }
-	
+
 
     @PostMapping("/edit")
     @ResponseBody

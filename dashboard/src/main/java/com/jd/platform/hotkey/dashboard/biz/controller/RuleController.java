@@ -29,7 +29,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/rule")
 public class RuleController extends BaseController {
-	
+
 
 	@Resource
 	private RuleService ruleService;
