@@ -1,3 +1,8 @@
+--  !!! 注意设置sql model 否则可能sql报错 ！！！
+--  查询你的sql_model参数：select @@global.sql_mode;  发现ONLY_FULL_GROUP_BY 则会导致报错
+--  解决方式：set @@global.sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+--  详情查阅：https://www.cnblogs.com/hjhsblogs/p/11079356.html
+
 DROP TABLE IF EXISTS `hk_change_log`;
 CREATE TABLE `hk_change_log`  (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -118,5 +123,21 @@ CREATE TABLE `hk_summary`  (
   INDEX `idx_apprule`(`app`, `rule`) USING BTREE COMMENT '查询索引',
   INDEX `ix_ct`(`create_time`) USING BTREE COMMENT '时间索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '汇总表' ROW_FORMAT = Compact;
+
+
+
+/* 请确认以下SQL符合您的变更需求，务必确认无误后再提交执行 */
+
+CREATE TABLE `biz_access_token` (
+   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'token',
+   `flag` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'flag',
+    `CREATED_BY` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '创建人',
+    `CREATED_TIME` datetime NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATED_BY` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '修改人',
+    `UPDATED_TIME` datetime NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+     PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '咚咚token表' ROW_FORMAT = Compact;
+
 
 

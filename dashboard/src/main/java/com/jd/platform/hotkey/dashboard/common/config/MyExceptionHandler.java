@@ -25,7 +25,7 @@ public class MyExceptionHandler {
 	@ResponseBody
 	public Result bizExceptionHandler(BizException e, HttpServletResponse resp){
 		resp.setStatus(e.getCode());
-		logger.info("业务异常：",e);
+		logger.error("业务异常：",e);
 		return Result.error(e.getCode(),e.getMsg());
 
 	}
@@ -34,7 +34,7 @@ public class MyExceptionHandler {
 	@ExceptionHandler(value =Exception.class)
 	@ResponseBody
 	public Result exceptionHandler(Exception e){
-		logger.info("未知异常：",e);
+		logger.error("未知异常：",e);
 		return Result.error(ResultEnum.BIZ_ERROR);
 	}
 }

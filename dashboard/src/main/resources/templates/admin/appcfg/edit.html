@@ -38,15 +38,21 @@
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-3 control-label ">警报周期(秒)：</label>
+								<label class="col-sm-3 control-label ">警报周期(秒)(60倍数)：</label>
 								<div class="col-sm-8">
 									<input class="form-control" type="text" id="warnPeriod" name="warnPeriod" th:value="*{warnPeriod}"/>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-3 control-label ">警报阈值：</label>
+								<label class="col-sm-3 control-label ">警报最小阈值：</label>
 								<div class="col-sm-8">
-									<input class="form-control" type="text" id="warnThreshold" name="warnThreshold" th:value="*{warnThreshold}"/>
+									<input class="form-control" type="text" id="warnMin" name="warnMin" th:value="*{warnMin}"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-3 control-label ">警报最大阈值：</label>
+								<div class="col-sm-8">
+									<input class="form-control" type="text" id="warnMax" name="warnMax" th:value="*{warnMax}"/>
 								</div>
 							</div>
 							<div class="form-group">
