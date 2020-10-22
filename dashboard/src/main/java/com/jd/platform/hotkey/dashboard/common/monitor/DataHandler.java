@@ -335,9 +335,8 @@ public class DataHandler {
         if(minNull){
             cfg.setWarnMin(Constant.WARN_INIT_MIN);
         }
-        if(maxNull || minNull){
-            configCenter.put(ConfigConstant.appCfgPath + cfg.getApp(), JSON.toJSONString(cfg));
-        }
+        cfg.setWarnPeriod(60);
+        configCenter.put(ConfigConstant.appCfgPath + cfg.getApp(), JSON.toJSONString(cfg));
     }
 
 }
