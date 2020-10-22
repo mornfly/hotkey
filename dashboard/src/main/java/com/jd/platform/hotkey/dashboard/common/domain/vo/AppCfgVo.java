@@ -2,7 +2,7 @@ package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
 
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
-import com.jd.platform.hotkey.dashboard.common.monitor.SlidingWindow;
+
 import java.io.Serializable;
 
 /**
