@@ -308,9 +308,9 @@ public class DataHandler {
 
         int count = keyRecordMapper.countKeyRecord(req);
         int type = 0;
-        if(count > cfg.getWarnMax()){
+        if(count >= cfg.getWarnMax()){
             type = 1;
-        }else if(count < cfg.getWarnMin()){
+        }else if(count <= cfg.getWarnMin()){
             type = 2;
         }
 
