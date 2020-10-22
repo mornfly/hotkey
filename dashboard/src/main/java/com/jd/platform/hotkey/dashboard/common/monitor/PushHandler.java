@@ -33,9 +33,9 @@ public class PushHandler {
     private static final String TITLE = "hotKey异常提醒";
 
     /**
-     * 拦截重复报警间隔 10分钟
+     * 拦截重复报警间隔 2分钟
      */
-    private static final long INTERVAL = 10*60*1000L;
+    private static final long INTERVAL = 2*60*1000L;
 
 
     /**
