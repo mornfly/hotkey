@@ -310,7 +310,7 @@ public class DataHandler {
         int type = 0;
         if(count > cfg.getWarnMax()){
             type = 1;
-        }else if(count < cfg.getWarnMax()){
+        }else if(count < cfg.getWarnMin()){
             type = 2;
         }
 
