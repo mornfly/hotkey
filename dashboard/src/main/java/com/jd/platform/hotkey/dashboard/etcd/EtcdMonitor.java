@@ -148,10 +148,6 @@ public class EtcdMonitor {
         threadPoolExecutor.submit(() -> {
             dataHandler.dealHotKey();
         });
-        threadPoolExecutor.submit(() -> {
-            pushHandler.pushWarnMsg();
-        });
-
     }
 
     /**

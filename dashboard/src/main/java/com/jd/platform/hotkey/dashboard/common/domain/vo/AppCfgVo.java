@@ -1,6 +1,7 @@
 package com.jd.platform.hotkey.dashboard.common.domain.vo;
 
 
+import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.monitor.SlidingWindow;
 import java.io.Serializable;
 
@@ -130,13 +131,12 @@ public class AppCfgVo implements Serializable {
     public AppCfgVo(String app) {
         this.app = app;
         this.dataTtl = 30;
-        this.warnPeriod = 10*60;
-        this.warnMin = -1;
-        this.warnMax = 1000;
+        this.warnPeriod = 60;
+        this.warnMin = Constant.WARN_INIT_MIN;
+        this.warnMax = Constant.WARN_INIT_MAX;
         this.version = 0L;
         this.warn = 1;
         this.modifier = "SYSTEM";
-        this.window = new SlidingWindow(warnPeriod/60,warnMin,warnMax);
     }
 
 }

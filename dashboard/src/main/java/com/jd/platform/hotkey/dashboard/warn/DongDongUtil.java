@@ -71,7 +71,7 @@ public class DongDongUtil {
 
         }
 
-        public boolean push(String title,String content,String accessToken) throws Exception{
+        public boolean push(String title,String content,String accessToken, List<String> erpList) throws Exception{
             String dogUrl = "http://dog-ee.jd.com/push";
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("accessid", UUID.randomUUID().toString()));
@@ -94,7 +94,7 @@ public class DongDongUtil {
             List<String> pins = new ArrayList<>();
             pins.add("wuweifeng10");
             pins.add("liyunfeng31");
-            pins.add("erp");
+            pins.addAll(erpList);
             json.put("tos", pins);
 
             JSONObject extend = new JSONObject();

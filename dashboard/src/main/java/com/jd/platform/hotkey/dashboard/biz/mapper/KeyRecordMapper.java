@@ -27,4 +27,7 @@ public interface KeyRecordMapper {
     List<Statistics> statisticsByRule(SearchReq req);
 
     int clearExpireData(String app, Date expireDate);
+
+    int countKeyRecord(SearchReq req);
+
 }

@@ -66,4 +66,10 @@ public class Constant {
 
     static { HEAD.add("热点key");  HEAD.add("次数");  HEAD.add("所属APP");}
 
+
+    public static final int WARN_INIT_MIN = -1;
+
+
+    public static final int WARN_INIT_MAX = 5000;
+
 }

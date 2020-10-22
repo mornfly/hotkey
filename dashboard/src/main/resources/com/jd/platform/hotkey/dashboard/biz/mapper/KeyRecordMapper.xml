@@ -139,6 +139,20 @@
   </select>
 
 
+
+  <select id="countKeyRecord"  resultType="java.lang.Integer"  parameterType="com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq">
+    select count(1)
+    from hk_key_record
+    where 1=1
+    <if test="app !=null and app !=''">
+      and app_name = #{app}
+    </if >
+    <if test="startTime != null">
+      <![CDATA[ and create_time >= #{startTime} and create_time < #{endTime}]]>
+    </if>
+  </select>
+
+
   <insert id="batchInsert">
     INSERT ignore INTO
     hk_key_record(

@@ -170,4 +170,11 @@
     group by app_name
   </select>
 
+
+  <select id="listErpByApp" resultType="java.lang.String">
+    select user_name
+     from  hk_user
+    where app_name = #{app}
+  </select>
+
 </mapper>

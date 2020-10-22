@@ -1,26 +1,17 @@
 package com.jd.platform.hotkey.dashboard.common.monitor;
 
-import com.alibaba.fastjson.JSON;
-import com.ibm.etcd.api.KeyValue;
-import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
-import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
-import com.jd.platform.hotkey.dashboard.biz.service.UserService;
-import com.jd.platform.hotkey.dashboard.common.domain.PushMsgWrapper;
-import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
+
+import com.jd.platform.hotkey.dashboard.biz.mapper.UserMapper;
 import com.jd.platform.hotkey.dashboard.warn.DongDongApiManager;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.Resource;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @ProjectName: hotkey
@@ -46,69 +37,29 @@ public class PushHandler {
      */
     private static final long INTERVAL = 10*60*1000L;
 
-    /**
-     * app-config map
-     */
-    public static Map<String, AppCfgVo> appCfgMap = new ConcurrentHashMap<>();
 
     /**
      * app-time 用于app存储报警时间 做拦截
      */
     private static Map<String,Long> appIntervalMap = new ConcurrentHashMap<>();
 
-    /**
-     * 超过阈值的热点记录次数 放到队列里
-     */
-    private static final BlockingQueue<PushMsgWrapper> MSG_QUEUE = new LinkedBlockingQueue<>();
-
-
-    @Resource
-    private IConfigCenter configCenter;
-
-    @Resource
-    private UserService userService;
 
     @Resource
     private DongDongApiManager apiManager;
 
-    /**
-     * 监控和入队
-     */
-    public void monitorAndPush(String app) throws InterruptedException {
-        AppCfgVo cfg = PushHandler.appCfgMap.get(app);
-        if(cfg.getWarn().equals(1)){
-            SlidingWindow wd = cfg.getWindow();
-            int count = wd.addCount(1);
-            if(count == 0){ return; }
-            MSG_QUEUE.put(new PushMsgWrapper(app, count));
-        }
-    }
+    @Resource
+    private UserMapper userMapper;
 
 
     /**
-     * 启动线程处理警报消息队列
+     * 发送消息
      */
-    public void pushWarnMsg() {
-        //  初始化MAP到内存
-        initAppCfgMap();
-        logger.info("initAppCfgMap success AppCfgMap:{}",JSON.toJSONString(appCfgMap));
-
-        while (true){
-            try {
-                PushMsgWrapper msgWrapper = MSG_QUEUE.take();
-                String warnApp = msgWrapper.getApp();
-                Long msgTime = msgWrapper.getDate();
-                boolean send = check(warnApp, msgTime);
-                if(send){
-                    Integer ct = msgWrapper.getCount();
-                    String content = ct == -1 ? warnApp+"热点记录频率低于最小阈值，请注意！" : warnApp+"热点记录频率高于最大阈值，请注意！";
-                    apiManager.push(TITLE,content);
-                }else{
-                    logger.info("check fail不允许发送：msg: {}",JSON.toJSONString(msgWrapper));
-                }
-            } catch (InterruptedException e) {
-                logger.info("pushWarnMsg thread error ,  msg :{}", e.getMessage());
-            }
+    public void pushMsg(String app, Date msgTime, String content) {
+        boolean send = check(app, msgTime.getTime());
+        if(send){
+            logger.info("Warn PushMsg content:{}",content);
+            List<String> erpList = userMapper.listErpByApp(app);
+            apiManager.push(TITLE,content,erpList);
         }
     }
 
@@ -131,35 +82,6 @@ public class PushHandler {
             }
         }
         return false;
-    }
-
-
-    /**
-     * 初始化cfgMap和滑动窗口
-     */
-    private void initAppCfgMap() {
-        /**
-         * 为了加入最小值
-         */
-        configCenter.delete(ConfigConstant.appCfgPath);
-        List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
-        if(CollectionUtils.isEmpty(keyValues) || keyValues.size()==1){
-            List<String> apps = userService.listApp();
-            for (String ap : apps) {
-                AppCfgVo cfg = new AppCfgVo(ap);
-                appCfgMap.put(ap,cfg);
-                configCenter.put(ConfigConstant.appCfgPath + ap, JSON.toJSONString(cfg));
-            }
-            return;
-        }
-
-        for (KeyValue keyValue : keyValues) {
-            String val = keyValue.getValue().toStringUtf8();
-            if(StringUtils.isNotEmpty(val)){
-                AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
-                appCfgMap.put(cfg.getApp(),cfg);
-            }
-        }
     }
 
 }

@@ -74,7 +74,7 @@ public class DongDongApiManager {
     }
 
 
-    public boolean push(String title, String content) {
+    public boolean push(String title, String content, List<String> erpList) {
         List<BizAccessToken> tokens = accessTokenService.selectBizAccessTokenList(new BizAccessToken());
         if(tokens.size() == 0){
             log.error("没有查询到有效的token！");
@@ -85,7 +85,7 @@ public class DongDongApiManager {
             return false;
         }
         try {
-            return dongUtil.push(title,content,accessToken);
+            return dongUtil.push(title,content,accessToken, erpList);
         }catch (Exception e){
             return false;
         }
