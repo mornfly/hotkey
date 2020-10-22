@@ -50,9 +50,6 @@ public class AppCfgVo implements Serializable {
      */
     private String modifier;
 
-
-    private SlidingWindow window;
-
     public String getApp() {
         return app;
     }
@@ -115,14 +112,6 @@ public class AppCfgVo implements Serializable {
 
     public void setModifier(String modifier) {
         this.modifier = modifier;
-    }
-
-    public SlidingWindow getWindow() {
-        return window;
-    }
-
-    public void setWindow(SlidingWindow window) {
-        this.window = window;
     }
 
     public AppCfgVo() {

@@ -75,7 +75,6 @@ public class AppCfgServiceImpl implements AppCfgService {
      */
     @Override
     public void saveAppCfgVo(AppCfgVo cfg) {
-        cfg.setWindow(new SlidingWindow(cfg.getWarnPeriod()/60,cfg.getWarnMin(),cfg.getWarnMax()));
         configCenter.put(ConfigConstant.appCfgPath + cfg.getApp(), JSON.toJSONString(cfg));
     }
 }
