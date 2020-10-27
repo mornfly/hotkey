@@ -26,7 +26,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.crypto.Mac;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,11 +91,10 @@ public class DataHandler {
                         keyRecordList.add(keyRecord);
                     }
                 }
-                log.info("batch insert record size:{}",keyRecordList.size());
                 keyRecordMapper.batchInsert(keyRecordList);
 
             } catch (Exception e) {
-                log.error("batch insert error:{}",e.getMessage(), e);
+                log.error("batch insert error:{}", e.getMessage(), e);
                 e.printStackTrace();
             }
         }
@@ -218,7 +216,6 @@ public class DataHandler {
     }
 
 
-
     /**
      * 每天根据app的配置清理过期数据
      */
@@ -236,7 +233,7 @@ public class DataHandler {
                 keyRecordMapper.clearExpireData(app, expireDate);
                 statisticsMapper.clearExpireData(app, expireDate);
             }
-          } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -246,7 +243,7 @@ public class DataHandler {
     /**
      * 每10秒检测一次热点记录 用于监控报警
      */
-    @Scheduled(initialDelay = 30000,fixedRate = 10000)
+    @Scheduled(initialDelay = 30000, fixedRate = 10000)
     public void scanRecordForMonitor() {
         try {
             SearchReq req = new SearchReq();
@@ -254,14 +251,12 @@ public class DataHandler {
             req.setEndTime(date);
             List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
             for (KeyValue kv : keyValues) {
-                queryRecordAndCheck( kv, req, date);
+                queryRecordAndCheck(kv, req, date);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 
 
     public void dealHotKey() {
@@ -270,7 +265,7 @@ public class DataHandler {
                 //获取发来的这个热key，存入本地caffeine，设置过期时间
                 HotKeyModel model = HotKeyReceiver.take();
                 //将该key放入实时热key本地缓存中
-                if(model != null){
+                if (model != null) {
                     HotKeyReceiver.put(model);
                     putRecord(model.getAppName(), model.getKey());
                 }
@@ -281,16 +276,27 @@ public class DataHandler {
     }
 
 
-    public void putRecord(String app, String key) throws InterruptedException {
+    private void putRecord(String app, String key) {
         this.offer(new IRecord() {
             @Override
-            public String appNameKey() { return app + "/" + key; }
+            public String appNameKey() {
+                return app + "/" + key;
+            }
+
             @Override
-            public String value() { return UUID.randomUUID().toString(); }
+            public String value() {
+                return UUID.randomUUID().toString();
+            }
+
             @Override
-            public int type() { return 0; }
+            public int type() {
+                return 0;
+            }
+
             @Override
-            public Date createTime() { return new Date(); }
+            public Date createTime() {
+                return new Date();
+            }
         });
     }
 
@@ -298,49 +304,34 @@ public class DataHandler {
     /**
      * 查询条数 比对配置 发送报警
      */
-    private void queryRecordAndCheck(KeyValue kv, SearchReq req, Date date){
+    private void queryRecordAndCheck(KeyValue kv, SearchReq req, Date date) {
         String val = kv.getValue().toStringUtf8();
         AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
-        // appendCfg(cfg);
-        if(cfg.getWarn() != 1){ return; }
+        if (cfg.getWarn() != 1) {
+            return;
+        }
 
         req.setApp(cfg.getApp());
-        req.setStartTime(new Date(date.getTime() - cfg.getWarnPeriod()*1000));
+        req.setStartTime(new Date(date.getTime() - cfg.getWarnPeriod() * 1000));
 
         int count = keyRecordMapper.countKeyRecord(req);
-        log.info("应用app:{}, 记录count:{}, 统计时间Period:{}",cfg.getApp(), count, cfg.getWarnPeriod());
+        log.info("应用app:{}, 记录count:{}, 统计时间Period:{}", cfg.getApp(), count, cfg.getWarnPeriod());
         int type = 0;
-        if(count >= cfg.getWarnMax()){
+        if (count >= cfg.getWarnMax()) {
             type = 1;
-        }else if(count <= cfg.getWarnMin()){
+        } else if (count <= cfg.getWarnMin()) {
             type = 2;
         }
 
-        if(type > 0){
-            String str = type == 1 ? "高于最大":"低于最小";
-            int threshold = type == 1 ? cfg.getWarnMax():cfg.getWarnMin();
-            String content = String.format("应用：%s热点记录在%d秒内累计: %d, %s阈值: %d, 请注意", cfg.getApp(),cfg.getWarnPeriod(),count,str,threshold);
-            pushHandler.pushMsg(cfg.getApp(),date,content);
-        }else{
-            log.error(" app config error out of rang: {}",val);
+        if (type > 0) {
+            String str = type == 1 ? "高于最大" : "低于最小";
+            int threshold = type == 1 ? cfg.getWarnMax() : cfg.getWarnMin();
+            String content = String.format("应用：%s热点记录在%d秒内累计: %d, %s阈值: %d, 请注意", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold);
+            pushHandler.pushMsg(cfg.getApp(), date, content);
+        } else {
+            log.error(" app config error out of rang: {}", val);
         }
     }
 
-
-
-    private void appendCfg(AppCfgVo cfg){
-
-        boolean maxNull = cfg.getWarnMax() == null;
-        boolean minNull = cfg.getWarnMin() == null;
-
-        if(maxNull){
-            cfg.setWarnMax(Constant.WARN_INIT_MAX);
-        }
-        if(minNull){
-            cfg.setWarnMin(Constant.WARN_INIT_MIN);
-        }
-        cfg.setWarnPeriod(60);
-        configCenter.put(ConfigConstant.appCfgPath + cfg.getApp(), JSON.toJSONString(cfg));
-    }
 
 }
