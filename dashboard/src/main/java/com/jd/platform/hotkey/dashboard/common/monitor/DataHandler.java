@@ -92,10 +92,11 @@ public class DataHandler {
                         keyRecordList.add(keyRecord);
                     }
                 }
-
+                log.info("batch insert record size:{}",keyRecordList.size());
                 keyRecordMapper.batchInsert(keyRecordList);
 
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                log.error("batch insert error:{}",e.getMessage(), e);
                 e.printStackTrace();
             }
         }
@@ -300,13 +301,14 @@ public class DataHandler {
     private void queryRecordAndCheck(KeyValue kv, SearchReq req, Date date){
         String val = kv.getValue().toStringUtf8();
         AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
-        appendCfg(cfg);
+        // appendCfg(cfg);
         if(cfg.getWarn() != 1){ return; }
 
         req.setApp(cfg.getApp());
         req.setStartTime(new Date(date.getTime() - cfg.getWarnPeriod()*1000));
 
         int count = keyRecordMapper.countKeyRecord(req);
+        log.info("应用app:{}, 记录count:{}, 统计时间Period:{}",cfg.getApp(), count, cfg.getWarnPeriod());
         int type = 0;
         if(count >= cfg.getWarnMax()){
             type = 1;
@@ -319,6 +321,8 @@ public class DataHandler {
             int threshold = type == 1 ? cfg.getWarnMax():cfg.getWarnMin();
             String content = String.format("应用：%s热点记录在%d秒内累计: %d, %s阈值: %d, 请注意", cfg.getApp(),cfg.getWarnPeriod(),count,str,threshold);
             pushHandler.pushMsg(cfg.getApp(),date,content);
+        }else{
+            log.error(" app config error out of rang: {}",val);
         }
     }
 
