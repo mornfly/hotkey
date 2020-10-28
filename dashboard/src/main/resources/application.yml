@@ -50,9 +50,9 @@ etcd:
   server: ${etcdServer:http://127.0.0.1:2379}
 erp:
   enabled: false
-  ssoAppKey: fangzhou
-  ssoAppToken: 3f48d7ade61940f2ba22079ebc273fb8
+  ssoAppKey: xxx
+  ssoAppToken: xxx
   loginUrl: https://ssa.jd.com/sso/login
   excludePath: /login,/assets,/bootstarp,/common,/htmlformat,/images,/jn,/jquery,/user/login,login
   ssoAppUrl: http://ssa.jd.com
-  defaultPwd: 123456
+  defaultPwd: xxx
