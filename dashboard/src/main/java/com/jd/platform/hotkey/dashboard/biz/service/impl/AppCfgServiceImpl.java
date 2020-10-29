@@ -2,6 +2,7 @@ package com.jd.platform.hotkey.dashboard.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.util.StringUtil;
+import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ProjectName: hotkey
@@ -40,7 +42,8 @@ public class AppCfgServiceImpl implements AppCfgService {
 
         List<String> apps = userMapper.listApp();
 
-        List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
+        List<KeyValue> keyValues = getKVList(apps);
+
         List<AppCfgVo> cfgVos = new ArrayList<>();
         for (KeyValue kv : keyValues) {
             String key = kv.getKey().toStringUtf8();
@@ -50,7 +53,6 @@ public class AppCfgServiceImpl implements AppCfgService {
                 configCenter.delete(key);
                 continue;
             }
-
             //取到配置信息
             String v = kv.getValue().toStringUtf8();
             //如果为空，则赋值初始化
@@ -94,5 +96,26 @@ public class AppCfgServiceImpl implements AppCfgService {
     @Override
     public void saveAppCfgVo(AppCfgVo cfg) {
         configCenter.put(ConfigConstant.appCfgPath + cfg.getApp(), JSON.toJSONString(cfg));
+    }
+
+
+    /**
+     * 比较和补充
+     * @param apps  all db apps
+     */
+    private List<KeyValue> getKVList(List<String> apps){
+        
+        List<KeyValue> keyValues = new ArrayList<>(configCenter.getPrefix(ConfigConstant.appCfgPath));
+        List<String> etcdApps = keyValues.stream()
+                .map(x -> x.getKey().toStringUtf8()
+                .replace(ConfigConstant.appCfgPath, ""))
+                .collect(Collectors.toList());
+        List<String> tempList = new ArrayList<>(apps);
+        tempList.removeAll(etcdApps);
+        for (String diffApp : tempList) {
+            KeyValue kv = KeyValue.newBuilder().setKey(ByteString.copyFromUtf8(ConfigConstant.appCfgPath + diffApp)).build();
+            keyValues.add(kv);
+        }
+        return keyValues;
     }
 }
