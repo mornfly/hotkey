@@ -57,7 +57,7 @@ public class AppCfgServiceImpl implements AppCfgService {
             String v = kv.getValue().toStringUtf8();
             //如果为空，则赋值初始化
             if (StringUtil.isEmpty(v)) {
-                v = JSON.toJSONString(new AppCfgVo(key));
+                v = JSON.toJSONString(new AppCfgVo(k));
                 configCenter.put(key, v);
             }
 
