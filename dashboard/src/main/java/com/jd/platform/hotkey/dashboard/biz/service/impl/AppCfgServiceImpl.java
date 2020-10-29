@@ -43,33 +43,41 @@ public class AppCfgServiceImpl implements AppCfgService {
         List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
         List<AppCfgVo> cfgVos = new ArrayList<>();
         for (KeyValue kv : keyValues) {
-            String v = kv.getValue().toStringUtf8();
             String key = kv.getKey().toStringUtf8();
-            String k = key.replace(ConfigConstant.appCfgPath,"");
-
-            if(!apps.contains(k)){
+            String k = key.replace(ConfigConstant.appCfgPath, "");
+            //如果某个配置所属的app已经被删了，则删除该app的配置
+            if (!apps.contains(k)) {
                 configCenter.delete(key);
                 continue;
-            }else if(StringUtil.isEmpty(v)){
+            }
+
+            //取到配置信息
+            String v = kv.getValue().toStringUtf8();
+            //如果为空，则赋值初始化
+            if (StringUtil.isEmpty(v)) {
                 v = JSON.toJSONString(new AppCfgVo(key));
                 configCenter.put(key, v);
             }
 
             AppCfgVo vo = JSON.parseObject(v, AppCfgVo.class);
             vo.setVersion(kv.getModRevision());
-            if(StringUtils.isEmpty(app)){
+            //如果是管理员，则添加所有
+            if (StringUtils.isEmpty(app)) {
                 cfgVos.add(vo);
-            }else{
-                if(k.equals(app)){ cfgVos.add(vo); }
+            } else {
+                //添加自己的app信息
+                if (k.equals(app)) {
+                    cfgVos.add(vo);
+                }
             }
         }
-        return PageUtil.pagination(cfgVos,page.getPageSize(),page.getPageNum()-1);
+        return PageUtil.pagination(cfgVos, page.getPageSize(), page.getPageNum() - 1);
     }
 
     @Override
     public AppCfgVo selectAppCfgVo(String app) {
         KeyValue kv = configCenter.getKv(ConfigConstant.appCfgPath + app);
-        if(kv == null || kv.getValue() == null){
+        if (kv == null || kv.getValue() == null) {
             AppCfgVo ap = new AppCfgVo(app);
             configCenter.put(ConfigConstant.appCfgPath + app, JSON.toJSONString(ap));
             return ap;
