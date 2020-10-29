@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.biz.service.impl;
 
+import cn.hutool.core.date.SystemClock;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
@@ -122,9 +123,13 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public int save(Rules rules) {
         String app = rules.getApp();
-        String from = "";
+
+        KeyValue kv = configCenter.getKv(ConfigConstant.rulePath + app);
+        String from = kv.getValue().toStringUtf8();
         String to = JSON.toJSONString(rules);
         configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
+
+        logMapper.insertSelective(new ChangeLog(app, 1, from, to,rules.getUpdateUser(), app, SystemClock.nowDate()));
         return 1;
     }
 

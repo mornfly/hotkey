@@ -5,6 +5,7 @@ import com.github.pagehelper.util.StringUtil;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.dashboard.biz.mapper.UserMapper;
 import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
@@ -30,21 +31,32 @@ public class AppCfgServiceImpl implements AppCfgService {
     @Resource
     private IConfigCenter configCenter;
 
+    @Resource
+    private UserMapper userMapper;
+
 
     @Override
     public Page<AppCfgVo> pageAppCfgVo(PageReq page, String app) {
+
+        List<String> apps = userMapper.listApp();
+
         List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
         List<AppCfgVo> cfgVos = new ArrayList<>();
         for (KeyValue kv : keyValues) {
             String v = kv.getValue().toStringUtf8();
             String key = kv.getKey().toStringUtf8();
-            if(StringUtil.isEmpty(v)){
-                configCenter.put(key, JSON.toJSONString(new AppCfgVo(key)));
+            String k = key.replace(ConfigConstant.appCfgPath,"");
+
+            if(!apps.contains(k)){
+                configCenter.delete(key);
                 continue;
+            }else if(StringUtil.isEmpty(v)){
+                v = JSON.toJSONString(new AppCfgVo(key));
+                configCenter.put(key, v);
             }
+
             AppCfgVo vo = JSON.parseObject(v, AppCfgVo.class);
             vo.setVersion(kv.getModRevision());
-            String k = key.replace(ConfigConstant.appCfgPath,"");
             if(StringUtils.isEmpty(app)){
                 cfgVos.add(vo);
             }else{
