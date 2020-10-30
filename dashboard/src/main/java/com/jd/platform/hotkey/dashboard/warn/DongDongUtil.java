@@ -99,7 +99,7 @@ public class DongDongUtil {
 
             JSONObject extend = new JSONObject();
             extend.put("url", "http://hotkey.jd.com");
-            extend.put("pic", "https://img14.360buyimg.com/imagetools/jfs/t1/144156/7/8194/7263/5f5b34baEdfd90a49/a15144ab447bfbf2.png");
+          /*  extend.put("pic", "https://img14.360buyimg.com/imagetools/jfs/t1/144156/7/8194/7263/5f5b34baEdfd90a49/a15144ab447bfbf2.png");*/
             json.put("extend", extend);
             params.add(new BasicNameValuePair("jsonMsg",JSON.toJSONString(json)));
 

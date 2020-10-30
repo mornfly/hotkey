@@ -326,7 +326,8 @@ public class DataHandler {
         if (type > 0) {
             String str = type == 1 ? "高于最大" : "低于最小";
             int threshold = type == 1 ? cfg.getWarnMax() : cfg.getWarnMin();
-            String content = String.format("应用：%s热点记录在%d秒内累计: %d, %s阈值: %d, 请注意", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold);
+            String time = LocalDateTime.now().toString().replace("T", " ");
+            String content = String.format("【警报】 应用：【%s】  热点记录在%d秒内累计: %d, %s阈值: %d \n【时间】：%s", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold,time);
             pushHandler.pushMsg(cfg.getApp(), date, content);
         } else {
             log.error(" app config error out of rang: {}", val);
