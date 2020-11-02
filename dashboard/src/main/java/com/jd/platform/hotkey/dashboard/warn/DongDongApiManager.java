@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.warn;
 
+import com.alibaba.fastjson.JSON;
 import com.github.rholder.retry.*;
 import com.jd.platform.hotkey.dashboard.biz.service.IBizAccessTokenService;
 import com.jd.platform.hotkey.dashboard.model.BizAccessToken;
@@ -39,13 +40,15 @@ public class DongDongApiManager {
             try {
                 String accessToken = dongUtil.grant();
                 List<BizAccessToken> tokens = accessTokenService.selectBizAccessTokenList(new BizAccessToken());
+                log.info("TASK grant accessToken:{},   数据库查询tokenList:{}",accessToken, JSON.toJSONString(tokens));
                 if(tokens.size()>0){
                     BizAccessToken token = tokens.get(0);
                     token.setToken(accessToken);
                     token.setUpdatedBy("system");
                     token.setUpdatedTime(new Date());
                     log.info("updateBizAccessToken={}", accessToken);
-                    accessTokenService.updateBizAccessToken(token);
+                    int row = accessTokenService.updateBizAccessToken(token);
+                    log.info("TASK refresh accessToken 影响行数：{},  修改对象：{}",row, JSON.toJSONString(token));
                 }else{
                     BizAccessToken token=new BizAccessToken();
                     token.setToken(accessToken);

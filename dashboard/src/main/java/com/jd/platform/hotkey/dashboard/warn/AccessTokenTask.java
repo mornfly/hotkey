@@ -23,6 +23,7 @@ public class AccessTokenTask {
     @Scheduled(cron = "0 0 0/1 ? * *")
     public void updateAccessToken(){
         try {
+            log.info("=== time to refreshAccessSignature ===");
             apiManager.refreshAccessSignature();
         }catch (Exception e){
             log.error("refreshAccessSignature error:",e);
