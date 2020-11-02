@@ -2,13 +2,15 @@ package com.jd.platform.hotkey.dashboard.warn;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author lihongliang32
@@ -26,16 +28,20 @@ public class DongDongApiManager {
     /**
      * 启动时获取token，每隔1小时刷新一次token
      */
-    @Scheduled(cron = "0 0 * * * ?")
     @PostConstruct
     public void updateAccessToken() {
-        try {
-            String accessToken = dongUtil.grant();
-            log.info("刷新token：" + accessToken);
-            DongDongToken.TOKEN = accessToken;
-        } catch (Exception e) {
-            log.error("refreshAccessSignature error:", e);
-        }
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                String accessToken = dongUtil.grant();
+                log.info("刷新token：" + accessToken);
+                DongDongToken.TOKEN = accessToken;
+            } catch (Exception e) {
+                log.error("refreshAccessSignature error:", e);
+            }
+        }, 0, 60, TimeUnit.MINUTES);
+
     }
 
 

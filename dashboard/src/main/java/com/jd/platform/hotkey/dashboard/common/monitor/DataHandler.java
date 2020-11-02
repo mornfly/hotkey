@@ -27,15 +27,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 @Component
 public class DataHandler {
@@ -249,19 +245,24 @@ public class DataHandler {
     /**
      * 每10秒检测一次热点记录 用于监控报警
      */
-    @Scheduled(initialDelay = 30000, fixedRate = 10000)
+    @PostConstruct
     public void scanRecordForMonitor() {
-        try {
-            SearchReq req = new SearchReq();
-            Date date = new Date();
-            req.setEndTime(date);
-            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
-            for (KeyValue kv : keyValues) {
-                queryRecordAndCheck(kv, req, date);
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                SearchReq req = new SearchReq();
+                Date date = new Date();
+                req.setEndTime(date);
+                List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
+                for (KeyValue kv : keyValues) {
+                    queryRecordAndCheck(kv, req, date);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }, 2, 10, TimeUnit.SECONDS);
+
     }
 
 
@@ -321,7 +322,10 @@ public class DataHandler {
         req.setStartTime(new Date(date.getTime() - cfg.getWarnPeriod() * 1000));
 
         int count = keyRecordMapper.countKeyRecord(req);
-        log.info("应用app:{}, 记录count:{}, 统计时间Period:{}", cfg.getApp(), count, cfg.getWarnPeriod());
+        //抽样2%打印
+        if (count > 0 && Math.abs(new Random().nextInt()) % 50 == 0) {
+            log.info("应用app:{}, 记录count:{}, 统计时间Period:{}", cfg.getApp(), count, cfg.getWarnPeriod());
+        }
         int type = 0;
         if (count >= cfg.getWarnMax()) {
             type = 1;
