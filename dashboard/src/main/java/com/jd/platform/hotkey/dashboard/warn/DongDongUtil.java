@@ -57,7 +57,7 @@ public class DongDongUtil {
 
             CloseableHttpResponse response = httpclient.execute(httpPost);
             String res = EntityUtils.toString(response.getEntity());
-
+            log.info("TASK grantAccessSign param:{}  result:{}",JSON.toJSONString(params),res);
             //返回结果对象AccessSignatureResult
             AccessSignatureResult result = JSON.parseObject(res, AccessSignatureResult.class);
             if (result.getCode() == 230031) {
@@ -110,7 +110,7 @@ public class DongDongUtil {
             httpPost.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             String res = EntityUtils.toString(response.getEntity());
-            log.info("发送报警信息：{}", res);
+            log.info("发送报警信息参数：{}   结果：{}", JSON.toJSONString(params), res);
             //返回结果对象AccessSignatureResult
             MessagePushResult result = JSON.parseObject(res, MessagePushResult.class);
             return result.getCode() == 230070;
