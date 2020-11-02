@@ -26,7 +26,7 @@ import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
 import com.jd.platform.hotkey.dashboard.biz.service.KeyService;
 import com.jd.platform.hotkey.dashboard.biz.service.RuleService;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
-import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.DateUtils;
 import com.jd.platform.hotkey.dashboard.util.PageUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import org.slf4j.Logger;
@@ -79,12 +79,12 @@ public class KeyServiceImpl implements KeyService {
         }
         req.setApp(null);
         LocalDateTime now = LocalDateTime.now();
-        req.setEndTime(req.getEndTime() == null ? DateUtil.ldtToDate(now) : req.getEndTime());
+        req.setEndTime(req.getEndTime() == null ? DateUtils.ldtToDate(now) : req.getEndTime());
         List<String> rules = ruleService.listRules(null);
         if (type == 4) {
-            LocalDateTime st = req.getStartTime() == null ? now.minusMinutes(31) : DateUtil.dateToLdt(req.getStartTime());
-            req.setStartTime(DateUtil.ldtToDate(st));
-            LocalDateTime et = DateUtil.dateToLdt(req.getEndTime());
+            LocalDateTime st = req.getStartTime() == null ? now.minusMinutes(31) : DateUtils.dateToLdt(req.getStartTime());
+            req.setStartTime(DateUtils.ldtToDate(st));
+            LocalDateTime et = DateUtils.dateToLdt(req.getEndTime());
             boolean longTime = Duration.between(st, et).toHours() > 2;
             req.setType(longTime ? 6 : 5);
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
@@ -93,17 +93,17 @@ public class KeyServiceImpl implements KeyService {
 
         if (type == 5) {
             LocalDateTime startTime = now.minusMinutes(31);
-            req.setStartTime(DateUtil.ldtToDate(startTime));
+            req.setStartTime(DateUtils.ldtToDate(startTime));
             List<Statistics> list = statisticsMapper.listOrderByTime(req);
             return CommonUtil.processData(startTime, now, list, true, rules, app);
         } else if (type == 6) {
             LocalDateTime startTime2 = now.minusHours(25);
-            req.setStartTime(DateUtil.ldtToDate(startTime2));
+            req.setStartTime(DateUtils.ldtToDate(startTime2));
             List<Statistics> list2 = statisticsMapper.listOrderByTime(req);
             return CommonUtil.processData(startTime2, now, list2, false, rules, app);
         } else {
             LocalDateTime startTime3 = now.minusDays(7).minusHours(1);
-            req.setStartTime(DateUtil.ldtToDate(startTime3));
+            req.setStartTime(DateUtils.ldtToDate(startTime3));
             req.setType(6);
             List<Statistics> list3 = statisticsMapper.listOrderByTime(req);
             return CommonUtil.processData(startTime3, now, list3, false, rules, app);
@@ -138,7 +138,7 @@ public class KeyServiceImpl implements KeyService {
         int hours = 6;
         // 默认查询6小时内的数据
         SearchReq req = new SearchReq();
-        req.setStartTime(DateUtil.preTime(hours));
+        req.setStartTime(DateUtils.preTime(hours));
         req.setEndTime(new Date());
         List<Statistics> statistics = statisticsMapper.listStatistics(req);
         // 获取data Y轴
@@ -215,7 +215,7 @@ public class KeyServiceImpl implements KeyService {
         Map<String, int[]> map = new HashMap<>(10);
         Map<String, List<Statistics>> listMap = statistics.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
         for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
-            int start = DateUtil.preHoursInt(5);
+            int start = DateUtils.preHoursInt(5);
             map.put(m.getKey(), new int[hours]);
             int[] data = map.get(m.getKey());
             int tmp = 0;
@@ -244,7 +244,7 @@ public class KeyServiceImpl implements KeyService {
 
     private void checkParam(SearchReq req) {
         if (req.getStartTime() == null || req.getEndTime() == null) {
-            req.setStartTime(DateUtil.preTime(5));
+            req.setStartTime(DateUtils.preTime(5));
             req.setEndTime(new Date());
         }
        /* long day = (req.getEndTime().getTime() - req.getStartTime().getTime()) / 86400000;

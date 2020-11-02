@@ -1,7 +1,7 @@
 package com.jd.platform.hotkey.dashboard.common.domain.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.DateUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -82,7 +82,7 @@ public class SearchReq implements Serializable {
     }
 
     public SearchReq(LocalDateTime st) {
-        this.startTime = DateUtil.ldtToDate(st);
+        this.startTime = DateUtils.ldtToDate(st);
         this.endTime = new Date();
     }
 }

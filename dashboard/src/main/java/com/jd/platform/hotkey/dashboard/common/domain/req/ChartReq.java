@@ -1,6 +1,6 @@
 package com.jd.platform.hotkey.dashboard.common.domain.req;
 
-import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.DateUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -28,8 +28,8 @@ public class ChartReq implements Serializable {
     }
 
     public ChartReq(LocalDateTime st, LocalDateTime et, Integer limit) {
-        this.startTime = DateUtil.ldtToDate(st);
-        this.endTime = DateUtil.ldtToDate(et);
+        this.startTime = DateUtils.ldtToDate(st);
+        this.endTime = DateUtils.ldtToDate(et);
         this.limit = limit;
     }
 

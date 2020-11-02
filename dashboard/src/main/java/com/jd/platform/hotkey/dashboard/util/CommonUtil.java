@@ -1,6 +1,5 @@
 package com.jd.platform.hotkey.dashboard.util;
 
-import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.model.Summary;
@@ -118,10 +117,10 @@ public class CommonUtil {
         Duration duration = Duration.between(st, et);
         long passTime = isMinute ? duration.toMinutes() : duration.toHours();
         Map<Integer, Integer> timeCountMap = new TreeMap<>();
-        String pattern = isMinute ? DateUtil.PATTERN_MINUS : DateUtil.PATTERN_HOUR;
+        String pattern = isMinute ? DateUtils.PATTERN_MINUS : DateUtils.PATTERN_HOUR;
         for (int i = 1; i < passTime; i++) {
-            int time = DateUtil.reviseTime(st, i, isMinute ? 1 : 2);
-            xAxisSet.add(DateUtil.formatTime(time, pattern));
+            int time = DateUtils.reviseTime(st, i, isMinute ? 1 : 2);
+            xAxisSet.add(DateUtils.formatTime(time, pattern));
             timeCountMap.put(time, null);
         }
         Map<String, List<Statistics>> ruleStatsMap = listGroup(list);
@@ -175,12 +174,12 @@ public class CommonUtil {
         String app = args[0];
         String rule = args[1];
         String hitTime = args[2];
-        Date time = DateUtil.strToDate(hitTime);
+        Date time = DateUtils.strToDate(hitTime);
         assert time != null;
-        LocalDateTime ldt = DateUtil.dateToLdt(time);
-        int day = DateUtil.nowDay(ldt);
-        int hour = DateUtil.nowHour(ldt);
-        int minus = DateUtil.nowMinus(ldt);
+        LocalDateTime ldt = DateUtils.dateToLdt(time);
+        int day = DateUtils.nowDay(ldt);
+        int hour = DateUtils.nowHour(ldt);
+        int minus = DateUtils.nowMinus(ldt);
         long seconds = time.getTime() / 1000;
         String[] counts = map.get(key).split("-");
         int hitCount = Integer.parseInt(counts[0]);

@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * @author liyunfeng31
  */
-public class DateUtil {
+public class DateUtils {
 
     public static final String PATTERN_SECONDS="yyMMddHHmmss";
 

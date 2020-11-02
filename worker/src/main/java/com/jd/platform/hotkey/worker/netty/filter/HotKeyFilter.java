@@ -8,6 +8,7 @@ import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.NettyIpUtil;
 import com.jd.platform.hotkey.worker.keydispatcher.KeyProducer;
 import com.jd.platform.hotkey.worker.netty.holder.WhiteListHolder;
+import com.jd.platform.hotkey.worker.starters.EtcdStarter;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,9 @@ public class HotKeyFilter implements INettyMsgFilter {
             }
             long timeOut = now - model.getCreateTime();
             if (timeOut > 1000) {
-                logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
+                if (EtcdStarter.LOGGER_ON) {
+                    logger.info("key timeout " + timeOut + ", from ip : " + NettyIpUtil.clientIp(ctx));
+                }
             }
             keyProducer.push(model, now);
         }

@@ -2,6 +2,8 @@ package com.jd.platform.hotkey.dashboard.common.monitor;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Queues;
 import com.ibm.etcd.api.KeyValue;
@@ -18,7 +20,7 @@ import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
-import com.jd.platform.hotkey.dashboard.util.DateUtil;
+import com.jd.platform.hotkey.dashboard.util.DateUtils;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,9 +145,9 @@ public class DataHandler {
     public void offlineStatistics() {
         try {
             LocalDateTime now = LocalDateTime.now();
-            Date nowTime = DateUtil.ldtToDate(now);
-            int day = DateUtil.nowDay(now);
-            int hour = DateUtil.nowHour(now);
+            Date nowTime = DateUtils.ldtToDate(now);
+            int day = DateUtils.nowDay(now);
+            int hour = DateUtils.nowHour(now);
             SearchReq preHour = new SearchReq(now.minusHours(1));
             List<Statistics> records = keyRecordMapper.maxHotKey(preHour);
             if (records.size() != 0) {
@@ -188,10 +190,10 @@ public class DataHandler {
     public void offlineStatisticsRule() {
         try {
             LocalDateTime now = LocalDateTime.now();
-            Date nowTime = DateUtil.ldtToDate(now);
-            int day = DateUtil.nowDay(now);
-            int hour = DateUtil.nowHour(now);
-            int minus = DateUtil.nowMinus(now);
+            Date nowTime = DateUtils.ldtToDate(now);
+            int day = DateUtils.nowDay(now);
+            int hour = DateUtils.nowHour(now);
+            int minus = DateUtils.nowMinus(now);
 
             List<Statistics> records = keyRecordMapper.statisticsByRule(new SearchReq(now.minusMinutes(1)));
             if (records.size() == 0) {
@@ -219,26 +221,30 @@ public class DataHandler {
     /**
      * 每天根据app的配置清理过期数据
      */
-    @Scheduled(cron = "0 0 1 * * ?")
+//    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(fixedRate = 5000) //每隔5秒删1万
     public void clearExpireData() {
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
-            for (KeyValue kv : keyValues) {
+        List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
+        for (KeyValue kv : keyValues) {
+            try {
                 String val = kv.getValue().toStringUtf8();
                 AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
                 String app = cfg.getApp();
-                Date expireDate = DateUtil.ldtToDate(now.minusDays(cfg.getDataTtl()));
-                summaryMapper.clearExpireData(app, expireDate);
-                keyRecordMapper.clearExpireData(app, expireDate);
-                statisticsMapper.clearExpireData(app, expireDate);
+                //保存几天
+                Integer days = cfg.getDataTtl();
+                DateTime dateTime = DateUtil.offsetDay(new Date(), -days);
+
+
+                summaryMapper.clearExpireData(app, dateTime);
+                keyRecordMapper.clearExpireData(app, dateTime);
+                statisticsMapper.clearExpireData(app, dateTime);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
-    }
 
+    }
 
     /**
      * 每10秒检测一次热点记录 用于监控报警
@@ -327,10 +333,8 @@ public class DataHandler {
             String str = type == 1 ? "高于最大" : "低于最小";
             int threshold = type == 1 ? cfg.getWarnMax() : cfg.getWarnMin();
             String time = LocalDateTime.now().toString().replace("T", " ");
-            String content = String.format("【警报】 应用：【%s】  热点记录在%d秒内累计: %d, %s阈值: %d \n【时间】：%s", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold,time);
+            String content = String.format("【警报】 应用：【%s】  热点记录在%d秒内累计: %d, %s阈值: %d \n【时间】：%s", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold, time);
             pushHandler.pushMsg(cfg.getApp(), date, content);
-        } else {
-            log.error(" app config error out of rang: {}", val);
         }
     }
 

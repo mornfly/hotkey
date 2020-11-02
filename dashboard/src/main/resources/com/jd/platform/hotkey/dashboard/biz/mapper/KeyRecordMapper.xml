@@ -217,6 +217,7 @@
     delete from hk_key_record
     where app_name = #{app}
      <![CDATA[ and create_time < #{expireDate}]]>
+    limit 10000
   </delete>
 
 </mapper>

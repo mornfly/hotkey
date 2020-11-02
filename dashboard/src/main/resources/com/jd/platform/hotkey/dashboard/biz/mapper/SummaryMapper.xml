@@ -55,6 +55,7 @@
     delete from hk_summary
     where app = #{app}
      <![CDATA[ and create_time < #{expireDate}]]>
+    limit 10000
   </delete>
 
 
