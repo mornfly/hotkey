@@ -40,6 +40,11 @@ public class DateUtils {
         return null;
     }
 
+    public static String dateToStr(Date date){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return format.format(date);
+    }
+
     public static LocalDateTime strToLdt(String str, String pattern){
         return LocalDateTime.parse(str, DateTimeFormatter.ofPattern(pattern));
     }

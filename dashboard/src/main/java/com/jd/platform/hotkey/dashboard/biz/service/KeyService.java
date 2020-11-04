@@ -22,6 +22,8 @@ import java.util.List;
 public interface KeyService {
 
 
+    List<KeyRecord> listKeyRecord(SearchReq param);
+
     PageInfo<KeyRecord> pageKeyRecord(PageReq page, SearchReq param);
 
     int insertKeyByUser(KeyTimely keyTimely);

@@ -122,13 +122,6 @@ public class KeyController extends BaseController {
 	}
 
 
-	/*@GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap modelMap){
-		modelMap.writeToLocalCaffeine("key", keyService.selectByPk(id));
-        return prefix + "/edit";
-    }*/
-
-
     @PostMapping("/edit")
     @ResponseBody
     public Result editSave(KeyTimely key) {
@@ -157,6 +150,28 @@ public class KeyController extends BaseController {
 	}
 
 
+	@RequestMapping(value = "/exportList", method = RequestMethod.GET)
+	@ResponseBody
+	public void exportList(HttpServletResponse resp,String startTime,String endTime,String app,String key){
+		SearchReq req = new SearchReq();
+		if(StringUtil.isNotEmpty(startTime)){
+			req.setStartTime(DateUtils.strToDate(startTime));
+		}
+		if(StringUtil.isNotEmpty(endTime)){
+			req.setEndTime(DateUtils.strToDate(endTime));
+		}
+		req.setApp(app);
+		req.setKey(key);
+		List<KeyRecord> records = keyService.listKeyRecord(req);
+		if(records.size() > ExcelUtil.MAX_ROW){
+			records = records.subList(0,ExcelUtil.MAX_ROW);
+		}
+		List<List<String>> rows = transformList(records);
+		ExcelDataDto data = new ExcelDataDto("keyRecord.xlsx", Constant.HEAD,rows);
+		ExcelUtil.exportExcel(resp,data);
+	}
+
+
 
 	private List<List<String>> transform(List<Statistics> records){
 		List<List<String>> rows = new ArrayList<>();
@@ -165,6 +180,18 @@ public class KeyController extends BaseController {
 			list.add(record.getKeyName());
 			list.add(record.getCount().toString());
 			list.add(record.getApp());
+			rows.add(list);
+		}
+		return rows;
+	}
+
+	private List<List<String>> transformList(List<KeyRecord> records){
+		List<List<String>> rows = new ArrayList<>();
+		for (KeyRecord record : records) {
+			List<String> list = new ArrayList<>();
+			list.add(record.getKey());
+			list.add(record.getAppName());
+			list.add(DateUtils.dateToStr(record.getCreateTime()));
 			rows.add(list);
 		}
 		return rows;

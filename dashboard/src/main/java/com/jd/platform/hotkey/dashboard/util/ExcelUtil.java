@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 public class ExcelUtil {
 
+
+    public static final int MAX_ROW = 60000;
+
     private static Logger log = LoggerFactory.getLogger(ExcelUtil.class);
 
     public static void exportExcel(HttpServletResponse response, ExcelDataDto data) {
