@@ -167,7 +167,7 @@ public class KeyController extends BaseController {
 			records = records.subList(0,ExcelUtil.MAX_ROW);
 		}
 		List<List<String>> rows = transformList(records);
-		ExcelDataDto data = new ExcelDataDto("keyRecord.xlsx", Constant.HEAD,rows);
+		ExcelDataDto data = new ExcelDataDto("keyRecord.xlsx", Constant.RECORD_HEAD,rows);
 		ExcelUtil.exportExcel(resp,data);
 	}
 

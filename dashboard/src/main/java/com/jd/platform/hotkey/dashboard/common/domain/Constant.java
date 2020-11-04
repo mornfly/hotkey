@@ -66,6 +66,10 @@ public class Constant {
 
     static { HEAD.add("热点key");  HEAD.add("次数");  HEAD.add("所属APP");}
 
+    public static final List<String> RECORD_HEAD = new ArrayList<>();
+
+    static { RECORD_HEAD.add("热点key");  RECORD_HEAD.add("所属APP");  RECORD_HEAD.add("  时间");}
+
 
     public static final int WARN_INIT_MIN = -1;
 

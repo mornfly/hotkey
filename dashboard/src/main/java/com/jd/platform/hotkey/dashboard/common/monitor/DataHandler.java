@@ -63,8 +63,16 @@ public class DataHandler {
 
 
     /**
-     * 开始定时将keyRecord入库
+     * 入队
      */
+    public void offer(IRecord record) {
+        try {
+            RECORD_QUEUE.put(record);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void insertRecords() {
         while (true) {
             try {
