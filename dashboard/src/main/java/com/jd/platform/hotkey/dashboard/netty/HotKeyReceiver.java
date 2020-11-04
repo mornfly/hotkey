@@ -56,7 +56,7 @@ public class HotKeyReceiver {
     /**
      * 将热key存入本地缓存，设置过期时间
      */
-    public static void put(HotKeyModel hotKeyModel) {
+    public static void writeToLocalCaffeine(HotKeyModel hotKeyModel) {
         String appNameKey = hotKeyModel.getAppName() + "/" + hotKeyModel.getKey();
         KeyRule keyRule = RuleUtil.findByKey(appNameKey);
         if (keyRule == null) {

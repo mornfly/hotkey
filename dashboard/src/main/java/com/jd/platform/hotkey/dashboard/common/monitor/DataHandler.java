@@ -63,16 +63,8 @@ public class DataHandler {
 
 
     /**
-     * 入队
+     * 开始定时将keyRecord入库
      */
-    public void offer(IRecord record) {
-        try {
-            RECORD_QUEUE.put(record);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void insertRecords() {
         while (true) {
             try {
@@ -96,6 +88,57 @@ public class DataHandler {
             }
         }
 
+    }
+
+    /**
+     * 读取netty发来的热key，进行初步处理，并写入本地caffeine
+      */
+    public void dealHotKey() {
+        while (true) {
+            try {
+                HotKeyModel model = HotKeyReceiver.take();
+                //将该key放入实时热key本地缓存中
+                if (model != null) {
+                    //将key放到队列里，供入库时分批调用
+                    putRecord(model.getAppName(), model.getKey(), model.getCreateTime());
+                    //获取发来的这个热key，存入本地caffeine，设置过期时间
+                    HotKeyReceiver.writeToLocalCaffeine(model);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 将待入库的热key放到队列
+     */
+    private void putRecord(String app, String key, long createTime) {
+        try {
+            RECORD_QUEUE.put(new IRecord() {
+                @Override
+                public String appNameKey() {
+                    return app + "/" + key;
+                }
+
+                @Override
+                public String value() {
+                    return UUID.randomUUID().toString();
+                }
+
+                @Override
+                public int type() {
+                    return 0;
+                }
+
+                @Override
+                public Date createTime() {
+                    return new Date(createTime);
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -271,49 +314,6 @@ public class DataHandler {
         }, 2, 10, TimeUnit.SECONDS);
 
     }
-
-
-    public void dealHotKey() {
-        while (true) {
-            try {
-                //获取发来的这个热key，存入本地caffeine，设置过期时间
-                HotKeyModel model = HotKeyReceiver.take();
-                //将该key放入实时热key本地缓存中
-                if (model != null) {
-                    HotKeyReceiver.put(model);
-                    putRecord(model.getAppName(), model.getKey());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    private void putRecord(String app, String key) {
-        this.offer(new IRecord() {
-            @Override
-            public String appNameKey() {
-                return app + "/" + key;
-            }
-
-            @Override
-            public String value() {
-                return UUID.randomUUID().toString();
-            }
-
-            @Override
-            public int type() {
-                return 0;
-            }
-
-            @Override
-            public Date createTime() {
-                return new Date();
-            }
-        });
-    }
-
 
     /**
      * 查询条数 比对配置 发送报警

@@ -176,7 +176,7 @@ public class KeyServiceImpl implements KeyService {
         hotKeyModel.setCreateTime(System.currentTimeMillis());
         hotKeyModel.setAppName(key.getAppName());
         hotKeyModel.setKey(key.getKey());
-        HotKeyReceiver.put(hotKeyModel);
+        HotKeyReceiver.writeToLocalCaffeine(hotKeyModel);
         return logMapper.insertSelective(new ChangeLog(key.getAppName(), Constant.HOTKEY_CHANGE, "",
                 key.getKey(), key.getUpdater(), SystemClock.now() + ""));
     }
