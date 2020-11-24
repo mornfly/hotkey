@@ -65,8 +65,9 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HotKeyMsg> {
             if (CollectionUtil.isEmpty(msg.getHotKeyModels())) {
                 return;
             }
-            HotKeyModel model = msg.getHotKeyModels().get(0);
-            EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
+            for (HotKeyModel model : msg.getHotKeyModels()) {
+                EventBusCenter.getInstance().post(new ReceiveNewKeyEvent(model));
+            }
         }
 
     }
