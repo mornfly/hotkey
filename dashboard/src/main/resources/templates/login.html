@@ -90,7 +90,6 @@
 <script type="text/javascript" th:src="@{/static/admin/assets/js/validate/jquery.validate.min.js}"></script>
 <script type="text/javascript" th:src="@{/static/admin/assets/js/validate/messages_zh.min.js}"></script>
 <script type="text/javascript" th:src="@{/static/admin/assets/js/validate/jquery.validate.extend.js}"></script>
-<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=WSrX4bCfgcjTfhWNCwvfI1ZnQnfZDxFW"></script>
 <script type="text/javascript" th:inline="javascript">
 var isRoll=false;
 $(document).ready(function(){
@@ -171,7 +170,7 @@ function sub(){
 					},
 					success : function(result) {
 						if(result.code==200){
-							let token = result.data.token;
+							var token = result.data.token;
 							// result.getco
 							window.localStorage.setItem('token', token);
 							window.localStorage.setItem('time', Date.now());

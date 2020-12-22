@@ -72,20 +72,23 @@
             "Authorization":getCookie("token")
         },
         async : false,
-        error : function(XMLHttpRequest){
-            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
+        error : function(response){
+            var token = getCookie("token");
+            if(response.status == 1000 && ( token == "undefined" || token =="")){
+                top.location.href = '/user/login';
+            }
+            console.info("加载数据失败");
         },
         success : function(data) {
-            console.log(data)
-            let role = data.role;
+            var role = data.role;
             if(role === "ADMIN"){
                 $("#apps").append("<option></option>");
             }
-            let apps = data.appNames;
-            let appName = data.appName;
-            for (let i = 0; i < apps.length; i++) {
-                let app = apps[i];
-                if(app === appName){
+            var apps = data.appNames;
+            var appName = data.appName;
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
+                if(app == appName){
                     $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
                 }else{
                     $("#apps").append("<option>" + apps[i] + "</option>");
@@ -165,21 +168,21 @@
                     option.legend.data = result.legend;
                     //初始化option.series[0]中的data
                     option.series = [];
-                    let i = 0;
+                    var i = 0;
                     if(result.legend.length === 0){
                         myChart.clear();
                     }else{
-                        for(let key in result.series2){
+                        for(var key in result.series2){
                             i++;
-                            let seriesData = {"name":key, "data": result.series2[key],"type":"line"};
+                            var seriesData = {"name":key, "data": result.series2[key],"type":"line"};
                             option.series.push(seriesData);
                         }
                     }
                 }
             },
             error: function(result){  //加载失败时执行
-                let token = getCookie("token");
-                if(result.status == 500 && ( token == "undefined" || token =="")){
+                var token = getCookie("token");
+                if(result.status == 1000 && ( token == "undefined" || token =="")){
                     top.location.href = '/user/login';
                 }
                 console.info("加载数据失败");
@@ -205,11 +208,11 @@
 
 
     function ruleSearch(){
-        let st = $("#lineSt").val();
-        let et = $("#lineEt").val();
-        let type = $("#type").val();
-        let app = $("#apps").val();
-        let param = {"startTime":st,"endTime":et,"type":type,"app":app};
+        var st = $("#lineSt").val();
+        var et = $("#lineEt").val();
+        var type = $("#type").val();
+        var app = $("#apps").val();
+        var param = {"startTime":st,"endTime":et,"type":type,"app":app};
         loadData(option,"",param);
         myChart.setOption(option);
     }

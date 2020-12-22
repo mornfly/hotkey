@@ -14,17 +14,21 @@ $.ajax({
 	async : false,
 	error : function(XMLHttpRequest){
 		$.modal.alertError(XMLHttpRequest.responseJSON.msg);
+		var token = getCookie("token");
+		if(XMLHttpRequest.status == 1000 && ( token == "undefined" || token =="")){
+			top.location.href = '/user/login';
+		}
 	},
 	success : function(data) {
 		console.log(data)
-		let role = data.role;
+		var role = data.role;
 		if(role === "ADMIN"){
 			$("#apps").val("");
 		}
-		let apps = data.appNames;
-		let appName = data.appName;
-		for (let i = 0; i < apps.length; i++) {
-			let app = apps[i];
+		var apps = data.appNames;
+		var appName = data.appName;
+		for (var i = 0; i < apps.length; i++) {
+			var app = apps[i];
 			if(app === appName){
 				$("#apps").val(apps[i]);
 			}

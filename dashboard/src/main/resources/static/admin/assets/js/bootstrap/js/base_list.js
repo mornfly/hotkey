@@ -45,8 +45,8 @@
 			                console.info("加载成功");
 				        },
 				        onLoadError: function(status){  //加载失败时执行
-                            let token = getCookie("token");
-                            if(status === 500 && ( token == "undefined" || token =="")){
+                            var token = getCookie("token");
+                            if(status === 1000 && ( token == "undefined" || token =="")){
                                 top.location.href = '/user/login';
                             }
 				            console.info("加载数据失败");
@@ -59,15 +59,15 @@
 				 var search = {};
 				 search.pageSize= params.pageSize;
 				 search.pageNum=params.pageNumber;
-				 let app = $("#apps").val();
+                var app = $("#apps").val();
                 if(app!==undefined && app != null && app!==""){
                     search.app = app;
                 }
-                let time1 = $("#startTime").val();
+                var time1 = $("#startTime").val();
                 if(time1!==undefined && time1 != null && time1!==""){
                     search.startTime = time1;
                 }
-                let time2 = $("#endTime").val();
+                var time2 = $("#endTime").val();
                 if(time2!==undefined && time2 != null && time2!==""){
                     search.endTime = time2;
                 }
@@ -303,7 +303,7 @@
                     title: title,
                     content: url,
                     success:function(dom){
-                        let $iframeDom=$(dom[0]).find("iframe").eq(0).contents();
+                        var $iframeDom=$(dom[0]).find("iframe").eq(0).contents();
                         $iframeDom.find("#test").html("我是从父级传来的值哟……")
                     }
                 })
@@ -495,19 +495,19 @@ modal_status = {
 
 
 function getCookie(cname){
-    let token = window.localStorage.getItem('token');
+    var token = window.localStorage.getItem('token');
     if(token != null && token !==""){
-        let time = window.localStorage.getItem('time');
+        var time = window.localStorage.getItem('time');
         if(Date.now()-time>7*24*360000){
             localStorage.removeItem(time);
             return "";
         }
         return token;
     }
-    let name = cname + "=";
-    let ca = document.cookie.split(';');
-    for(let i=0; i<ca.length; i++){
-        let c = ca[i].trim();
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++){
+        var c = ca[i].trim();
         if (c.indexOf(name)===0) return c.substring(name.length,c.length);
     }
     return "";

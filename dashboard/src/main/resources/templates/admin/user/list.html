@@ -176,7 +176,7 @@ $(function(){
 
 <script type="text/javascript">
 
-	let editPwdUrl="/user/editPwd/{id}";
+    var editPwdUrl="/user/editPwd/{id}";
 	function updatePwd(){
 		 var rows = $.common.isEmpty($.table._option.id) ? $.table.selectFirstColumns() : $.table.selectColumns($.table._option.id);
          if (rows.length == 0) {
