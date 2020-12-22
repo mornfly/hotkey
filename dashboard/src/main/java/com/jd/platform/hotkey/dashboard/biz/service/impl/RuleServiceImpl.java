@@ -6,18 +6,19 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
-import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
-import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
-import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
-import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
 import com.jd.platform.hotkey.dashboard.biz.mapper.ChangeLogMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.RulesMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
-import com.jd.platform.hotkey.dashboard.model.*;
 import com.jd.platform.hotkey.dashboard.biz.service.RuleService;
+import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
+import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
+import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
+import com.jd.platform.hotkey.dashboard.model.ChangeLog;
+import com.jd.platform.hotkey.dashboard.model.Rule;
+import com.jd.platform.hotkey.dashboard.model.Rules;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -127,8 +128,7 @@ public class RuleServiceImpl implements RuleService {
 
         KeyValue kv = configCenter.getKv(ConfigConstant.rulePath + app);
         String from = null;
-        ByteString string = kv.getValue();
-        if (string != null) {
+        if (kv != null) {
             from = kv.getValue().toStringUtf8();
         }
         String to = JSON.toJSONString(rules);
