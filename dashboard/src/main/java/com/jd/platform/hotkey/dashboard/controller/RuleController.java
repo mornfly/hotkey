@@ -3,7 +3,6 @@ package com.jd.platform.hotkey.dashboard.controller;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONTokener;
-import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.jd.platform.hotkey.dashboard.common.base.BaseController;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
@@ -14,7 +13,6 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HitCountVo;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
 import com.jd.platform.hotkey.dashboard.common.ex.BizException;
-import com.jd.platform.hotkey.dashboard.model.Rule;
 import com.jd.platform.hotkey.dashboard.model.Rules;
 import com.jd.platform.hotkey.dashboard.service.RuleService;
 import org.springframework.stereotype.Controller;
@@ -31,7 +29,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/rule")
 public class RuleController extends BaseController {
-	
+
 
 	@Resource
 	private RuleService ruleService;

@@ -52,13 +52,13 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public Rules selectRules(String app) {
         KeyValue kv = configCenter.getKv(ConfigConstant.rulePath + app);
-        if(kv == null || kv.getValue() == null){
+        if (kv == null || kv.getValue() == null) {
             return new Rules();
         }
         String k = kv.getKey().toStringUtf8();
         String v = kv.getValue().toStringUtf8();
-        List<Rule> rule = JSON.parseArray(v,Rule.class);
-        return new Rules(app,v);
+        List<Rule> rule = JSON.parseArray(v, Rule.class);
+        return new Rules(app, v);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -67,7 +67,7 @@ public class RuleServiceImpl implements RuleService {
         String app = rules.getApp();
         Rules oldRules = rulesMapper.select(app);
         String from = JSON.toJSONString(oldRules);
-        configCenter.put(ConfigConstant.rulePath+app, rules.getRules());
+        configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
         String to = JSON.toJSONString(rules);
         logMapper.insertSelective(new ChangeLog(app, 1, from, to,
                 rules.getUpdateUser(), app, UUID.fastUUID().toString(true)));
@@ -78,7 +78,7 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public Integer add(Rules rules) {
         String app = rules.getApp();
-        configCenter.put(ConfigConstant.rulePath+app,rules.getRules());
+        configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
         String to = JSON.toJSONString(rules);
         logMapper.insertSelective(new ChangeLog(app, 1, "", to,
                 rules.getUpdateUser(), app, UUID.fastUUID().toString(true)));
@@ -103,15 +103,15 @@ public class RuleServiceImpl implements RuleService {
         List<Rules> rules = new ArrayList<>();
         for (KeyValue kv : keyValues) {
             String v = kv.getValue().toStringUtf8();
-            if(StringUtil.isEmpty(v)){
+            if (StringUtil.isEmpty(v)) {
                 continue;
             }
             String key = kv.getKey().toStringUtf8();
-            String k = key.replace(ConfigConstant.rulePath,"");
-            if(StringUtils.isEmpty(appName)){
+            String k = key.replace(ConfigConstant.rulePath, "");
+            if (StringUtils.isEmpty(appName)) {
                 rules.add(new Rules(k, v));
-            }else{
-                if(k.equals(appName)){
+            } else {
+                if (k.equals(appName)) {
                     rules.add(new Rules(k, v));
                 }
             }
@@ -122,7 +122,12 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public int save(Rules rules) {
         String app = rules.getApp();
-        String from = "";
+
+        KeyValue kv = configCenter.getKv(ConfigConstant.rulePath + app);
+        String from = null;
+        if (kv != null) {
+            from = kv.getValue().toStringUtf8();
+        }
         String to = JSON.toJSONString(rules);
         configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
         return 1;
@@ -134,14 +139,14 @@ public class RuleServiceImpl implements RuleService {
         List<String> rules = new ArrayList<>();
         for (KeyValue kv : keyValues) {
             String v = kv.getValue().toStringUtf8();
-            if(StringUtil.isEmpty(v)){
+            if (StringUtil.isEmpty(v)) {
                 continue;
             }
             String key = kv.getKey().toStringUtf8();
-            String appKey = key.replace(ConfigConstant.rulePath,"");
+            String appKey = key.replace(ConfigConstant.rulePath, "");
             List<Rule> rs = JSON.parseArray(v, Rule.class);
             for (Rule r : rs) {
-                rules.add(appKey+"-"+r.getKey());
+                rules.add(appKey + "-" + r.getKey());
             }
         }
         return rules;
@@ -149,11 +154,10 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public PageInfo<HitCountVo> pageRuleHitCount(PageReq pageReq, SearchReq req, String ownApp) {
-        PageHelper.startPage(pageReq.getPageNum(),pageReq.getPageSize());
+        PageHelper.startPage(pageReq.getPageNum(), pageReq.getPageSize());
         List<HitCountVo> hitCountVos = summaryMapper.listRuleHitCount(req);
-        return  new PageInfo<>(hitCountVos);
+        return new PageInfo<>(hitCountVos);
     }
-
 
 
 }
