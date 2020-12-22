@@ -33,8 +33,9 @@ public class MyExceptionHandler {
 
 	@ExceptionHandler(value =Exception.class)
 	@ResponseBody
-	public Result exceptionHandler(Exception e){
+	public Result exceptionHandler(Exception e,HttpServletResponse resp){
 		logger.error("未知异常：",e);
+		resp.setStatus(500);
 		return Result.error(ResultEnum.BIZ_ERROR);
 	}
 }
