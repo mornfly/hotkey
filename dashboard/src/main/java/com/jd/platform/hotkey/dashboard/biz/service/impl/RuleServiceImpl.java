@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
+import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
@@ -125,7 +126,11 @@ public class RuleServiceImpl implements RuleService {
         String app = rules.getApp();
 
         KeyValue kv = configCenter.getKv(ConfigConstant.rulePath + app);
-        String from = kv.getValue().toStringUtf8();
+        String from = null;
+        ByteString string = kv.getValue();
+        if (string != null) {
+            from = kv.getValue().toStringUtf8();
+        }
         String to = JSON.toJSONString(rules);
         configCenter.put(ConfigConstant.rulePath + app, rules.getRules());
 
