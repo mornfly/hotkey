@@ -1,16 +1,20 @@
 package com.jd.platform.hotkey.worker.netty.server;
 
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
+import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +23,7 @@ import java.util.List;
  *
  * @author wuweifeng wrote on 2019-11-05.
  */
-public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
+public class NodesServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
     /**
      * 客户端状态监听器
      */
@@ -32,11 +36,15 @@ public class NodesServerHandler extends SimpleChannelInboundHandler<String> {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String message) {
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) {
+        //利用ByteBuf的toString()方法获取请求消息
+        //udp 不需要考虑粘包半包
+        String message = packet.content().toString(CharsetUtil.UTF_8).replace(Constant.DELIMITER,"");
         if (StringUtils.isEmpty(message)) {
             return;
         }
         HotKeyMsg msg = FastJsonUtils.toBean(message, HotKeyMsg.class);
+        msg.setAddress(packet.sender());
         for (INettyMsgFilter messageFilter : messageFilters) {
             boolean doNext = messageFilter.chain(msg, ctx);
             if (!doNext) {

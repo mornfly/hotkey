@@ -9,6 +9,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
@@ -42,15 +43,12 @@ public class NettyClient {
 
         Bootstrap bootstrap = new Bootstrap();
         NettyClientHandler nettyClientHandler = new NettyClientHandler();
-        bootstrap.group(group).channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(group).channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_BROADCAST, true)
+                .handler(new ChannelInitializer<Channel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) {
-                        ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
+                    protected void initChannel(Channel ch) {
                         ch.pipeline()
-                                .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
                                 .addLast(new StringDecoder())
                                 //10秒没消息时，就发心跳包过去
                                 .addLast(new IdleStateHandler(0, 0, 30))

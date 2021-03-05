@@ -7,6 +7,8 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+
 /**
  * 对客户端的管理，新来、断线的管理
  *
@@ -25,21 +27,21 @@ public class ClientChangeListener implements IClientChangeListener {
      * 客户端新增
      */
     @Override
-    public synchronized void newClient(String appName, String ip, ChannelHandlerContext ctx) {
+    public synchronized void newClient(String appName, String ip, ChannelHandlerContext ctx, InetSocketAddress address) {
         logger.info(NEW_CLIENT);
 
         boolean appExist = false;
         for (AppInfo appInfo : ClientInfoHolder.apps) {
             if (appName.equals(appInfo.getAppName())) {
                 appExist = true;
-                appInfo.add(ctx);
+                appInfo.add(ctx,address);
                 break;
             }
         }
         if (!appExist) {
             AppInfo appInfo = new AppInfo(appName);
             ClientInfoHolder.apps.add(appInfo);
-            appInfo.add(ctx);
+            appInfo.add(ctx,address);
         }
 
         logger.info(NEW_CLIENT_JOIN);

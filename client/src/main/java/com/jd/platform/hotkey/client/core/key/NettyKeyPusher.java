@@ -10,6 +10,7 @@ import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import io.netty.channel.Channel;
+import io.netty.channel.socket.DatagramPacket;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -44,7 +45,8 @@ public class NettyKeyPusher implements IKeyPusher {
         for (Channel channel : map.keySet()) {
             try {
                 List<HotKeyModel> batch = map.get(channel);
-                channel.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_NEW_KEY, FastJsonUtils.convertObjectToJSON(batch)))).sync();
+                channel.writeAndFlush(new DatagramPacket(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.REQUEST_NEW_KEY, FastJsonUtils.convertObjectToJSON(batch))),
+                        (InetSocketAddress) channel.remoteAddress())).sync();
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();

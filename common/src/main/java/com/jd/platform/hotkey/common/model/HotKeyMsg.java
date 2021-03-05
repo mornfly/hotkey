@@ -2,6 +2,8 @@ package com.jd.platform.hotkey.common.model;
 
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 
+import java.net.InetSocketAddress;
+
 /**
  * netty通信消息
  * @author wuweifeng wrote on 2020-01-06
@@ -15,6 +17,8 @@ public class HotKeyMsg {
     private MessageType messageType;
 
     private String body;
+
+    private InetSocketAddress address;
 
     public HotKeyMsg(MessageType messageType, String body) {
         this(null, messageType, body);
@@ -68,5 +72,13 @@ public class HotKeyMsg {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
+    public void setAddress(InetSocketAddress address) {
+        this.address = address;
     }
 }

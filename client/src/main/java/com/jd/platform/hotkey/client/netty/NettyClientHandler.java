@@ -11,18 +11,19 @@ import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.CharsetUtil;
+
+import java.net.InetSocketAddress;
 
 /**
  * @author wuweifeng wrote on 2019-11-05.
  */
 @ChannelHandler.Sharable
-public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
+public class NettyClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -31,7 +32,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
 
             if (idleStateEvent.state() == IdleState.ALL_IDLE) {
                 //向服务端发送消息
-                ctx.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.PING, Constant.PING)));
+                ctx.writeAndFlush(new DatagramPacket(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.PING, Constant.PING)),
+                        (InetSocketAddress) ctx.channel().remoteAddress()));
             }
         }
 
@@ -41,7 +43,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         JdLogger.info(getClass(), "channelActive:" + ctx.name());
-        ctx.writeAndFlush(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.APP_NAME, Context.APP_NAME)));
+        ctx.writeAndFlush(new DatagramPacket(MsgBuilder.buildByteBuf(new HotKeyMsg(MessageType.APP_NAME, Context.APP_NAME)),
+                (InetSocketAddress) ctx.channel().remoteAddress()));
     }
 
     @Override
@@ -57,7 +60,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, String message) {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket packet) {
+        String message = packet.content().toString(CharsetUtil.UTF_8).replace(Constant.DELIMITER,"");
         HotKeyMsg msg = FastJsonUtils.toBean(message, HotKeyMsg.class);
         if (MessageType.PONG == msg.getMessageType()) {
             JdLogger.info(getClass(), "heart beat");
