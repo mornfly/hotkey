@@ -1,20 +1,17 @@
 package com.jd.platform.hotkey.worker.netty.server;
 
-import com.jd.platform.hotkey.common.coder.MsgDecoder;
-import com.jd.platform.hotkey.common.coder.MsgEncoder;
-import com.jd.platform.hotkey.common.tool.Constant;
+
+import com.jd.platform.hotkey.common.model.HotKeyMsgProto;
 import com.jd.platform.hotkey.worker.netty.client.IClientChangeListener;
 import com.jd.platform.hotkey.worker.netty.filter.INettyMsgFilter;
-import com.jd.platform.hotkey.worker.tool.CpuNum;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
+import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,22 +28,17 @@ public class NodesServer {
     public void startNettyServer(int port) throws Exception {
         //boss单线程
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup(CpuNum.workerCount());
         try {
-            ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .option(ChannelOption.SO_BACKLOG, 1024)
-                    //保持长连接
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+            Bootstrap bootstrap = new Bootstrap();
+            bootstrap.group(bossGroup)
+                    .channel(NioDatagramChannel.class)
+                    .option(ChannelOption.SO_BROADCAST, true)
                     //出来网络io事件，如记录日志、对消息编解码等
-                    .childHandler(new ChildChannelHandler());
+                    .handler(new ChildChannelHandler());
             //绑定端口，同步等待成功
             ChannelFuture future = bootstrap.bind(port).sync();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 bossGroup.shutdownGracefully (1000, 3000, TimeUnit.MILLISECONDS);
-                workerGroup.shutdownGracefully (1000, 3000, TimeUnit.MILLISECONDS);
             }));
             //等待服务器监听端口关闭
             future.channel().closeFuture().sync();
@@ -57,7 +49,6 @@ public class NodesServer {
         } finally {
             //优雅退出，释放线程池资源
             bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
         }
     }
 
@@ -72,11 +63,11 @@ public class NodesServer {
             serverHandler.setClientEventListener(clientChangeListener);
             serverHandler.addMessageFilters(messageFilters);
 
-            ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
             ch.pipeline()
-                    .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
-                    .addLast(new MsgDecoder())
-                    .addLast(new MsgEncoder())
+                    .addLast("frameDecoder",new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4))
+                    .addLast("protobufDecoder",new ProtobufDecoder(HotKeyMsgProto.HotKeyMsgWrapperProto.getDefaultInstance()))
+                    .addLast("frameEncoder",new LengthFieldPrepender(4))
+                    .addLast("protobufEncoder",new ProtobufEncoder())
                     .addLast(serverHandler);
         }
     }

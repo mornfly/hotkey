@@ -27,7 +27,7 @@ public class AppNameFilter implements INettyMsgFilter {
         if (MessageType.APP_NAME == message.getMessageType()) {
             String appName = message.getAppName();
             if (clientEventListener != null) {
-                clientEventListener.newClient(appName, NettyIpUtil.clientIp(ctx), ctx);
+                clientEventListener.newClient(appName, NettyIpUtil.clientIp(ctx), ctx, message.getAddress());
             }
             return false;
         }
