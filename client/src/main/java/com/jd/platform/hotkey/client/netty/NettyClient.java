@@ -4,6 +4,7 @@ import com.jd.platform.hotkey.client.core.worker.WorkerInfoHolder;
 import com.jd.platform.hotkey.client.log.JdLogger;
 import com.jd.platform.hotkey.common.coder.MsgDecoder;
 import com.jd.platform.hotkey.common.coder.MsgEncoder;
+import com.jd.platform.hotkey.common.model.HotKeyMsgProto;
 import com.jd.platform.hotkey.common.tool.Constant;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -11,8 +12,15 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.List;
@@ -43,17 +51,16 @@ public class NettyClient {
 
         Bootstrap bootstrap = new Bootstrap();
         NettyClientHandler nettyClientHandler = new NettyClientHandler();
-        bootstrap.group(group).channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(group).channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_BROADCAST, true)
+                .handler(new ChannelInitializer<Channel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) {
-                        ByteBuf delimiter = Unpooled.copiedBuffer(Constant.DELIMITER.getBytes());
+                    protected void initChannel(Channel ch) {
                         ch.pipeline()
-                                .addLast(new DelimiterBasedFrameDecoder(Constant.MAX_LENGTH, delimiter))
-                                .addLast(new MsgDecoder())
-                                .addLast(new MsgEncoder())
+                                .addLast("frameDecoder",new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4))
+                                .addLast("protobufDecoder",new ProtobufDecoder(HotKeyMsgProto.HotKeyMsgWrapperProto.getDefaultInstance()))
+                                .addLast("frameEncoder",new LengthFieldPrepender(4))
+                                .addLast("protobufEncoder",new ProtobufEncoder())
                                 //10秒没消息时，就发心跳包过去
                                 .addLast(new IdleStateHandler(0, 0, 30))
                                 .addLast(nettyClientHandler);

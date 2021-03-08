@@ -3,6 +3,7 @@ package com.jd.platform.hotkey.client.core.key;
 import com.jd.platform.hotkey.client.Context;
 import com.jd.platform.hotkey.client.core.worker.WorkerInfoHolder;
 import com.jd.platform.hotkey.client.log.JdLogger;
+import com.jd.platform.hotkey.common.model.DatagramPacketBuilder;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
 import com.jd.platform.hotkey.common.model.KeyCountModel;
@@ -44,7 +45,7 @@ public class NettyKeyPusher implements IKeyPusher {
                 List<HotKeyModel> batch = map.get(channel);
                 HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_NEW_KEY, Context.APP_NAME);
                 hotKeyMsg.setHotKeyModels(batch);
-                channel.writeAndFlush(hotKeyMsg).sync();
+                channel.writeAndFlush(DatagramPacketBuilder.getDatagramPacket(hotKeyMsg,channel)).sync();
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
@@ -80,7 +81,7 @@ public class NettyKeyPusher implements IKeyPusher {
                 List<KeyCountModel> batch = map.get(channel);
                 HotKeyMsg hotKeyMsg = new HotKeyMsg(MessageType.REQUEST_HIT_COUNT, Context.APP_NAME);
                 hotKeyMsg.setKeyCountModels(batch);
-                channel.writeAndFlush(hotKeyMsg).sync();
+                channel.writeAndFlush(DatagramPacketBuilder.getDatagramPacket(hotKeyMsg,channel)).sync();
             } catch (Exception e) {
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();

@@ -1,8 +1,11 @@
 package com.jd.platform.hotkey.worker.netty.filter;
 
+import com.jd.platform.hotkey.common.model.DatagramPacketBuilder;
 import com.jd.platform.hotkey.common.model.HotKeyMsg;
+import com.jd.platform.hotkey.common.model.MsgBuilder;
 import com.jd.platform.hotkey.common.model.typeenum.MessageType;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.DatagramPacket;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +21,7 @@ public class HeartBeatFilter implements INettyMsgFilter {
     @Override
     public boolean chain(HotKeyMsg message, ChannelHandlerContext ctx) {
         if (MessageType.PING == message.getMessageType()) {
-            ctx.writeAndFlush(new HotKeyMsg(MessageType.PONG));
+            ctx.writeAndFlush(DatagramPacketBuilder.getDatagramPacket(new HotKeyMsg(MessageType.PONG),message.getAddress()));
             return false;
         }
         return true;
