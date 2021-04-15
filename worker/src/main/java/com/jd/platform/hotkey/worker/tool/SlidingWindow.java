@@ -5,7 +5,7 @@ import cn.hutool.core.date.SystemClock;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 滑动窗口。该窗口同样的key都是单线程计算。
@@ -16,7 +16,7 @@ public class SlidingWindow {
     /**
      * 循环队列，就是装多个窗口用，该数量是windowSize的2倍
      */
-    private AtomicInteger[] timeSlices;
+    private LongAdder[] timeSlices;
     /**
      * 队列的总长度
      */
@@ -111,16 +111,16 @@ public class SlidingWindow {
     private void reset() {
         beginTimestamp = SystemClock.now();
         //窗口个数
-        AtomicInteger[] localTimeSlices = new AtomicInteger[timeSliceSize];
+        LongAdder[] localTimeSlices = new LongAdder[timeSliceSize];
         for (int i = 0; i < timeSliceSize; i++) {
-            localTimeSlices[i] = new AtomicInteger(0);
+            localTimeSlices[i] = new LongAdder();
         }
         timeSlices = localTimeSlices;
     }
 
     private void print() {
-        for (AtomicInteger integer : timeSlices) {
-            System.out.print(integer + "-");
+        for (LongAdder longAdder : timeSlices) {
+            System.out.print(longAdder.sum() + "-");
         }
     }
 
@@ -144,7 +144,7 @@ public class SlidingWindow {
     /**
      * 增加count个数量
      */
-    public synchronized boolean addCount(int count) {
+    public synchronized boolean addCount(long count) {
         //当前自己所在的位置，是哪个小时间窗
         int index = locationIndex();
 //        System.out.println("index:" + index);
@@ -155,10 +155,11 @@ public class SlidingWindow {
 
         int sum = 0;
         // 在当前时间片里继续+1
-        sum += timeSlices[index].addAndGet(count);
+        timeSlices[index].add(count);
+        sum += timeSlices[index].sum();
         //加上前面几个时间片
         for (int i = 1; i < windowSize; i++) {
-            sum += timeSlices[(index - i + timeSliceSize) % timeSliceSize].get();
+            sum += timeSlices[(index - i + timeSliceSize) % timeSliceSize].sum();
         }
 
         lastAddTimestamp = SystemClock.now();
@@ -172,7 +173,7 @@ public class SlidingWindow {
             if (j >= windowSize * 2) {
                 j -= windowSize * 2;
             }
-            timeSlices[j].set(0);
+            timeSlices[j].reset();
         }
     }
 
