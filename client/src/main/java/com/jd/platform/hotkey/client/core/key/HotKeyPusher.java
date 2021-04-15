@@ -8,6 +8,8 @@ import com.jd.platform.hotkey.common.model.typeenum.KeyType;
 import com.jd.platform.hotkey.common.tool.Constant;
 import com.jd.platform.hotkey.common.tool.HotKeyPathTool;
 
+import java.util.concurrent.atomic.LongAdder;
+
 /**
  * 客户端上传热key的入口调用
  *
@@ -29,7 +31,7 @@ public class HotKeyPusher {
         HotKeyModel hotKeyModel = new HotKeyModel();
         hotKeyModel.setAppName(Context.APP_NAME);
         hotKeyModel.setKeyType(keyType);
-        hotKeyModel.setCount(count);
+        hotKeyModel.setCount(new LongAdder());
         hotKeyModel.setRemove(remove);
         hotKeyModel.setKey(key);
 

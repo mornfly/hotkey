@@ -52,12 +52,12 @@ public class TurnKeyCollector implements IKeyCollector<HotKeyModel, HotKeyModel>
             //不存在时返回null并将key-value放入，已有相同key时，返回该key对应的value，并且不覆盖
             HotKeyModel model = map0.putIfAbsent(key, hotKeyModel);
             if (model != null) {
-                model.setCount(model.getCount() + hotKeyModel.getCount());
+                model.add(hotKeyModel.getCount());
             }
         } else {
             HotKeyModel model = map1.putIfAbsent(key, hotKeyModel);
             if (model != null) {
-                model.setCount(model.getCount() + hotKeyModel.getCount());
+                model.add(hotKeyModel.getCount());
             }
         }
 
