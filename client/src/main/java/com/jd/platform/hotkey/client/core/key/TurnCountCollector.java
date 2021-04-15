@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 /**
  * 热点数量统计
@@ -36,6 +37,8 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
 
     private AtomicLong atomicLong = new AtomicLong(0);
 
+    private static final int DATA_CONVERT_SWITCH_THRESHOLD = 5000;
+
     @Override
     public List<KeyCountModel> lockAndGetResult() {
         //自增后，对应的map就会停止被写入，等待被读取
@@ -56,7 +59,38 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
      * 每10秒上报一次最近10秒的数据，并且删掉相应的key
      */
     private List<KeyCountModel> get(ConcurrentHashMap<String, HitCount> map) {
-        List<KeyCountModel> list = new ArrayList<>();
+        //根据待转换并上报的统计数据的数据量选择是否启用并行参数转换
+        if (map.size()>DATA_CONVERT_SWITCH_THRESHOLD){
+            return parallelConvert(map);
+        }else {
+            return syncConvert(map);
+        }
+    }
+
+    /**
+     * 在数据量足够大的情况下 并行转换可以拥有比串行for循环更好的性能
+     * @param map 统计数据
+     * @return 待上报数据
+     */
+    private List<KeyCountModel> parallelConvert(ConcurrentHashMap<String, HitCount> map) {
+        return map.entrySet().parallelStream().map(entry->{
+            String key = entry.getKey();
+            HitCount hitCount = entry.getValue();
+            KeyCountModel keyCountModel = new KeyCountModel();
+            keyCountModel.setTotalHitCount((int)hitCount.totalHitCount.sum());
+            keyCountModel.setRuleKey(key);
+            keyCountModel.setHotHitCount((int)hitCount.hotHitCount.sum());
+            return keyCountModel;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * 在数据量不大的情况下,使用同步for循环进行数据转换性能也不错
+     * @param map 统计数据
+     * @return 待上报数据
+     */
+    private List<KeyCountModel> syncConvert(ConcurrentHashMap<String, HitCount> map) {
+        List<KeyCountModel> list = new ArrayList<>(map.size());
         for (Map.Entry<String, HitCount> entry : map.entrySet()) {
             String key = entry.getKey();
             HitCount hitCount = entry.getValue();
