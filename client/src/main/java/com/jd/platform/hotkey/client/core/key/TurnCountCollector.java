@@ -11,8 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 热点数量统计
@@ -61,9 +61,9 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
             String key = entry.getKey();
             HitCount hitCount = entry.getValue();
             KeyCountModel keyCountModel = new KeyCountModel();
-            keyCountModel.setTotalHitCount(hitCount.totalHitCount.get());
+            keyCountModel.setTotalHitCount((int)hitCount.totalHitCount.sum());
             keyCountModel.setRuleKey(key);
-            keyCountModel.setHotHitCount(hitCount.hotHitCount.get());
+            keyCountModel.setHotHitCount((int)hitCount.hotHitCount.sum());
             list.add(keyCountModel);
         }
         return list;
@@ -97,9 +97,9 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
         //该方法线程安全
         HitCount hitCount = map.computeIfAbsent(mapKey, v -> new HitCount());
         if (isHot) {
-            hitCount.hotHitCount.incrementAndGet();
+            hitCount.hotHitCount.increment();
         }
-        hitCount.totalHitCount.incrementAndGet();
+        hitCount.totalHitCount.increment();
     }
 
     private String nowTime() {
@@ -109,7 +109,7 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
     }
 
     private class HitCount {
-        private AtomicInteger hotHitCount = new AtomicInteger();
-        private AtomicInteger totalHitCount = new AtomicInteger();
+        private LongAdder hotHitCount = new LongAdder();
+        private LongAdder totalHitCount = new LongAdder();
     }
 }
