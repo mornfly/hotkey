@@ -5,7 +5,7 @@ import cn.hutool.core.date.SystemClock;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 滑动窗口。该窗口同样的key都是单线程计算。
@@ -16,7 +16,7 @@ public class SlidingWindow {
     /**
      * 循环队列，就是装多个窗口用，该数量是windowSize的2倍
      */
-    private LongAdder[] timeSlices;
+    private AtomicLong[] timeSlices;
     /**
      * 队列的总长度
      */
@@ -111,16 +111,16 @@ public class SlidingWindow {
     private void reset() {
         beginTimestamp = SystemClock.now();
         //窗口个数
-        LongAdder[] localTimeSlices = new LongAdder[timeSliceSize];
+        AtomicLong[] localTimeSlices = new AtomicLong[timeSliceSize];
         for (int i = 0; i < timeSliceSize; i++) {
-            localTimeSlices[i] = new LongAdder();
+            localTimeSlices[i] = new AtomicLong();
         }
         timeSlices = localTimeSlices;
     }
 
     private void print() {
-        for (LongAdder longAdder : timeSlices) {
-            System.out.print(longAdder.sum() + "-");
+        for (AtomicLong atomicLong : timeSlices) {
+            System.out.print(atomicLong.get() + "-");
         }
     }
 
@@ -147,24 +147,32 @@ public class SlidingWindow {
     public synchronized boolean addCount(long count) {
         //当前自己所在的位置，是哪个小时间窗
         int index = locationIndex();
-//        System.out.println("index:" + index);
+        //System.out.println("index:" + index);
         //然后清空自己前面windowSize到2*windowSize之间的数据格的数据
         //譬如1秒分4个窗口，那么数组共计8个窗口
         //当前index为5时，就清空6、7、8、1。然后把2、3、4、5的加起来就是该窗口内的总和
         clearFromIndex(index);
 
-        int sum = 0;
-        // 在当前时间片里继续+1
-        timeSlices[index].add(count);
-        sum += timeSlices[index].sum();
-        //加上前面几个时间片
+        long sum = 0;
+        //算出不包含当前窗口的数量
         for (int i = 1; i < windowSize; i++) {
-            sum += timeSlices[(index - i + timeSliceSize) % timeSliceSize].sum();
+            if (i != index) {
+                sum += timeSlices[(index - i + timeSliceSize) % timeSliceSize].get();
+            }
         }
+        //不使用 addAndGet 而是将 addAndGet中的cas 上移到此处 手动使用 AtomicInteger中native的cas 来获取成功时之前的值
+        long before;
+        do {
+            before = timeSlices[index].get();
+        } while (!timeSlices[index].compareAndSet(before, before + count));
 
         lastAddTimestamp = SystemClock.now();
-
-        return sum >= threshold;
+        //没有增加之前小于最大阈值 增加之后大于等于最大阈值 因为使用了cas 所以before的值是准确的
+        if (before + sum < threshold && before + count + sum >= threshold) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
     }
 
     private void clearFromIndex(int index) {
@@ -173,7 +181,7 @@ public class SlidingWindow {
             if (j >= windowSize * 2) {
                 j -= windowSize * 2;
             }
-            timeSlices[j].reset();
+            timeSlices[j].set(0);
         }
     }
 
