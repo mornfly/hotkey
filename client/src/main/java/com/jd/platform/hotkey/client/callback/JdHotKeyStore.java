@@ -84,6 +84,16 @@ public class JdHotKeyStore {
     }
 
     /**
+     * 强制给value赋值
+     */
+    public static void forceSet(String key, Object value) {
+        ValueModel valueModel = ValueModel.defaultValue(key);
+        if (valueModel != null) {
+            valueModel.setValue(value);
+        }
+    }
+
+    /**
      * 获取value，如果value不存在则发往netty
      */
     public static Object getValue(String key, KeyType keyType) {

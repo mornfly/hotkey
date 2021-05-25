@@ -23,24 +23,6 @@ public class MsgDecoder extends ByteToMessageDecoder {
 
             list.add(ProtostuffUtils.deserialize(body, HotKeyMsg.class));
 
-//            if (in.readableBytes() < 4) {
-//                return;
-//            }
-//            in.markReaderIndex();
-//            int dataLength = in.readInt();
-//            if (dataLength < 0) {
-//                channelHandlerContext.close();
-//            }
-//            if (in.readableBytes() < dataLength) {
-//                in.resetReaderIndex();
-//                return;
-//            }
-//
-//            byte[] data = new byte[dataLength];
-//            in.readBytes(data);
-//
-//            Object obj = ProtostuffUtils.deserialize(data, HotKeyMsg.class);
-//            list.add(obj);
         } catch (Exception e) {
             e.printStackTrace();
         }

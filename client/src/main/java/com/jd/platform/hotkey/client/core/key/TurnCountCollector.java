@@ -83,7 +83,7 @@ public class TurnCountCollector implements IKeyCollector<KeyHotModel, KeyCountMo
 
     }
 
-    public void put(String key, boolean isHot, ConcurrentHashMap<String, HitCount> map) {
+    private void put(String key, boolean isHot, ConcurrentHashMap<String, HitCount> map) {
         //如key是pin_的前缀，则存储pin_
         String rule = KeyRuleHolder.rule(key);
         //不在规则内的不处理
