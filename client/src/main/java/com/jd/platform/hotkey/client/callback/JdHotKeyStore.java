@@ -91,6 +91,7 @@ public class JdHotKeyStore {
         if (valueModel != null) {
             valueModel.setValue(value);
         }
+        setValueDirectly(key, valueModel);
     }
 
     /**
