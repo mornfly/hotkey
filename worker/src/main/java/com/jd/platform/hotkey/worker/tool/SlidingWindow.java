@@ -5,7 +5,7 @@ import cn.hutool.core.date.SystemClock;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 滑动窗口。该窗口同样的key都是单线程计算。
@@ -16,7 +16,7 @@ public class SlidingWindow {
     /**
      * 循环队列，就是装多个窗口用，该数量是windowSize的2倍
      */
-    private AtomicInteger[] timeSlices;
+    private AtomicLong[] timeSlices;
     /**
      * 队列的总长度
      */
@@ -111,9 +111,9 @@ public class SlidingWindow {
     private void reset() {
         beginTimestamp = SystemClock.now();
         //窗口个数
-        AtomicInteger[] localTimeSlices = new AtomicInteger[timeSliceSize];
+        AtomicLong[] localTimeSlices = new AtomicLong[timeSliceSize];
         for (int i = 0; i < timeSliceSize; i++) {
-            localTimeSlices[i] = new AtomicInteger(0);
+            localTimeSlices[i] = new AtomicLong(0);
         }
         timeSlices = localTimeSlices;
     }
@@ -138,7 +138,7 @@ public class SlidingWindow {
     /**
      * 增加count个数量
      */
-    public synchronized boolean addCount(int count) {
+    public synchronized boolean addCount(long count) {
         //当前自己所在的位置，是哪个小时间窗
         int index = locationIndex();
 //        System.out.println("index:" + index);

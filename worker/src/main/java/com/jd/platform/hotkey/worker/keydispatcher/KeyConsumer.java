@@ -29,6 +29,8 @@ public class KeyConsumer {
                 if (model.isRemove()) {
                     iKeyListener.removeKey(model, KeyEventOriginal.CLIENT);
                 } else {
+                    //TODO WANG
+                    System.out.println(model.toString() +"    " + model.getCount());
                     iKeyListener.newKey(model, KeyEventOriginal.CLIENT);
                 }
 

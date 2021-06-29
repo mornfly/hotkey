@@ -6,6 +6,7 @@ import com.jd.platform.hotkey.common.tool.ProtostuffUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author wuweifeng
@@ -14,10 +15,12 @@ import java.util.List;
  */
 public class Test {
     public static void main(String[] args) {
+        LongAdder adderCnt = new LongAdder();
+        adderCnt.add(1);
         HotKeyMsg hotKeyMsg = new HotKeyMsg();
         hotKeyMsg.setAppName("cartsoa");
         HotKeyModel hotKeyModel = new HotKeyModel();
-        hotKeyModel.setCount(1);
+        hotKeyModel.setCount(adderCnt);
         hotKeyModel.setKey("pin_xx");
         hotKeyModel.setAppName("cartsoa");
 
@@ -50,4 +53,5 @@ public class Test {
 
 
     }
+
 }

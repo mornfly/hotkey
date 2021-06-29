@@ -1,8 +1,9 @@
 package com.jd.platform.hotkey.common.tool;
 
-import io.protostuff.LinkedBuffer;
-import io.protostuff.ProtobufIOUtil;
-import io.protostuff.Schema;
+import com.jd.platform.hotkey.common.convert.LongAdderDelegate;
+import io.protostuff.*;
+import io.protostuff.runtime.DefaultIdStrategy;
+import io.protostuff.runtime.RuntimeEnv;
 import io.protostuff.runtime.RuntimeSchema;
 
 import java.util.Map;
@@ -15,6 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2020/7/18
  **/
 public class ProtostuffUtils {
+
+    private final static DefaultIdStrategy idStrategy = ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY);
+
     /**
      * 避免每次序列化都重新申请Buffer空间
      * 这句话在实际生产上没有意义，耗时减少的极小，但高并发下，如果还用这个buffer，会报异常说buffer还没清空，就又被使用了
@@ -24,6 +28,10 @@ public class ProtostuffUtils {
      * 缓存Schema
      */
     private static Map<Class<?>, Schema<?>> schemaCache = new ConcurrentHashMap<>();
+
+    static {
+        idStrategy.registerDelegate(new LongAdderDelegate());
+    }
 
     /**
      * 序列化方法，把指定对象序列化成字节数组
@@ -65,7 +73,7 @@ public class ProtostuffUtils {
         if (Objects.isNull(schema)) {
             //这个schema通过RuntimeSchema进行懒创建并缓存
             //所以可以一直调用RuntimeSchema.getSchema(),这个方法是线程安全的
-            schema = RuntimeSchema.getSchema(clazz);
+            schema = RuntimeSchema.getSchema(clazz, idStrategy);
             if (Objects.nonNull(schema)) {
                 schemaCache.put(clazz, schema);
             }

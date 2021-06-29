@@ -7,7 +7,6 @@ import com.jd.platform.hotkey.common.model.HotKeyModel;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 轮流提供读写、暂存key的操作。
@@ -51,15 +50,14 @@ public class TurnKeyCollector implements IKeyCollector<HotKeyModel, HotKeyModel>
         }
         if (atomicLong.get() % 2 == 0) {
             //不存在时返回null并将key-value放入，已有相同key时，返回该key对应的value，并且不覆盖
-
             HotKeyModel model = map0.putIfAbsent(key, hotKeyModel);
             if (model != null) {
-                model.setCount(model.getCount() + hotKeyModel.getCount());
+                model.add(hotKeyModel.getCount());
             }
         } else {
             HotKeyModel model = map1.putIfAbsent(key, hotKeyModel);
             if (model != null) {
-                model.setCount(model.getCount() + hotKeyModel.getCount());
+                model.add(hotKeyModel.getCount());
             }
         }
 
