@@ -288,7 +288,7 @@ public class DataHandler {
      * 每10秒检测一次热点记录 用于监控报警
      */
     //TODO WANG
-    @PostConstruct
+//    @PostConstruct
     public void scanRecordForMonitor() {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
