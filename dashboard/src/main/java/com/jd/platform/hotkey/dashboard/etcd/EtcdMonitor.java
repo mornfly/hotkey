@@ -211,8 +211,7 @@ public class EtcdMonitor {
     private void fetchRuleFromEtcd() {
         RuleUtil.init();
         try {
-            List<KeyRule> ruleList = new ArrayList<>();
-
+           
             //从etcd获取rule
             List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
 
