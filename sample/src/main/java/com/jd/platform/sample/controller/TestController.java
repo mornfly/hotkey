@@ -4,6 +4,7 @@ import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.jd.platform.sample.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,15 +76,13 @@ public class TestController {
 //        return 1;
 //    }
 
-    @RequestMapping("")
-    public Object a() {
-        if (JdHotKeyStore.isHotKey("VENDER_ID_2111")) {
-            logger.error("isHot");
+    @RequestMapping("/hotKey")
+    public Object hotKey(String key) {
+        if (!StringUtils.isEmpty(key) && JdHotKeyStore.isHotKey(key)) {
+            return "isHot";
         } else {
-            logger.error("noHot");
+            return "noHot";
         }
-
-        return 1;
     }
 
     @DeleteMapping("")

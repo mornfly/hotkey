@@ -5,6 +5,7 @@ netty:
 local:
   address: ${localAddress:} #有些获取到的ip不能用，需要手工配worker的地址
 open:
+  timeout: ${openTimeOut:true}
   monitor: ${openMonitor:false}  #开启持续无key发送监控，如果持续1分钟没发来key，就断开和etcd的连接，之后重建和客户端连接
 thread:
   count: ${threadCount:0}

@@ -333,7 +333,7 @@ h2.headline.text-info {
  .lockscreen > body {
     background: transparent;
 }
-/* We will writeToLocalCaffeine the dynamically generated digital clock here */
+/* We will put the dynamically generated digital clock here */
  .lockscreen .headline {
     color: #fff;
     text-shadow: 1px 3px 5px rgba(0, 0, 0, 0.5);

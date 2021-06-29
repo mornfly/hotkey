@@ -6,13 +6,13 @@ import com.ibm.etcd.api.KeyValue;
 import com.ibm.etcd.client.kv.KvClient;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
+import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.common.tool.FastJsonUtils;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.IRecord;
 import com.jd.platform.hotkey.dashboard.common.monitor.DataHandler;
 import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
-import com.jd.platform.hotkey.dashboard.common.monitor.PushHandler;
 import com.jd.platform.hotkey.dashboard.model.Worker;
 import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
 import com.jd.platform.hotkey.dashboard.biz.service.WorkerService;
@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -54,11 +55,8 @@ public class EtcdMonitor {
     @Resource
     private DataHandler dataHandler;
 
-    @Resource
-    private PushHandler pushHandler;
 
-
-    public static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(16);
+    private final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(16);
 
     /**
      * 监听新来的热key，该key的产生是来自于手工在控制台添加
@@ -146,7 +144,41 @@ public class EtcdMonitor {
      */
     private void dealHotKey() {
         threadPoolExecutor.submit(() -> {
-            dataHandler.dealHotKey();
+            while (true) {
+                try {
+                    //获取发来的这个热key，存入本地caffeine，设置过期时间
+                    HotKeyModel model = HotKeyReceiver.take();
+
+                    //将该key放入实时热key本地缓存中
+                    HotKeyReceiver.writeToLocalCaffeine(model);
+
+                    dataHandler.offer(new IRecord() {
+                        @Override
+                        public String appNameKey() {
+                            return model.getAppName() + "/" + model.getKey();
+                        }
+
+                        @Override
+                        public String value() {
+                            return UUID.randomUUID().toString();
+                        }
+
+                        @Override
+                        public int type() {
+                            return 0;
+                        }
+
+                        @Override
+                        public Date createTime() {
+                            return new Date();
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         });
     }
 
@@ -180,8 +212,6 @@ public class EtcdMonitor {
     private void fetchRuleFromEtcd() {
         RuleUtil.init();
         try {
-            List<KeyRule> ruleList = new ArrayList<>();
-
             //从etcd获取rule
             List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.rulePath);
 
@@ -263,6 +293,15 @@ public class EtcdMonitor {
 
     private Event event(KvClient.WatchIterator watchIterator) {
         return watchIterator.next().getEvents().get(0);
+    }
+
+    @PreDestroy
+    public void close() {
+        try {
+            threadPoolExecutor.shutdown();
+        } catch (Exception e) {
+            log.error("EtcdMonitor threadPoolExecutor shutdown exception:{}", e.getMessage(), e);
+        }
     }
 
 }

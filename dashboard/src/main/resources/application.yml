@@ -29,7 +29,7 @@ spring :
   datasource:
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASS:root}
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/luck?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC&useTimezone=true&serverTimezone=GMT
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/hotkey_db?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC&useTimezone=true&serverTimezone=GMT
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       max-lifetime: 120000
@@ -48,11 +48,4 @@ pagehelper:
 
 etcd:
   server: ${etcdServer:http://127.0.0.1:2379}
-erp:
-  enabled: false
-  ssoAppKey: xxx
-  ssoAppToken: xxx
-  loginUrl: https://ssa.jd.com/sso/login
-  excludePath: /login,/assets,/bootstarp,/common,/htmlformat,/images,/jn,/jquery,/user/login,login
-  ssoAppUrl: http://ssa.jd.com
-  defaultPwd: xxx
+

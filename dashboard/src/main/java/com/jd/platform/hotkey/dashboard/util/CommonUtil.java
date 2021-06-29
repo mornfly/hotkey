@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.util;
 
+import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.model.Summary;
@@ -53,6 +54,10 @@ public class CommonUtil {
     }
 
 
+    public static String keyName(String k) {
+        int index = k.lastIndexOf("/");
+        return k.substring(index + 1);
+    }
 
 
     public static String encoder(String text) {
@@ -76,6 +81,49 @@ public class CommonUtil {
     }
 
 
+    /**
+     * 拼装数据
+     *
+     * @param list      list-data
+     * @param startTime 开始时间
+     * @param size      格子数
+     * @param type      类型 1分钟 2小时
+     * @return vo
+     */
+    public static HotKeyLineChartVo assembleData(List<Statistics> list, LocalDateTime startTime, int size, int type) {
+        Set<String> set = new TreeSet<>();
+        boolean isHour = type == 1;
+        String suffix = isHour ? "60" : "24";
+        String pattern = isHour ? DateUtil.PATTERN_MINUS : DateUtil.PATTERN_HOUR;
+        Map<String, int[]> map = new HashMap<>(10);
+        Map<String, List<Statistics>> listMap = listGroup(list);
+//		log.info("按照rule分组以后的listMap--> {}", JSON.toJSONString(listMap));
+        for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
+            int start = DateUtil.reviseTime(startTime, 0, type);
+            map.put(m.getKey(), new int[size]);
+            int[] data = map.get(m.getKey());
+            int tmp = 0;
+            for (int i = 0; i < size; i++) {
+                if (String.valueOf(start).endsWith(suffix)) {
+                    LocalDateTime tmpTime = DateUtil.strToLdt((start - 1) + "", pattern);
+                    start = DateUtil.reviseTime(tmpTime, 1, type);
+                }
+//				log.info("start--> {},  tmp---> {} ", start, tmp);
+                set.add(DateUtil.strToLdt(start + "", pattern).toString().replace("T", " "));
+                Statistics st = m.getValue().get(tmp);
+                int val = isHour ? st.getMinutes() : st.getHours();
+                if (start != val) {
+                    data[i] = 0;
+                } else {
+                    tmp++;
+                    data[i] = st.getCount();
+                }
+                start++;
+            }
+        }
+        return new HotKeyLineChartVo(new ArrayList<>(set), map);
+    }
+
 
     /**
      * 分组
@@ -86,6 +134,14 @@ public class CommonUtil {
     private static Map<String, List<Statistics>> listGroup(List<Statistics> list) {
        // return list.stream().collect(Collectors.groupingBy(Statistics::getRule));
         return list.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
+
+        /*
+        // master code
+        if (Constant.VERSION != 1) {
+            return list.stream().collect(Collectors.groupingBy(Statistics::getRule));
+        }
+        return list.stream().collect(Collectors.groupingBy(Statistics::getKeyName));
+        */
     }
 
     /**
@@ -117,10 +173,10 @@ public class CommonUtil {
         Duration duration = Duration.between(st, et);
         long passTime = isMinute ? duration.toMinutes() : duration.toHours();
         Map<Integer, Integer> timeCountMap = new TreeMap<>();
-        String pattern = isMinute ? DateUtils.PATTERN_MINUS : DateUtils.PATTERN_HOUR;
+        String pattern = isMinute ? DateUtil.PATTERN_MINUS : DateUtil.PATTERN_HOUR;
         for (int i = 1; i < passTime; i++) {
-            int time = DateUtils.reviseTime(st, i, isMinute ? 1 : 2);
-            xAxisSet.add(DateUtils.formatTime(time, pattern));
+            int time = DateUtil.reviseTime(st, i, isMinute ? 1 : 2);
+            xAxisSet.add(DateUtil.formatTime(time, pattern));
             timeCountMap.put(time, null);
         }
         Map<String, List<Statistics>> ruleStatsMap = listGroup(list);
@@ -174,12 +230,12 @@ public class CommonUtil {
         String app = args[0];
         String rule = args[1];
         String hitTime = args[2];
-        Date time = DateUtils.strToDate(hitTime);
+        Date time = DateUtil.strToDate(hitTime);
         assert time != null;
-        LocalDateTime ldt = DateUtils.dateToLdt(time);
-        int day = DateUtils.nowDay(ldt);
-        int hour = DateUtils.nowHour(ldt);
-        int minus = DateUtils.nowMinus(ldt);
+        LocalDateTime ldt = DateUtil.dateToLdt(time);
+        int day = DateUtil.nowDay(ldt);
+        int hour = DateUtil.nowHour(ldt);
+        int minus = DateUtil.nowMinus(ldt);
         long seconds = time.getTime() / 1000;
         String[] counts = map.get(key).split("-");
         int hitCount = Integer.parseInt(counts[0]);

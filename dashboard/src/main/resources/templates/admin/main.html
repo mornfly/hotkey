@@ -72,8 +72,12 @@
             "Authorization":getCookie("token")
         },
         async : false,
-        error : function(XMLHttpRequest){
-            $.modal.alertError(XMLHttpRequest.responseJSON.msg);
+        error : function(response){
+            let token = getCookie("token");
+            if(response.status == 1000 && ( token == "undefined" || token =="")){
+                top.location.href = '/user/login';
+            }
+            console.info("加载数据失败");
         },
         success : function(data) {
             console.log(data)

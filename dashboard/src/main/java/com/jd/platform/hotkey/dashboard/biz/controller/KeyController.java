@@ -15,7 +15,7 @@ import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.biz.service.KeyService;
-import com.jd.platform.hotkey.dashboard.util.DateUtils;
+import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.ExcelUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -136,10 +136,10 @@ public class KeyController extends BaseController {
 	public void export(HttpServletResponse resp,String startTime,String endTime,String app,String key){
 		SearchReq req = new SearchReq();
 		if(StringUtil.isNotEmpty(startTime)){
-			req.setStartTime(DateUtils.strToDate(startTime));
+			req.setStartTime(DateUtil.strToDate(startTime));
 		}
 		if(StringUtil.isNotEmpty(endTime)){
-			req.setEndTime(DateUtils.strToDate(endTime));
+			req.setEndTime(DateUtil.strToDate(endTime));
 		}
 		req.setApp(app);
 		req.setKey(key);
@@ -155,10 +155,10 @@ public class KeyController extends BaseController {
 	public void exportList(HttpServletResponse resp,String startTime,String endTime,String app,String key){
 		SearchReq req = new SearchReq();
 		if(StringUtil.isNotEmpty(startTime)){
-			req.setStartTime(DateUtils.strToDate(startTime));
+			req.setStartTime(DateUtil.strToDate(startTime));
 		}
 		if(StringUtil.isNotEmpty(endTime)){
-			req.setEndTime(DateUtils.strToDate(endTime));
+			req.setEndTime(DateUtil.strToDate(endTime));
 		}
 		req.setApp(app);
 		req.setKey(key);
@@ -191,7 +191,7 @@ public class KeyController extends BaseController {
 			List<String> list = new ArrayList<>();
 			list.add(record.getKey());
 			list.add(record.getAppName());
-			list.add(DateUtils.dateToStr(record.getCreateTime()));
+			list.add(DateUtil.dateToStr(record.getCreateTime()));
 			rows.add(list);
 		}
 		return rows;

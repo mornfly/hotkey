@@ -3,10 +3,6 @@ etcd:
   server: ${etcdServer:https://127.0.0.1:2379}
 #  server: ${etcdServer:http://10.170.161.91:2379｝
 #  server: http://open-etcd.jd.com:2000
-total:
-  count: ${count:40000}
-  sleep: ${sleep:1000}
-  period: ${period:10}
 spring:
   application:
     name: ${name:sample}

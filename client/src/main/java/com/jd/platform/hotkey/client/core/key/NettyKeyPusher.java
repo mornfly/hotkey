@@ -46,7 +46,6 @@ public class NettyKeyPusher implements IKeyPusher {
                 hotKeyMsg.setHotKeyModels(batch);
                 channel.writeAndFlush(hotKeyMsg).sync();
             } catch (Exception e) {
-                e.printStackTrace();
                 try {
                     InetSocketAddress insocket = (InetSocketAddress) channel.remoteAddress();
                     JdLogger.error(getClass(),"flush error " + insocket.getAddress().getHostAddress());

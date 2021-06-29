@@ -1,22 +1,18 @@
 package com.jd.platform.hotkey.dashboard.interceptor;
 
-import com.jd.platform.hotkey.dashboard.erp.ErpUimInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.*;
 
+
 @Configuration
 public class MyWebAppConfigurer  implements WebMvcConfigurer {
-	@Autowired
-	ErpUimInterceptor erpUimInterceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		//拦截路径可自行配置多个 可用 ，分隔开
 		InterceptorRegistration registration = registry.addInterceptor(new JwtInterceptor()).addPathPatterns("/**");
-		registry.addInterceptor(erpUimInterceptor);
-		registration.excludePathPatterns("/user/login","/user/getUserName","/error","/static/**","/main/**");
+		registration.excludePathPatterns("/user/login","/error","/static/**","/main/**");
 	}
 
 

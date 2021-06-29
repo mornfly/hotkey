@@ -118,12 +118,6 @@ public class SlidingWindow {
         timeSlices = localTimeSlices;
     }
 
-    private void print() {
-        for (AtomicInteger integer : timeSlices) {
-            System.out.print(integer + "-");
-        }
-    }
-
     /**
      * 计算当前所在的时间片的位置
      */

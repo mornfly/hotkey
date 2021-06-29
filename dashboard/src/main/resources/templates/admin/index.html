@@ -51,6 +51,7 @@ height: calc(100vh - 139px);overflow-x: hidden;
 </div>
 <script type="text/javascript" th:src="@{/static/admin/assets/js/toggle_close.js}"></script>
 <script type="text/javascript" th:src="@{/static/admin/assets/js/main.js}"></script>
+<script th:src="@{/static/admin/assets/js/bootstrap/js/base_list.js}" type="text/javascript"></script>
 
 <script>
 
@@ -64,15 +65,19 @@ height: calc(100vh - 139px);overflow-x: hidden;
         $.ajax({
             type : "POST",
             url: "/user/getUserName",
-            /*headers: {
+            headers: {
                 "Authorization":getCookie("token")
-            },*/
-            async : false,
-            error : function(request) {
-                $.modal.alertError("系统错误");
             },
+            async : false,
             success : function(data) {
                 $("#userName").html(data);
+            },
+            error: function(response){  //加载失败时执行
+                let token = getCookie("token");
+                if(response.status == 1000 && ( token == "undefined" || token =="")){
+                    top.location.href = '/user/login';
+                }
+                console.info("加载数据失败");
             }
         });
     });

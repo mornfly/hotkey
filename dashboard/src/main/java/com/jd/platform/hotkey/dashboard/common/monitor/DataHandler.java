@@ -2,8 +2,6 @@ package com.jd.platform.hotkey.dashboard.common.monitor;
 
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Queues;
 import com.ibm.etcd.api.KeyValue;
@@ -20,10 +18,11 @@ import com.jd.platform.hotkey.dashboard.common.domain.vo.AppCfgVo;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
 import com.jd.platform.hotkey.dashboard.netty.HotKeyReceiver;
-import com.jd.platform.hotkey.dashboard.util.DateUtils;
+import com.jd.platform.hotkey.dashboard.util.DateUtil;
 import com.jd.platform.hotkey.dashboard.util.RuleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -49,25 +48,20 @@ public class DataHandler {
     @Resource
     private IConfigCenter configCenter;
 
-    @Resource
-    private PushHandler pushHandler;
-
-
     private static final Integer CACHE_SIZE = 10000;
 
 
     /**
      * 队列
      */
-    private BlockingQueue<IRecord> RECORD_QUEUE = new LinkedBlockingQueue<>();
-
+    private BlockingQueue<IRecord> queue = new LinkedBlockingQueue<>();
 
     /**
      * 入队
      */
     public void offer(IRecord record) {
         try {
-            RECORD_QUEUE.put(record);
+            queue.put(record);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -77,22 +71,25 @@ public class DataHandler {
         while (true) {
             try {
                 List<IRecord> records = new ArrayList<>();
-                Queues.drain(RECORD_QUEUE, records, CACHE_SIZE, 1, TimeUnit.SECONDS);
+                Queues.drain(queue, records, 1000, 1, TimeUnit.SECONDS);
                 if (CollectionUtil.isEmpty(records)) {
                     continue;
                 }
-                List<KeyRecord> keyRecordList = new ArrayList<>();
+                List<KeyRecord> keyRecordList = new ArrayList<>(records.size());
                 for (IRecord iRecord : records) {
                     KeyRecord keyRecord = handHotKey(iRecord);
                     if (keyRecord != null) {
                         keyRecordList.add(keyRecord);
                     }
                 }
+                if(CollectionUtil.isEmpty(keyRecordList)){
+                    continue;
+                }
                 keyRecordMapper.batchInsert(keyRecordList);
 
             } catch (Exception e) {
                 log.error("batch insert error:{}", e.getMessage(), e);
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
@@ -123,7 +120,7 @@ public class DataHandler {
      */
     private void putRecord(String app, String key, long createTime) {
         try {
-            RECORD_QUEUE.put(new IRecord() {
+            queue.put(new IRecord() {
                 @Override
                 public String appNameKey() {
                     return app + "/" + key;
@@ -187,85 +184,79 @@ public class DataHandler {
     /**
      * 每小时 统计一次record 表 结果记录到统计表
      */
-    @PostConstruct
+    @Scheduled(cron = "0 0 * * * ?")
     public void offlineStatistics() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                LocalDateTime now = LocalDateTime.now();
-                Date nowTime = DateUtils.ldtToDate(now);
-                int day = DateUtils.nowDay(now);
-                int hour = DateUtils.nowHour(now);
-                SearchReq preHour = new SearchReq(now.minusHours(1));
-                List<Statistics> records = keyRecordMapper.maxHotKey(preHour);
-                if (records.size() != 0) {
-                    records.forEach(x -> {
-                        x.setBizType(1);
-                        x.setCreateTime(nowTime);
-                        x.setDays(day);
-                        x.setHours(hour);
-                        x.setUuid(1 + "_" + x.getKeyName() + "_" + hour);
-                    });
-                }
-                log.info("每小时统计最热点,时间：{}, 行数：{}", now.toString(), records.size());
-                List<Statistics> statistics = keyRecordMapper.statisticsByRule(preHour);
-                if (statistics.size() != 0) {
-                    statistics.forEach(x -> {
-                        x.setBizType(6);
-                        x.setRule(x.getRule());
-                        x.setCreateTime(nowTime);
-                        x.setDays(day);
-                        x.setHours(hour);
-                        x.setUuid(6 + "_" + x.getKeyName() + "_" + hour);
-                    });
-                    log.info("每小时统计规则,时间：{}, data list：{}", now.toString(), JSON.toJSONString(statistics));
-                    records.addAll(statistics);
-                }
-                if (records.size() > 0) {
-                    int row = statisticsMapper.batchInsert(records);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 2, 1, TimeUnit.HOURS);
-    }
-
-    /**
-     * 每分钟统计一次record 表 结果记录到统计表
-     */
-    @PostConstruct
-    public void offlineStatisticsRule() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                LocalDateTime now = LocalDateTime.now();
-                Date nowTime = DateUtils.ldtToDate(now);
-                int day = DateUtils.nowDay(now);
-                int hour = DateUtils.nowHour(now);
-                int minus = DateUtils.nowMinus(now);
-
-                List<Statistics> records = keyRecordMapper.statisticsByRule(new SearchReq(now.minusMinutes(1)));
-                if (records.size() == 0) {
-                    return;
-                }
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            Date nowTime = DateUtil.ldtToDate(now);
+            int day = DateUtil.nowDay(now);
+            int hour = DateUtil.nowHour(now);
+            SearchReq preHour = new SearchReq(now.minusHours(1));
+            List<Statistics> records = keyRecordMapper.maxHotKey(preHour);
+            if (records.size() != 0) {
                 records.forEach(x -> {
-                    x.setBizType(5);
+                    x.setBizType(1);
+                    x.setCreateTime(nowTime);
+                    x.setDays(day);
+                    x.setHours(hour);
+                    x.setUuid(1 + "_" + x.getKeyName() + "_" + hour);
+                });
+            }
+            log.info("每小时统计最热点,时间：{}, 行数：{}", now.toString(), records.size());
+            List<Statistics> statistics = keyRecordMapper.statisticsByRule(preHour);
+            if (statistics.size() != 0) {
+                statistics.forEach(x -> {
+                    x.setBizType(6);
                     x.setRule(x.getRule());
                     x.setCreateTime(nowTime);
                     x.setDays(day);
                     x.setHours(hour);
-                    x.setMinutes(minus);
-                    // 骚操作 临时解决没有rule字段的问题
-                    x.setUuid(5 + "_" + x.getKeyName() + "_" + minus);
+                    x.setUuid(6 + "_" + x.getKeyName() + "_" + hour);
                 });
-                int row = statisticsMapper.batchInsert(records);
-//            log.info("每分钟统计规则，时间：{}, 影响行数：{}, data list:{}", now.toString(), row, JSON.toJSONString(records));
-            } catch (Exception e) {
-                e.printStackTrace();
+                log.info("每小时统计规则,时间：{}, data list：{}", now.toString(), JSON.toJSONString(statistics));
+                records.addAll(statistics);
             }
-        }, 2, 1, TimeUnit.MINUTES);
+            if (records.size() > 0) {
+                int row = statisticsMapper.batchInsert(records);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    /**
+     * 每分钟统计一次record 表 结果记录到统计表
+     */
+    @Scheduled(cron = "0 */1 * * * ?")
+    public void offlineStatisticsRule() {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            Date nowTime = DateUtil.ldtToDate(now);
+            int day = DateUtil.nowDay(now);
+            int hour = DateUtil.nowHour(now);
+            int minus = DateUtil.nowMinus(now);
+
+            List<Statistics> records = keyRecordMapper.statisticsByRule(new SearchReq(now.minusMinutes(1)));
+            if (records.size() == 0) {
+                return;
+            }
+            records.forEach(x -> {
+                x.setBizType(5);
+                x.setRule(x.getRule());
+                x.setCreateTime(nowTime);
+                x.setDays(day);
+                x.setHours(hour);
+                x.setMinutes(minus);
+                // 骚操作 临时解决没有rule字段的问题
+                x.setUuid(5 + "_" + x.getKeyName() + "_" + minus);
+            });
+            int row = statisticsMapper.batchInsert(records);
+//            log.info("每分钟统计规则，时间：{}, 影响行数：{}, data list:{}", now.toString(), row, JSON.toJSONString(records));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -273,36 +264,30 @@ public class DataHandler {
     /**
      * 每天根据app的配置清理过期数据
      */
-    @PostConstruct
+    @Scheduled(cron = "0 0 1 * * ?")
     public void clearExpireData() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.clearCfgPath);
             for (KeyValue kv : keyValues) {
-                try {
-                    String val = kv.getValue().toStringUtf8();
-                    AppCfgVo cfg = JSON.parseObject(val, AppCfgVo.class);
-                    String app = cfg.getApp();
-                    //保存几天
-                    Integer days = cfg.getDataTtl();
-                    DateTime dateTime = DateUtil.offsetDay(new Date(), -days);
-
-
-                    summaryMapper.clearExpireData(app, dateTime);
-                    keyRecordMapper.clearExpireData(app, dateTime);
-                    statisticsMapper.clearExpireData(app, dateTime);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                String key = kv.getKey().toStringUtf8();
+                String ttl = kv.getValue().toStringUtf8();
+                String app = key.replace(ConfigConstant.clearCfgPath, "");
+                Date expireDate = DateUtil.ldtToDate(now.minusDays(Integer.parseInt(ttl)));
+                summaryMapper.clearExpireData(app, expireDate);
+                keyRecordMapper.clearExpireData(app, expireDate);
+                statisticsMapper.clearExpireData(app, expireDate);
             }
-        }, 1, 5, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
     /**
      * 每10秒检测一次热点记录 用于监控报警
      */
+    //TODO WANG
     @PostConstruct
     public void scanRecordForMonitor() {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -353,7 +338,9 @@ public class DataHandler {
             int threshold = type == 1 ? cfg.getWarnMax() : cfg.getWarnMin();
             String time = LocalDateTime.now().toString().replace("T", " ");
             String content = String.format("【警报】 应用：【%s】  热点记录在%d秒内累计: %d, %s阈值: %d \n【时间】：%s", cfg.getApp(), cfg.getWarnPeriod(), count, str, threshold, time);
-            pushHandler.pushMsg(cfg.getApp(), date, content);
+            //TODO WANG
+            System.out.println(content);
+//            pushHandler.pushMsg(cfg.getApp(), date, content);
         }
     }
 

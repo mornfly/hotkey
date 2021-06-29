@@ -75,7 +75,7 @@ public class EtcdStarter {
 
     private static final String MAO = ":";
     private static final String ETCD_DOWN = "etcd is unConnected . please do something";
-    private static final String EMPTY_RULE = "very important warn !!! rule info is null!!!";
+//    private static final String EMPTY_RULE = "very important warn !!! rule info is null!!!";
 
     /**
      * 用来存储临时收到的key总量，来判断是否很久都没收到key了
