@@ -11,6 +11,8 @@ import com.jd.platform.hotkey.dashboard.common.domain.req.ChartReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
 import com.jd.platform.hotkey.dashboard.common.domain.vo.HotKeyLineChartVo;
+import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
+import com.jd.platform.hotkey.dashboard.common.ex.BizException;
 import com.jd.platform.hotkey.dashboard.model.KeyRecord;
 import com.jd.platform.hotkey.dashboard.model.KeyTimely;
 import com.jd.platform.hotkey.dashboard.model.Statistics;
@@ -106,7 +108,8 @@ public class KeyController extends BaseController {
 	@PostMapping("/add")
 	@ResponseBody
 	public Result add(KeyTimely key){
-		checkApp(key.getAppName());
+		checkKeyTimely(key);
+
 		key.setUpdater(userName());
 		int b = keyService.insertKeyByUser(key);
 		return b == 0 ? Result.fail():Result.success();
@@ -115,6 +118,7 @@ public class KeyController extends BaseController {
 	@PostMapping("/remove")
 	@ResponseBody
 	public Result remove(String key){
+		checkKey(key);
 		String[] arr = key.split("/");
 		checkApp(arr[0]);
 		int b = keyService.delKeyByUser(new KeyTimely(key,userName()));
@@ -125,7 +129,8 @@ public class KeyController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public Result editSave(KeyTimely key) {
-		checkApp(key.getAppName());
+		checkKeyTimely(key);
+
 		return Result.success(keyService.updateKeyByUser(key));
     }
 
@@ -195,6 +200,26 @@ public class KeyController extends BaseController {
 			rows.add(list);
 		}
 		return rows;
+	}
+
+	/**
+	 * 检查合法性
+	 * @param key
+	 */
+	private void checkKeyTimely(KeyTimely key) {
+		checkApp(key.getAppName());
+		checkKey(key.getKey());
+		checkDuration(key.getDuration());
+	}
+
+	/**
+	 * 检查缓存时间
+	 * @param duration
+	 */
+	private void checkDuration(Long duration){
+		if(duration == null || duration <= 0){
+			throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "缓存时间不能小于等于0");
+		}
 	}
 }
 

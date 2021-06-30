@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.biz.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.jd.platform.hotkey.dashboard.biz.service.UserService;
@@ -9,6 +10,7 @@ import com.jd.platform.hotkey.dashboard.common.domain.Page;
 import com.jd.platform.hotkey.dashboard.common.domain.Result;
 import com.jd.platform.hotkey.dashboard.common.domain.req.PageReq;
 import com.jd.platform.hotkey.dashboard.common.eunm.ResultEnum;
+import com.jd.platform.hotkey.dashboard.common.ex.BizException;
 import com.jd.platform.hotkey.dashboard.model.User;
 import com.jd.platform.hotkey.dashboard.util.CommonUtil;
 import com.jd.platform.hotkey.dashboard.util.JwtTokenUtil;
@@ -122,6 +124,7 @@ public class UserController extends BaseController {
 	@PostMapping("/add")
 	@ResponseBody
 	public Result add(User user){
+		checkUser(user);
 		int b=userService.insertUser(user);
 		return b == 0 ? Result.fail():Result.success();
 	}
@@ -144,6 +147,7 @@ public class UserController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public Result editSave(User user) {
+		checkUser(user);
         return Result.success(userService.updateUser(user));
     }
 
@@ -158,9 +162,9 @@ public class UserController extends BaseController {
     @PostMapping("/editPwd")
     @ResponseBody
     public Result editPwdSave(User user){
+		checkUser(user);
         return Result.success(userService.updateUser(user));
     }
-
 
 	@GetMapping("Out404")
 	public String Out404(){
@@ -185,6 +189,28 @@ public class UserController extends BaseController {
 	@ResponseBody
 	public String getUserName(HttpServletRequest request, HttpServletResponse response){
 		return userName();
+	}
+
+	/**
+	 * 检查用户名、密码、APP信息
+	 * @param user
+	 */
+	private void checkUser(User user){
+		checkUserAndPwd(user);
+		checkApp(user.getAppName());
+	}
+	/**
+	 * 校验是否合法
+	 * @param user
+	 * @return
+	 */
+	private void checkUserAndPwd(User user) {
+		if(StrUtil.isBlank(user.getUserName())){
+			throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "用户名不能为空");
+		}
+		if(StrUtil.isBlank(user.getPwd())){
+			throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "密码不能为空");
+		}
 	}
 }
 

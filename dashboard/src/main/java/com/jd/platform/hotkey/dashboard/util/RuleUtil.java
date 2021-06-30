@@ -52,6 +52,13 @@ public class RuleUtil {
     }
 
     /**
+     * 根据APP的key，获取该key对应的rule.如 cartpc-pu__
+     */
+    public static String ruleNameKey(String appName, String key) {
+        return appName + "-" + key;
+    }
+
+    /**
      * 根据APP的key，获取该key对应的rule的desc
      */
     public static String ruleDesc(String key) {

@@ -25,7 +25,7 @@ public class ValueModel {
     public static ValueModel defaultValue(String key) {
         ValueModel valueModel = new ValueModel();
         int duration = KeyRuleHolder.duration(key);
-        if (duration == 0) {
+        if (duration <= 0) {
             //不符合任何规则
             return null;
         }

@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.client.core.worker;
 
+import cn.hutool.core.thread.NamedThreadFactory;
 import com.jd.platform.hotkey.client.log.JdLogger;
 import com.jd.platform.hotkey.client.netty.NettyClient;
 
@@ -20,7 +21,8 @@ public class WorkerRetryConnector {
      * 定时去重连没连上的workers
      */
     public static void retryConnectWorkers() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        @SuppressWarnings("PMD.ThreadPoolCreationRule")
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("worker-retry-connector-service-executor", true));
         //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
         scheduledExecutorService.scheduleAtFixedRate(WorkerRetryConnector::reConnectWorkers, 30, 30, TimeUnit.SECONDS);
     }

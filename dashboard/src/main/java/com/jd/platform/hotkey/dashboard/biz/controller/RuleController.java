@@ -1,5 +1,6 @@
 package com.jd.platform.hotkey.dashboard.biz.controller;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONTokener;
@@ -87,6 +88,7 @@ public class RuleController extends BaseController {
 
 	@GetMapping("/edit/{app}")
 	public String edit(ModelMap modelMap,@PathVariable("app") String app){
+		checkApp(app);
 		modelMap.put("title", Constant.RULE_CONFIG_VIEW);
 		modelMap.put("rules", ruleService.selectRules(app));
 		return "admin/rule/view";
@@ -127,6 +129,9 @@ public class RuleController extends BaseController {
 	 * @return boolean
 	 */
 	private void checkRule(String rules) {
+		if(StrUtil.isBlank(rules)){
+			throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "规则不能为空");
+		}
 		try {
 			Object json = new JSONTokener(rules).nextValue();
 			if (json instanceof JSONObject) {

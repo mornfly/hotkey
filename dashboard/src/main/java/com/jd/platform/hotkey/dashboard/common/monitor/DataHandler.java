@@ -8,6 +8,7 @@ import com.ibm.etcd.api.KeyValue;
 import com.jd.platform.hotkey.common.configcenter.ConfigConstant;
 import com.jd.platform.hotkey.common.configcenter.IConfigCenter;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
+import com.jd.platform.hotkey.common.rule.KeyRule;
 import com.jd.platform.hotkey.dashboard.biz.mapper.KeyRecordMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.StatisticsMapper;
 import com.jd.platform.hotkey.dashboard.biz.mapper.SummaryMapper;
@@ -25,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,9 +47,6 @@ public class DataHandler {
 
     @Resource
     private IConfigCenter configCenter;
-
-    private static final Integer CACHE_SIZE = 10000;
-
 
     /**
      * 队列
@@ -170,8 +167,14 @@ public class DataHandler {
             }
             //手工添加的是时间戳13位，worker传过来的是uuid
             String source = value.length() == 13 ? Constant.HAND : Constant.SYSTEM;
-            String rule = RuleUtil.rule(appKey);
-            KeyRecord keyRecord = new KeyRecord(key, rule, appName, 1, source, type, uuid, date);
+            String rule = "";
+            KeyRule keyRule = RuleUtil.findByKey(appKey);
+            int duration = 0;
+            if(keyRule != null){
+                rule = RuleUtil.ruleNameKey(appName, keyRule.getKey());
+                duration = keyRule.getDuration();
+            }
+            KeyRecord keyRecord = new KeyRecord(key, rule, appName, duration, source, type, uuid, date);
             keyRecord.setRule(rule);
             return keyRecord;
         } else {

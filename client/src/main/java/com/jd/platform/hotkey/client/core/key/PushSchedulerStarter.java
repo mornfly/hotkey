@@ -1,9 +1,13 @@
 package com.jd.platform.hotkey.client.core.key;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.thread.NamedThreadFactory;
 import com.jd.platform.hotkey.client.Context;
 import com.jd.platform.hotkey.common.model.HotKeyModel;
 import com.jd.platform.hotkey.common.model.KeyCountModel;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,26 +26,36 @@ public class PushSchedulerStarter {
         if (period == null || period <= 0) {
             period = 500L;
         }
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        @SuppressWarnings("PMD.ThreadPoolCreationRule")
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("hotkey-pusher-service-executor", true));
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             IKeyCollector<HotKeyModel, HotKeyModel> collectHK = KeyHandlerFactory.getCollector();
-            KeyHandlerFactory.getPusher().send(Context.APP_NAME, collectHK.lockAndGetResult());
-            collectHK.finishOnce();
+            List<HotKeyModel> hotKeyModels = collectHK.lockAndGetResult();
+            if(CollectionUtil.isNotEmpty(hotKeyModels)){
+                KeyHandlerFactory.getPusher().send(Context.APP_NAME, hotKeyModels);
+                collectHK.finishOnce();
+            }
+
         },0, period, TimeUnit.MILLISECONDS);
     }
 
     /**
      * 每10秒推送一次数量统计
      */
+
     public static void startCountPusher(Integer period) {
         if (period == null || period <= 0) {
             period = 10;
         }
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        @SuppressWarnings("PMD.ThreadPoolCreationRule")
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("hotkey-count-pusher-service-executor", true));
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             IKeyCollector<KeyHotModel, KeyCountModel> collectHK = KeyHandlerFactory.getCounter();
-            KeyHandlerFactory.getPusher().sendCount(Context.APP_NAME, collectHK.lockAndGetResult());
-            collectHK.finishOnce();
+            List<KeyCountModel> keyCountModels = collectHK.lockAndGetResult();
+            if(CollectionUtil.isNotEmpty(keyCountModels)){
+                KeyHandlerFactory.getPusher().sendCount(Context.APP_NAME, keyCountModels);
+                collectHK.finishOnce();
+            }
         },0, period, TimeUnit.SECONDS);
     }
 

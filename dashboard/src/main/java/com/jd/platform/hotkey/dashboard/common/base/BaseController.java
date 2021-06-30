@@ -3,6 +3,7 @@ package com.jd.platform.hotkey.dashboard.common.base;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.jd.platform.hotkey.dashboard.common.domain.Constant;
 import com.jd.platform.hotkey.dashboard.common.domain.req.SearchReq;
@@ -35,6 +36,9 @@ public class BaseController {
     }
 
     public void checkApp(String app){
+        if(StrUtil.isBlank(app)){
+            throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "所属APP不能为空");
+        }
         String authHeader = JwtTokenUtil.getAuthHeader(request);
         assert authHeader != null;
         Claims claims = JwtTokenUtil.claims(authHeader.substring(2));
@@ -46,6 +50,11 @@ public class BaseController {
         }
     }
 
+    public void checkKey(String key){
+        if(StrUtil.isBlank(key)){
+            throw new BizException(ResultEnum.PARAM_ERROR.getCode(), "key不能为空");
+        }
+    }
 
     public String userName(){
         final String authHeader = JwtTokenUtil.getAuthHeader(request);
