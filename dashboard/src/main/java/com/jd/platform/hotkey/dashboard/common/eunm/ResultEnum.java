@@ -22,7 +22,7 @@ public enum ResultEnum {
 
     BIZ_ERROR(1006, "业务异常"),
 
-    CONFLICT_ERROR(1007, "用户名/手机号已存在"),
+    CONFLICT_ERROR(1007, "用户名已存在"),
 
     ILLEGAL_JSON_ARR(1008, "非法的json数组"),
 

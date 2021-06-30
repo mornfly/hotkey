@@ -50,17 +50,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public int insertUser(User user) {
         String name = user.getUserName();
-        String phone = user.getPhone();
         String app = user.getAppName();
-        List<User> users = userMapper.listUser(null);
-        Set<String> set = new HashSet<>();
-        for (User u : users) {
-            set.add(u.getAppName());
-            if(u.getUserName().equals(name) || u.getPhone().equals(phone)){
-                throw new BizException(ResultEnum.CONFLICT_ERROR);
-            }
+        User dbUser = userMapper.selectByUserName(name);
+        if(dbUser != null){
+            throw new BizException(ResultEnum.CONFLICT_ERROR);
         }
-        if(StringUtil.isNotEmpty(app) && !set.contains(app)){
+        if(StringUtil.isNotEmpty(app)){
             this.initApp(app);
         }
         user.setCreateTime(new Date());

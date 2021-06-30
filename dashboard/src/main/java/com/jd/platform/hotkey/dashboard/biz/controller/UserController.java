@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Controller
 @RequestMapping("/user")
 public class UserController extends BaseController {
@@ -81,7 +80,7 @@ public class UserController extends BaseController {
 		Claims claims = JwtTokenUtil.claims(authHeader.substring(2));
 		String role = claims.get("role",String.class);
 		String appName = userService.selectByUserName(claims.getSubject()).getAppName();
-		return new User(role, userService.listApp(),appName);
+		return new User(role, userService.listApp(), appName);
 	}
 
 
@@ -132,10 +131,12 @@ public class UserController extends BaseController {
 	@PostMapping("/remove")
 	@ResponseBody
 	public Result remove(Integer key){
+		if(key == null){
+			throw new BizException(ResultEnum.BIZ_ERROR);
+		}
 		int b = userService.deleteByPrimaryKey(key);
 		return b == 0 ? Result.fail():Result.success();
 	}
-
 
 	@GetMapping("/edit/{id}")
     public String edit(@PathVariable("id") Integer id, ModelMap modelMap){
