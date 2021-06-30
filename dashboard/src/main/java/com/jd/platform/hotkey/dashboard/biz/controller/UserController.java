@@ -147,7 +147,9 @@ public class UserController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public Result editSave(User user) {
-		checkUser(user);
+		if(user.getId() == null){
+			throw new BizException(ResultEnum.BIZ_ERROR);
+		}
         return Result.success(userService.updateUser(user));
     }
 
@@ -162,7 +164,10 @@ public class UserController extends BaseController {
     @PostMapping("/editPwd")
     @ResponseBody
     public Result editPwdSave(User user){
-		checkUser(user);
+		if(user.getId() == null){
+			throw new BizException(ResultEnum.BIZ_ERROR);
+		}
+		checkUserAndPwd(user);
         return Result.success(userService.updateUser(user));
     }
 
