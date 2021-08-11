@@ -6,7 +6,7 @@ $("#form-edit").validate({
 });
 
 function edit() {
-	let dataFormJson = $("#form-edit").serialize();
+	var dataFormJson = $("#form-edit").serialize();
 	$.ajax({
 		cache : true,
 		type : "POST",
@@ -17,7 +17,7 @@ function edit() {
 		},
 		async : false,
 		error : function(XMLHttpRequest) {
-			let token = getCookie("token");
+			var token = getCookie("token");
 			if(XMLHttpRequest.status == 1000 && ( token == "undefined" || token =="")){
 				top.location.href = '/user/login';
 			}

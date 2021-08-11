@@ -32,7 +32,7 @@ function add() {
 		async : false,
 		error : function(XMLHttpRequest){
 			$.modal.alertError(XMLHttpRequest.responseJSON.msg);
-			let token = getCookie("token");
+            var token = getCookie("token");
 			if(XMLHttpRequest.status == 1000 && ( token == "undefined" || token =="")){
 				top.location.href = '/user/login';
 			}
