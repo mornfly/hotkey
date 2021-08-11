@@ -170,7 +170,7 @@ function sub(){
 					},
 					success : function(result) {
 						if(result.code==200){
-							let token = result.data.token;
+							var token = result.data.token;
 							// result.getco
 							window.localStorage.setItem('token', token);
 							window.localStorage.setItem('time', Date.now());

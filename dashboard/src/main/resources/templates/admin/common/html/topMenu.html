@@ -24,7 +24,6 @@
 	
 	
 	            <div id="logo-mobile" class="visible-xs">
-	               <h1>用户管理<span>v2</span></h1>
 	            </div>
 	
 	        </div>
@@ -120,7 +119,7 @@
 	                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
 	                        <img alt="" class="admin-pic img-circle" th:src="@{/static/admin/images/10.jpg}">
 							<!--<span th:text="${'Hi,'+session.sessionUserName}"></span><b class="caret"></b>-->
-							<span id="userName" th:text="${name}"></span><b class="caret"></b>
+							<span id="userName" th:text="${name}"></span>
 	                    </a>
 	                    <ul style="margin-top:14px;" role="menu" class="dropdown-setting dropdown-menu">
 	                        <!--<li>
@@ -135,11 +134,11 @@
 	                            <a href="#">
 	                                <span class="entypo-lifebuoy"></span>&#160;&#160;Help</a>
 	                        </li>-->
-	                        <li class="divider"></li>
+	                        <!--<li class="divider"></li>
 	                        <li>
 	                 				<a th:href="@{/user/LoginOut}">
 	                                <span class="entypo-basket"></span>&#160;&#160; 退出</a>
-	                        </li>
+	                        </li>-->
 	                    </ul>
 	                </li>
 	                <!-- END头像设置 -->

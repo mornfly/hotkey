@@ -54,8 +54,8 @@
 <script th:src="@{/static/admin/assets/js/layer/layer.js}" type="text/javascript"></script>
 
 <script th:inline="javascript">
-    let rules = [[${rules}]];
-    let initApp = 1;
+    var rules = [[${rules}]];
+    var initApp = 1;
     if(rules != null){
          initApp = rules.app;
     }
@@ -76,14 +76,14 @@
             $.modal.alertError(XMLHttpRequest.responseJSON.msg);
         },
         success : function(data) {
-            let role = data.role;
+            var role = data.role;
             if(role === "ADMIN"){
                 $("#apps").append("<option></option>");
             }
-            let apps = data.appNames;
-            let appName = data.appName;
-            for (let i = 0; i < apps.length; i++) {
-                let app = apps[i];
+            var apps = data.appNames;
+            var appName = data.appName;
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
                 if(initApp === 1){
                     if(app === appName){
                         $("#apps").append("<option selected = selected>" + apps[i] + "</option>");
@@ -102,14 +102,14 @@
     });
 
     $("#apps").change(function () {
-        let app = this.options[this.selectedIndex].value;
-        let childWindow = $("#json")[0].contentWindow;
+        var app = this.options[this.selectedIndex].value;
+        var childWindow = $("#json")[0].contentWindow;
         childWindow.getRules(app);
     });
 
     function add(){
-        let app = $("#apps").val();
-        let rules =  window.frames["json"].document.getElementById("myWord").value;
+        var app = $("#apps").val();
+        var rules =  window.frames["json"].document.getElementById("myWord").value;
         $.ajax({
             cache : true,
             type : "POST",
@@ -128,9 +128,9 @@
         });
     }
     function save(){
-        let app = $("#apps").val();
-        let rules =  window.frames["json"].document.getElementById("myWord").value;
-        let target =  window.frames["json"].document.getElementById("json-target").innerText;
+        var app = $("#apps").val();
+        var rules =  window.frames["json"].document.getElementById("myWord").value;
+        var target =  window.frames["json"].document.getElementById("json-target").innerText;
 
         if(target.indexOf("解析错误") != -1 ){
             $.modal.alertError("非法的json数组");
@@ -156,7 +156,7 @@
         });
     }
     function del(){
-        let app = $("#apps").val();
+        var app = $("#apps").val();
         $.ajax({
             cache : true,
             type : "POST",
@@ -172,7 +172,7 @@
             success : function(data) {
                 console.log(data)
                 layer.alert(data.msg)
-                let childWindow = $("#json")[0].contentWindow;
+                var childWindow = $("#json")[0].contentWindow;
                 childWindow.getRules(app);
             }
         });

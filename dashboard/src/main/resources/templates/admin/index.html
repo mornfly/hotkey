@@ -73,7 +73,7 @@ height: calc(100vh - 139px);overflow-x: hidden;
                 $("#userName").html(data);
             },
             error: function(response){  //加载失败时执行
-                let token = getCookie("token");
+                var token = getCookie("token");
                 if(response.status == 1000 && ( token == "undefined" || token =="")){
                     top.location.href = '/user/login';
                 }
