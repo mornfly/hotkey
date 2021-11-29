@@ -130,7 +130,7 @@
             { field: 'ratio', title: '命中率'},
             { field: 'seconds', title: '时间',
                 formatter:function (val) {
-                    return timestampToTime(val*1000);
+                    return changeDateFormat(val*1000);
                 }
             }]
     };
