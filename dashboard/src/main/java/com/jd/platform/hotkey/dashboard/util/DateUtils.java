@@ -14,7 +14,7 @@ public class DateUtils {
 
     public static final String PATTERN_SECONDS="yyMMddHHmmss";
 
-    public static final String PATTERN_MINUS="yyMMddHHmm";
+    public static final String PATTERN_MINUS="yyMMddHH";
 
     public static final String PATTERN_HOUR="yyMMddHH";
 
