@@ -21,7 +21,7 @@ public class Statistics implements Serializable {
 
     private Integer hours;
 
-    private Integer minutes;
+    private Long minutes;
 
     private Integer bizType;
 
@@ -79,11 +79,11 @@ public class Statistics implements Serializable {
         this.hours = hours;
     }
 
-    public Integer getMinutes() {
+    public Long getMinutes() {
         return minutes;
     }
 
-    public void setMinutes(Integer minutes) {
+    public void setMinutes(Long minutes) {
         this.minutes = minutes;
     }
 

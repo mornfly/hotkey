@@ -97,7 +97,6 @@ public class CommonUtil {
         String pattern = isHour ? DateUtil.PATTERN_MINUS : DateUtil.PATTERN_HOUR;
         Map<String, int[]> map = new HashMap<>(10);
         Map<String, List<Statistics>> listMap = listGroup(list);
-//		log.info("按照rule分组以后的listMap--> {}", JSON.toJSONString(listMap));
         for (Map.Entry<String, List<Statistics>> m : listMap.entrySet()) {
             int start = DateUtil.reviseTime(startTime, 0, type);
             map.put(m.getKey(), new int[size]);
@@ -108,10 +107,9 @@ public class CommonUtil {
                     LocalDateTime tmpTime = DateUtil.strToLdt((start - 1) + "", pattern);
                     start = DateUtil.reviseTime(tmpTime, 1, type);
                 }
-//				log.info("start--> {},  tmp---> {} ", start, tmp);
                 set.add(DateUtil.strToLdt(start + "", pattern).toString().replace("T", " "));
                 Statistics st = m.getValue().get(tmp);
-                int val = isHour ? st.getMinutes() : st.getHours();
+                long val = isHour ? st.getMinutes() : st.getHours();
                 if (start != val) {
                     data[i] = 0;
                 } else {
@@ -150,11 +148,11 @@ public class CommonUtil {
      * @param list list
      * @return map
      */
-    private static Map<Integer, List<Statistics>> listGroupByTime(List<Statistics> list, boolean isMinute) {
+    private static Map<Long, List<Statistics>> listGroupByTime(List<Statistics> list, boolean isMinute) {
         if (isMinute) {
             return list.stream().collect(Collectors.groupingBy(Statistics::getMinutes));
         }
-        return list.stream().collect(Collectors.groupingBy(Statistics::getHours));
+        return list.stream().collect(Collectors.groupingBy(x-> x.getHours().longValue()));
     }
 
 
@@ -172,17 +170,17 @@ public class CommonUtil {
         Set<String> xAxisSet = new TreeSet<>();
         Duration duration = Duration.between(st, et);
         long passTime = isMinute ? duration.toMinutes() : duration.toHours();
-        Map<Integer, Integer> timeCountMap = new TreeMap<>();
+        Map<Long, Integer> timeCountMap = new TreeMap<>();
         String pattern = isMinute ? DateUtil.PATTERN_MINUS : DateUtil.PATTERN_HOUR;
         for (int i = 1; i < passTime; i++) {
-            int time = DateUtil.reviseTime(st, i, isMinute ? 1 : 2);
-            xAxisSet.add(DateUtil.formatTime(time, pattern));
+            long time = DateUtil.reviseTimeV2(st, i, isMinute ? 1 : 2);
+            xAxisSet.add(DateUtil.formatTimeV2(time, pattern));
             timeCountMap.put(time, null);
         }
         Map<String, List<Statistics>> ruleStatsMap = listGroup(list);
         Map<String, List<Integer>> ruleDataMap = new ConcurrentHashMap<>(ruleStatsMap.size());
         ruleStatsMap.forEach((rule, statistics) -> {
-            Map<Integer, List<Statistics>> timeStatsMap = listGroupByTime(statistics, isMinute);
+            Map<Long, List<Statistics>> timeStatsMap = listGroupByTime(statistics, isMinute);
             timeCountMap.forEach((k, v) -> {
                 if (timeStatsMap.get(k) == null) {
                     timeCountMap.put(k, 0);
@@ -235,7 +233,7 @@ public class CommonUtil {
         LocalDateTime ldt = DateUtil.dateToLdt(time);
         int day = DateUtil.nowDay(ldt);
         int hour = DateUtil.nowHour(ldt);
-        int minus = DateUtil.nowMinus(ldt);
+        long minus = DateUtil.nowMinus(ldt);
         long seconds = time.getTime() / 1000;
         String[] counts = map.get(key).split("-");
         int hitCount = Integer.parseInt(counts[0]);
@@ -244,7 +242,7 @@ public class CommonUtil {
 
         return Summary.aSummary().indexName(rule).rule(rule).app(app)
                 .val1(totalCount).val2(hitCount).val3(BigDecimal.ZERO)
-                .days(day).hours(hour).minutes(minus).seconds((int) seconds)
+                .days(day).hours(hour).minutes(minus).seconds(seconds)
                 .bizType(1).uuid(uuid).createTime(new Date()).build();
     }
 

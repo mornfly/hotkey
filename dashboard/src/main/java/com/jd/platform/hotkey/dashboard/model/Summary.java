@@ -28,9 +28,9 @@ public class Summary implements Serializable {
 
     private Integer hours;
 
-    private Integer minutes;
+    private Long minutes;
 
-    private Integer seconds;
+    private Long seconds;
 
     private Integer bizType;
 
@@ -113,19 +113,19 @@ public class Summary implements Serializable {
         this.hours = hours;
     }
 
-    public Integer getMinutes() {
+    public Long getMinutes() {
         return minutes;
     }
 
-    public void setMinutes(Integer minutes) {
+    public void setMinutes(Long minutes) {
         this.minutes = minutes;
     }
 
-    public Integer getSeconds() {
+    public Long getSeconds() {
         return seconds;
     }
 
-    public void setSeconds(Integer seconds) {
+    public void setSeconds(Long seconds) {
         this.seconds = seconds;
     }
 
@@ -168,8 +168,8 @@ public class Summary implements Serializable {
         private BigDecimal val3;
         private Integer days;
         private Integer hours;
-        private Integer minutes;
-        private Integer seconds;
+        private Long minutes;
+        private Long seconds;
         private Integer bizType;
         private String uuid;
         private Date createTime;
@@ -222,12 +222,12 @@ public class Summary implements Serializable {
             return this;
         }
 
-        public SummaryBuilder minutes(Integer minutes) {
+        public SummaryBuilder minutes(Long minutes) {
             this.minutes = minutes;
             return this;
         }
 
-        public SummaryBuilder seconds(Integer seconds) {
+        public SummaryBuilder seconds(Long seconds) {
             this.seconds = seconds;
             return this;
         }

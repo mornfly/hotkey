@@ -65,6 +65,21 @@ public class DateUtil {
         return 0;
     }
 
+    public static long reviseTimeV2(LocalDateTime time, int diff, int type){
+        switch (type){
+            case 0:
+                return Long.parseLong(FORMAT_SECONDS.format(time.plusSeconds(diff)));
+            case 1:
+                return Long.parseLong(FORMAT_MINUS.format(time.plusMinutes(diff)));
+            case 2:
+                return Long.parseLong(FORMAT_HOUR.format(time.plusHours(diff)));
+            case 3:
+                return Long.parseLong(FORMAT_DAY.format(time.plusDays(diff)));
+            default:
+        }
+        return 0;
+    }
+
 
 
 
@@ -78,8 +93,12 @@ public class DateUtil {
     }
 
 
-    public static int nowMinus(LocalDateTime now){
-        return Integer.parseInt(now.format(FORMAT_MINUS)) ;
+    public static long nowMinus(LocalDateTime now){
+        return Long.parseLong(now.format(FORMAT_MINUS)) ;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(LocalDateTime.now().format(FORMAT_MINUS));
     }
 
     public static int nowHour(LocalDateTime now){
@@ -113,5 +132,10 @@ public class DateUtil {
     public static String formatTime(int time,String pattern){
         return strToLdt(time+"", pattern).toString().replace("T", " ");
     }
+
+    public static String formatTimeV2(long time,String pattern){
+        return strToLdt(time+"", pattern).toString().replace("T", " ");
+    }
+
 
 }

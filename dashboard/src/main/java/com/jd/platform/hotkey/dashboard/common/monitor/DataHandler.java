@@ -239,7 +239,7 @@ public class DataHandler {
             Date nowTime = DateUtil.ldtToDate(now);
             int day = DateUtil.nowDay(now);
             int hour = DateUtil.nowHour(now);
-            int minus = DateUtil.nowMinus(now);
+            long minus = DateUtil.nowMinus(now);
 
             List<Statistics> records = keyRecordMapper.statisticsByRule(new SearchReq(now.minusMinutes(1)));
             if (records.size() == 0) {
@@ -252,7 +252,6 @@ public class DataHandler {
                 x.setDays(day);
                 x.setHours(hour);
                 x.setMinutes(minus);
-                // 骚操作 临时解决没有rule字段的问题
                 x.setUuid(5 + "_" + x.getKeyName() + "_" + minus);
             });
             int row = statisticsMapper.batchInsert(records);

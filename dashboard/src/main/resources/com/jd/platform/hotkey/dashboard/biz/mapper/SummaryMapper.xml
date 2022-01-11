@@ -11,8 +11,8 @@
     <result column="index_val3" property="val3" jdbcType="DECIMAL" />
     <result column="days" property="days" jdbcType="INTEGER" />
     <result column="hours" property="hours" jdbcType="INTEGER" />
-    <result column="minutes" property="minutes" jdbcType="INTEGER" />
-    <result column="seconds" property="seconds" jdbcType="INTEGER" />
+    <result column="minutes" property="minutes" jdbcType="BIGINT" />
+    <result column="seconds" property="seconds" jdbcType="BIGINT" />
     <result column="biz_type" property="bizType" jdbcType="INTEGER" />
     <result column="uuid" property="uuid" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
