@@ -1,4 +1,9 @@
 # hotkey
+
+备注：有需要存储海量日志的场景，秒级GB级或数十GB级，可关注我的另一个开源项目[JLog](https://gitee.com/jd-platform-opensource/jlog)，较ELK系列套件在处理日志方面提升10倍性能，且存储降低70%以上。
+
+以下为hotkey相关
+
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0616/105737_e5b876cd_303698.png "redis热key探测及缓存到JVM (1).png")
 
 对任意突发性的无法预先感知的热点数据，包括并不限于热点数据（如突发大量请求同一个商品）、热用户（如恶意爬虫刷子）、热接口（突发海量请求同一个接口）等，进行毫秒级精准探测到。然后对这些热数据、热用户等，推送到所有服务端JVM内存中，以大幅减轻对后端数据存储层的冲击，并可以由使用者决定如何分配、使用这些热key（譬如对热商品做本地缓存、对热用户进行拒绝访问、对热接口进行熔断或返回默认值）。这些热数据在整个服务端集群内保持一致性，并且业务隔离，worker端性能强悍。
@@ -252,15 +257,8 @@ Object JdHotKeyStore.getValue(String key)
 
              }
 
-### 测试环境
+### 接入、共建公司
 
-我司为方便大家快速接入试用、查看hotkey效果，提供了1台公网etcd机器（16c16g）、2台worker机器（8c12g），供快速接入测试。
-
-
-etcd地址为： **http://open-etcd.jd.com:2000** ，可以在下载项目后，在sample项目、dashboard项目里yml文件修改etcd连接地址为该地址，然后进入界面控制台，即可看到当前连接的worker，之后可以在sample项目里，进行hotkey测试。
+![输入图片说明](image/sou.png)
 
 
-控制台公网测试地址：http://hotkey.tianyalei.com:9001/  账号admin，密码123456
-
-
-测试前，注意在控制台新建自己的app规则。
