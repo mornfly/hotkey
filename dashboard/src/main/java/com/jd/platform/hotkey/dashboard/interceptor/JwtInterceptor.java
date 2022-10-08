@@ -22,12 +22,15 @@ public class JwtInterceptor extends HandlerInterceptorAdapter{
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (HttpMethod.OPTIONS.equals(request.getMethod())) {
+        if (HttpMethod.OPTIONS.name().equals(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return true;
         }
-        String header = request.getHeader("x-requested-with");
-        if(!StringUtils.isEmpty(header) && "XMLHttpRequest".endsWith(header) && request.getMethod().equals(Constant.POST)){
+        if(request.getMethod().equals(Constant.POST)){
+            String header = request.getHeader("x-requested-with");
+            if(StringUtils.isEmpty(header) || !"XMLHttpRequest".endsWith(header)){
+                return false;
+            }
             String authHeader = request.getHeader(JwtTokenUtil.AUTH_HEADER_KEY);
             if (StringUtils.isEmpty(authHeader) || !authHeader.startsWith(JwtTokenUtil.TOKEN_PREFIX)) {
                 throw new BizException(ResultEnum.NO_LOGIN);
@@ -42,8 +45,8 @@ public class JwtInterceptor extends HandlerInterceptorAdapter{
             if(url.contains(Constant.VIEW)||url.contains(Constant.LIST)||url.contains(Constant.INFO)){
                 return true;
             }
-
         }
+
         return true;
     }
 
