@@ -198,6 +198,19 @@ public void initHotkey() {
 
 有时可能项目里没有直接依赖guava，但是引入的某个pom里引了guava，也需要将guava排除掉。
 
+如果原有项目使用了fastjson，需要降为`2.0.0`版本以下，
+在`2.0.0`版本以上，`com.alibaba.fastjson.serializer.JSONLibDataFormatSerializer`类已经删除。
+导致JSON工具类`com.jd.platform.hotkey.common.tool.FastJsonUtils`初始化时找不到类。
+规则配置的json转换有问题。
+推荐使用与HotKey相同的版本：
+```
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.70</version>
+</dependency>
+```
+
 
 
 使用：
