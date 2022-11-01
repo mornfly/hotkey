@@ -112,7 +112,7 @@ public class EtcdStarter {
                 String loggerOn = configCenter.get(ConfigConstant.logToggle);
                 LOGGER_ON = "true".equals(loggerOn) || "1".equals(loggerOn);
             } catch (StatusRuntimeException ex) {
-                logger.error(ETCD_DOWN);
+                logger.error(ETCD_DOWN, ex);
             }
 
             KvClient.WatchIterator watchIterator = configCenter.watch(ConfigConstant.logToggle);
@@ -212,7 +212,7 @@ public class EtcdStarter {
                 }
             }
         } catch (StatusRuntimeException ex) {
-            logger.error(ETCD_DOWN);
+            logger.error(ETCD_DOWN, ex);
         }
 
     }
@@ -245,7 +245,7 @@ public class EtcdStarter {
             }
 //            configCenter.putAndGrant(ConfigConstant.bufferPoolPath + ip, MemoryTool.getBufferPool() + "", 10);
         } catch (Exception ex) {
-            logger.error(ETCD_DOWN);
+            logger.error(ETCD_DOWN, ex);
         }
     }
 
