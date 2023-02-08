@@ -278,6 +278,7 @@ public class DataHandler {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         //开启拉取etcd的worker信息，如果拉取失败，则定时继续拉取
         scheduledExecutorService.scheduleAtFixedRate(() -> {
+            log.info("清理数据任务开始");
             List<KeyValue> keyValues = configCenter.getPrefix(ConfigConstant.appCfgPath);
             for (KeyValue kv : keyValues) {
                 try {
@@ -296,6 +297,7 @@ public class DataHandler {
                     e.printStackTrace();
                 }
             }
+            log.info("清理数据任务结束");
         }, 1, 5, TimeUnit.MINUTES);
 
     }
