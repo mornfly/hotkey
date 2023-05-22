@@ -273,5 +273,3 @@ Object JdHotKeyStore.getValue(String key)
 ### 接入、共建公司
 
 ![输入图片说明](image/sou.png)
-
-![输入图片说明](image/yiche.png)
