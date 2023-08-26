@@ -326,7 +326,7 @@ public class EtcdStarter {
     public void removeNodeInfo() {
         try {
             String hostName = IpUtils.getHostName();
-            configCenter.delete(ConfigConstant.workersPath + workerPath + hostName);
+            configCenter.delete(ConfigConstant.workersPath + workerPath + "/" + hostName);
             AsyncPool.shutDown();
         } catch (Exception e) {
             logger.error("worker connect to etcd failure");
